@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Conway's Game of Life (Mobile-First)</title>
+  <!-- Viewport for mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- jQuery & jQuery Mobile (stable 1.4.5) from CDN -->
+  <link
+    rel="stylesheet"
+    href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"
+  />
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+  <!-- Inline CSS -->
+  <style>
+    /* Basic page styling */
+    body, .ui-page, .ui-content {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+    }
+
+    /* Header */
+    #header h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 1.25em;
+      padding: 0.5em;
+    }
+
+    /* Button container */
+    #controls {
+      text-align: center;
+      margin: 0.5em 0;
+    }
+
+    /* Speed selector container */
+    #speed-control {
+      display: inline-block;
+      margin-top: 0.5em;
+    }
+    #speed-label {
+      font-weight: bold;
+      margin-right: 0.5em;
+    }
+
+    /* Grid container with max width on desktop */
+    #grid-container {
+      max-width: 1000px;
+      width: 100%;
+      overflow-x: auto; /* Horizontal scroll if grid is too wide */
+      overflow-y: auto;
+      margin: 1em auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
+    /* The grid itself */
+    #grid {
+      display: grid;
+      /* Slightly smaller squares for desktop so it's less zoomed in */
+      grid-template-columns: repeat(50, 12px);
+      grid-template-rows: repeat(30, 12px);
+      gap: 1px;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .cell {
+      width: 12px;
+      height: 12px;
+      background-color: #fff;
+    }
+
+    .alive {
+      background-color: #2b2b2b;
+    }
+
+    /* For narrower screens, shrink cells more */
+    @media (max-width: 600px) {
+      #grid {
+        grid-template-columns: repeat(50, 10px);
+        grid-template-rows: repeat(30, 10px);
+      }
+      .cell {
+        width: 10px;
+        height: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<!-- Main Page -->
+<div data-role="page" id="mainPage">
+
+  <!-- Header -->
+  <div data-role="header" data-position="fixed" id="header">
+    <h1>Conway's Game of Life</h1>
+  </div>
+
+  <!-- Page Content -->
+  <div role="main" class="ui-content">
+    <!-- Controls -->
+    <div id="controls" data-role="controlgroup" data-type="horizontal">
+      <button id="startBtn" data-role="button">Start</button>
+      <button id="stopBtn" data-role="button">Stop</button>
+      <button id="stepBtn" data-role="button">Step</button>
+      <button id="randomBtn" data-role="button">Random</button>
+      <button id="clearBtn" data-role="button">Clear</button>
+    </div>
+
+    <!-- Playback speed selector -->
+    <div id="speed-control">
+      <label id="speed-label" for="speedSelect">Speed:</label>
+      <select id="speedSelect" data-role="none">
+        <option value="0.5">0.5×</option>
+        <option value="1.0" selected>1.0×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2.0">2.0×</option>
+      </select>
+    </div>
+
+    <!-- Grid Container -->
+    <div id="grid-container">
+      <div id="grid"></div>
+    </div>
+  </div>
+
+  <!-- Script: Conway's Game of Life Logic -->
+  <script>
+    // -----------------------------------------------------
+    // Configuration
+    // -----------------------------------------------------
+    const rows = 30;
+    const cols = 50;
+    let grid = createEmptyGrid(rows, cols);
+
+    const baseInterval = 200; // 1.0× => 200ms
+    let playing = false;
+    let timer = null;
+    let currentSpeedMultiplier = 1.0; // default 1.0
+
+    // -----------------------------------------------------
+    // On Page Create
+    // -----------------------------------------------------
+    $(document).on("pagecreate", "#mainPage", function () {
+      buildGridUI();
+
+      // Button event listeners
+      $("#startBtn").on("click", startGame);
+      $("#stopBtn").on("click", stopGame);
+      $("#stepBtn").on("click", stepGeneration);
+      $("#randomBtn").on("click", randomizeGrid);
+      $("#clearBtn").on("click", clearGrid);
+
+      // Handle speed changes
+      $("#speedSelect").on("change", function () {
+        currentSpeedMultiplier = parseFloat($(this).val());
+        if (playing) {
+          stopGame();
+          startGame();
+        }
+      });
+    });
+
+    // -----------------------------------------------------
+    // Create and Render the Grid
+    // -----------------------------------------------------
+    function createEmptyGrid(r, c) {
+      const arr = [];
+      for (let i = 0; i < r; i++) {
+        arr[i] = [];
+        for (let j = 0; j < c; j++) {
+          arr[i][j] = 0;
+        }
+      }
+      return arr;
+    }
+
+    function buildGridUI() {
+      const $grid = $("#grid");
+      $grid.empty();
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const $cell = $("<div></div>");
+          $cell
+            .addClass("cell")
+            .attr("data-row", r)
+            .attr("data-col", c);
+
+          // "tap" event from jQuery Mobile
+          $cell.on("tap", function () {
+            const rowIdx = parseInt($(this).attr("data-row"));
+            const colIdx = parseInt($(this).attr("data-col"));
+            grid[rowIdx][colIdx] = grid[rowIdx][colIdx] ? 0 : 1;
+            renderGrid();
+          });
+
+          $grid.append($cell);
+        }
+      }
+
+      renderGrid();
+    }
+
+    function renderGrid() {
+      $("#grid .cell").each(function () {
+        const r = parseInt($(this).attr("data-row"));
+        const c = parseInt($(this).attr("data-col"));
+        if (grid[r][c] === 1) {
+          $(this).addClass("alive");
+        } else {
+          $(this).removeClass("alive");
+        }
+      });
+    }
+
+    // -----------------------------------------------------
+    // Game Logic
+    // -----------------------------------------------------
+    function computeNextGeneration(currentGrid) {
+      const newGrid = createEmptyGrid(rows, cols);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const neighbors = countNeighbors(currentGrid, r, c);
+          const cellState = currentGrid[r][c];
+
+          // Conway's rules
+          if (cellState === 1) {
+            // Live cell
+            if (neighbors === 2 || neighbors === 3) {
+              newGrid[r][c] = 1; // stays alive
+            } else {
+              newGrid[r][c] = 0; // dies
+            }
+          } else {
+            // Dead cell
+            if (neighbors === 3) {
+              newGrid[r][c] = 1; // becomes alive
+            } else {
+              newGrid[r][c] = 0; // stays dead
+            }
+          }
+        }
+      }
+
+      return newGrid;
+    }
+
+    function countNeighbors(g, row, col) {
+      let count = 0;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          // skip the cell itself
+          if (dr === 0 && dc === 0) continue;
+          const nr = row + dr;
+          const nc = col + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+            count += g[nr][nc];
+          }
+        }
+      }
+      return count;
+    }
+
+    function allCellsDead(g) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (g[r][c] === 1) return false;
+        }
+      }
+      return true;
+    }
+
+    // -----------------------------------------------------
+    // Control Functions
+    // -----------------------------------------------------
+    function startGame() {
+      // If no cells are alive, randomize before starting
+      if (allCellsDead(grid)) {
+        randomizeGrid();
+      }
+      if (!playing) {
+        playing = true;
+        timer = setInterval(() => {
+          grid = computeNextGeneration(grid);
+          renderGrid();
+        }, calculateInterval());
+      }
+    }
+
+    function stopGame() {
+      playing = false;
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function stepGeneration() {
+      stopGame();
+      grid = computeNextGeneration(grid);
+      renderGrid();
+    }
+
+    function randomizeGrid() {
+      stopGame();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          // ~20% chance of being alive
+          grid[r][c] = Math.random() > 0.8 ? 1 : 0;
+        }
+      }
+      renderGrid();
+    }
+
+    function clearGrid() {
+      stopGame();
+      grid = createEmptyGrid(rows, cols);
+      renderGrid();
+    }
+
+    function calculateInterval() {
+      // If speed is 0.5 => baseInterval / 0.5 = 400ms
+      // If speed is 1.0 => 200ms
+      // If speed is 1.5 => ~133ms
+      // If speed is 2.0 => 100ms
+      return baseInterval / currentSpeedMultiplier;
+    }
+  </script>
+</div>
+</body>
+</html>
