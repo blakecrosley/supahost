@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Conway's Game of Life (Mobile-First)</title>
+  <title>Conway's Game of Life</title>
   <!-- Viewport for mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- jQuery & jQuery Mobile (stable 1.4.5) from CDN -->
+  <!-- jQuery + jQuery Mobile (stable 1.4.5) from CDN -->
   <link
     rel="stylesheet"
     href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"
@@ -16,12 +16,19 @@
 
   <!-- Inline CSS -->
   <style>
-    /* Basic page styling */
+    /* Overall page styling */
     body, .ui-page, .ui-content {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
       background: #fafafa;
+    }
+
+    /* Center all main content, restrict width */
+    #mainContent {
+      max-width: 580px;
+      margin: 0 auto; /* center horizontally */
+      padding: 0 1em; /* some side padding */
     }
 
     /* Header */
@@ -32,39 +39,34 @@
       padding: 0.5em;
     }
 
-    /* Button container */
+    /* Button container: add margin-top for breathing room */
     #controls {
+      margin-top: 2em; 
       text-align: center;
-      margin: 0.5em 0;
     }
 
-    /* Speed selector container */
-    #speed-control {
-      display: inline-block;
-      margin-top: 0.5em;
-    }
-    #speed-label {
-      font-weight: bold;
-      margin-right: 0.5em;
+    /* We keep the controlgroup horizontal, but everything inside is centered. */
+    #controls .ui-controlgroup-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    /* Grid container with max width on desktop */
+    /* Grid container with max width and centered */
     #grid-container {
-      max-width: 1000px;
-      width: 100%;
-      overflow-x: auto; /* Horizontal scroll if grid is too wide */
-      overflow-y: auto;
       margin: 1em auto;
       border: 1px solid #ccc;
       border-radius: 4px;
       background: #fff;
       box-sizing: border-box;
+      overflow-x: auto; 
+      overflow-y: auto;
     }
 
     /* The grid itself */
     #grid {
       display: grid;
-      /* Slightly smaller squares for desktop so it's less zoomed in */
+      /* Slightly smaller squares so it’s less zoomed */
       grid-template-columns: repeat(50, 12px);
       grid-template-rows: repeat(30, 12px);
       gap: 1px;
@@ -93,47 +95,76 @@
         height: 10px;
       }
     }
+
+    /* Instructions styling */
+    #instructions {
+      margin-top: 1em;
+      font-size: 0.95em;
+      line-height: 1.4em;
+      text-align: center;
+    }
+
+    /* Editorial description styling */
+    #description {
+      margin: 2em auto;
+      line-height: 1.6;
+      font-size: 1em;
+      color: #333;
+    }
+    #description p {
+      margin-bottom: 1em;
+    }
   </style>
 </head>
 
 <body>
 <!-- Main Page -->
 <div data-role="page" id="mainPage">
-
   <!-- Header -->
   <div data-role="header" data-position="fixed" id="header">
     <h1>Conway's Game of Life</h1>
   </div>
 
   <!-- Page Content -->
-  <div role="main" class="ui-content">
-    <!-- Controls -->
+  <div role="main" class="ui-content" id="mainContent">
+    <!-- Button Group (Controlgroup) -->
     <div id="controls" data-role="controlgroup" data-type="horizontal">
       <button id="startBtn" data-role="button">Start</button>
       <button id="stopBtn" data-role="button">Stop</button>
       <button id="stepBtn" data-role="button">Step</button>
       <button id="randomBtn" data-role="button">Random</button>
       <button id="clearBtn" data-role="button">Clear</button>
+
+      <!-- Speed Control as a dropdown in the same group -->
+      <select id="speedSelect" data-role="button" data-icon="arrow-d" data-iconpos="right">
+        <option value="0.5">Speed 0.5</option>
+        <option value="1.0" selected>Speed 1.0</option>
+        <option value="1.5">Speed 1.5</option>
+        <option value="2.0">Speed 2.0</option>
+      </select>
     </div>
 
-    <!-- Playback speed selector -->
-    <div id="speed-control">
-      <label id="speed-label" for="speedSelect">Speed:</label>
-      <select id="speedSelect" data-role="none">
-        <option value="0.5">0.5×</option>
-        <option value="1.0" selected>1.0×</option>
-        <option value="1.5">1.5×</option>
-        <option value="2.0">2.0×</option>
-      </select>
+    <!-- Simple instructions above the game -->
+    <div id="instructions">
+      <p>Tap or click cells to toggle them. Press <strong>Start</strong> to begin the simulation. You can <strong>Step</strong> through generations manually, <strong>Random</strong> to populate new cells, or <strong>Clear</strong> to wipe the board.</p>
     </div>
 
     <!-- Grid Container -->
     <div id="grid-container">
       <div id="grid"></div>
     </div>
+
+    <!-- Editorial-style description beneath the grid -->
+    <div id="description">
+      <p>Conway’s Game of Life is a classic example of how complexity can blossom from just a few straightforward rules. Picture an infinite grid of cells—each one can be “on” (alive) or “off” (dead). At every turn (or “generation”), each cell checks how many neighbors are alive. If it’s too crowded, the cell dies. If it’s too lonely, same story. But if conditions are just right—namely exactly three neighbors—new life sparks into being. These four simple laws create a mesmerizing dance of patterns that can replicate, move around (“gliders”), or even form loops that generate new cells (“guns”).</p>
+
+      <p>What makes this so intriguing for nerds of all stripes is the concept of emergence: complex behavior arising from super-simple rules. Watching the grid evolve can feel like peering into a mini-universe. One moment, you’re convinced half the cells will vanish. The next, you spot newly formed “oscillators” ticking away in perfect sync like digital clockwork. Then there are “spaceships” gliding across the screen, as if they have some built-in mission to conquer new territories—spoiler alert: they don’t, but that’s half the fun.</p>
+      
+      <p>Conway’s Game of Life has also earned a kind of legendary status among computer scientists: it’s Turing complete, which means in theory you can do any computable operation within it (with the right configuration of cells, of course). For all its playful simplicity, the Game of Life has inspired decades of deep dives into complexity, computational theory, and even philosophical ponderings on what it means to be “alive.” It’s like having a front-row seat to a microcosm of creation—minus the headache of lab equipment or code wrangling. Whether you’re a seasoned coder, a math geek, or just someone who likes a good puzzle, the Game of Life never runs out of surprises. Dive in and see for yourself how such simple rules can produce a digital world that feels uncannily, well, alive.</p>
+    </div>
   </div>
 
-  <!-- Script: Conway's Game of Life Logic -->
+  <!-- Conway's Game of Life Logic -->
   <script>
     // -----------------------------------------------------
     // Configuration
@@ -142,10 +173,11 @@
     const cols = 50;
     let grid = createEmptyGrid(rows, cols);
 
-    const baseInterval = 200; // 1.0× => 200ms
+    // Base interval for 1.0 speed = 200ms
+    const baseInterval = 200;
     let playing = false;
     let timer = null;
-    let currentSpeedMultiplier = 1.0; // default 1.0
+    let currentSpeedMultiplier = 1.0; // default
 
     // -----------------------------------------------------
     // On Page Create
@@ -160,9 +192,10 @@
       $("#randomBtn").on("click", randomizeGrid);
       $("#clearBtn").on("click", clearGrid);
 
-      // Handle speed changes
+      // Speed select changes
       $("#speedSelect").on("change", function () {
-        currentSpeedMultiplier = parseFloat($(this).val());
+        const newVal = $(this).val();
+        currentSpeedMultiplier = parseFloat(newVal);
         if (playing) {
           stopGame();
           startGame();
@@ -196,7 +229,7 @@
             .attr("data-row", r)
             .attr("data-col", c);
 
-          // "tap" event from jQuery Mobile
+          // jQuery Mobile "tap" event
           $cell.on("tap", function () {
             const rowIdx = parseInt($(this).attr("data-row"));
             const colIdx = parseInt($(this).attr("data-col"));
@@ -207,15 +240,14 @@
           $grid.append($cell);
         }
       }
-
       renderGrid();
     }
 
     function renderGrid() {
       $("#grid .cell").each(function () {
-        const r = parseInt($(this).attr("data-row"));
-        const c = parseInt($(this).attr("data-col"));
-        if (grid[r][c] === 1) {
+        const rowIdx = parseInt($(this).attr("data-row"));
+        const colIdx = parseInt($(this).attr("data-col"));
+        if (grid[rowIdx][colIdx] === 1) {
           $(this).addClass("alive");
         } else {
           $(this).removeClass("alive");
@@ -247,12 +279,11 @@
             if (neighbors === 3) {
               newGrid[r][c] = 1; // becomes alive
             } else {
-              newGrid[r][c] = 0; // stays dead
+              newGrid[r][c] = 0;
             }
           }
         }
       }
-
       return newGrid;
     }
 
@@ -260,8 +291,7 @@
       let count = 0;
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-          // skip the cell itself
-          if (dr === 0 && dc === 0) continue;
+          if (dr === 0 && dc === 0) continue; // skip itself
           const nr = row + dr;
           const nc = col + dc;
           if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
@@ -285,7 +315,7 @@
     // Control Functions
     // -----------------------------------------------------
     function startGame() {
-      // If no cells are alive, randomize before starting
+      // If no cells alive, randomize first
       if (allCellsDead(grid)) {
         randomizeGrid();
       }
@@ -316,7 +346,7 @@
       stopGame();
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          // ~20% chance of being alive
+          // ~20% chance for a cell to start alive
           grid[r][c] = Math.random() > 0.8 ? 1 : 0;
         }
       }
@@ -330,10 +360,8 @@
     }
 
     function calculateInterval() {
-      // If speed is 0.5 => baseInterval / 0.5 = 400ms
-      // If speed is 1.0 => 200ms
-      // If speed is 1.5 => ~133ms
-      // If speed is 2.0 => 100ms
+      // 1.0 speed = 200 ms
+      // 0.5 => 400 ms, 1.5 => ~133 ms, 2.0 => 100 ms
       return baseInterval / currentSpeedMultiplier;
     }
   </script>
