@@ -26,7 +26,7 @@
 
     /* Center all main content, restrict width */
     #mainContent {
-      max-width: 580px;
+      max-width: 638px;
       margin: 0 auto; /* center horizontally */
       padding: 0 1em; /* some side padding */
     }
@@ -42,27 +42,47 @@
     /* Button container: add margin-top for breathing room */
     #controls {
       margin-top: 2em; 
-      text-align: center;
+      width: 100%;
     }
 
     /* We keep the controlgroup horizontal, but everything inside is centered. */
     #controls .ui-controlgroup-controls {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: space-between;
+      width: 100%;
     }
 
     /* Make all buttons in control group same width */
     #controls .ui-btn {
-      min-width: 80px;  /* Set a minimum width for all buttons */
-      width: auto;      /* Allow natural width if content is wider */
+      flex: 1;          /* Make buttons grow evenly */
+      min-width: 0;     /* Allow buttons to shrink below their content width */
       padding-left: 1em;
       padding-right: 1em;
+      margin: 0;        /* Remove margin between buttons */
     }
 
     /* Force select to match button widths */
     #controls select {
-      min-width: 80px;
+      flex: 1;
+      min-width: 0;
+      /* Remove default select styling */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      border-radius: 0;
+    }
+
+    /* Remove the gap between buttons in the controlgroup */
+    .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn,
+    .ui-controlgroup-horizontal .ui-controlgroup-controls select {
+      border-right-width: 0;
+    }
+
+    /* Add border to last element */
+    .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn:last-child,
+    .ui-controlgroup-horizontal .ui-controlgroup-controls select:last-child {
+      border-right-width: 1px;
     }
 
     /* Grid container with max width and centered */
@@ -72,25 +92,31 @@
       border-radius: 4px;
       background: #fff;
       box-sizing: border-box;
-      overflow-x: auto; 
-      overflow-y: auto;
+      width: 100%;
+      position: relative;
+      padding-bottom: 60%;
+      overflow: hidden;
     }
 
     /* The grid itself */
     #grid {
       display: grid;
-      /* Slightly smaller squares so it’s less zoomed */
-      grid-template-columns: repeat(50, 12px);
-      grid-template-rows: repeat(30, 12px);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
       gap: 1px;
-      justify-content: center;
-      margin: 0 auto;
+      background: #ccc;
     }
 
     .cell {
-      width: 12px;
-      height: 12px;
+      width: 100%;
+      height: 100%;
       background-color: #fff;
+      box-sizing: border-box;
     }
 
     .alive {
@@ -99,15 +125,6 @@
 
     /* For narrower screens, shrink cells more */
     @media (max-width: 600px) {
-      #grid {
-        grid-template-columns: repeat(50, 10px);
-        grid-template-rows: repeat(30, 10px);
-      }
-      .cell {
-        width: 10px;
-        height: 10px;
-      }
-
       /* Make buttons more finger-friendly without drastic changes */
       #controls .ui-btn {
         font-size: 0.9em;
@@ -155,7 +172,7 @@
       <button id="clearBtn" data-role="button" style="min-width:80px;">Clear</button>
       
       <!-- Speed Control at far right -->
-      <select id="speedSelect" data-role="button">
+      <select id="speedSelect" data-role="button" data-icon="false">
         <option value="0.5">0.5×</option>
         <option value="1.0" selected>1.0×</option>
         <option value="1.5">1.5×</option>
@@ -233,8 +250,30 @@
       ]
     };
 
-    const rows = 30;
-    const cols = 50;
+    // Calculate grid dimensions based on container size
+    function calculateGridDimensions() {
+      const $container = $("#grid-container");
+      const containerWidth = $container.width();
+      const containerHeight = $container.height();
+      
+      // Calculate cell size to fit container perfectly
+      const targetCols = 50;
+      const targetRows = 30;
+      
+      const cols = targetCols;
+      const rows = targetRows;
+      
+      // Update grid CSS to create perfectly sized cells
+      const $grid = $("#grid");
+      $grid.css({
+        'grid-template-columns': `repeat(${cols}, 1fr)`,
+        'grid-template-rows': `repeat(${rows}, 1fr)`
+      });
+      
+      return { rows, cols };
+    }
+
+    let { rows, cols } = calculateGridDimensions();
     let grid = createEmptyGrid(rows, cols);
 
     // Keep track of old grid for differential rendering
@@ -245,6 +284,23 @@
     let playing = false;
     let timer = null;
     let currentSpeedMultiplier = 1.0; // default
+
+    // Update grid dimensions on window resize
+    let resizeTimer;
+    $(window).on('resize', function() {
+      // Debounce the resize event
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        const newDims = calculateGridDimensions();
+        if (newDims.rows !== rows || newDims.cols !== cols) {
+          rows = newDims.rows;
+          cols = newDims.cols;
+          grid = createEmptyGrid(rows, cols);
+          oldGrid = null;
+          buildGridUI();
+        }
+      }, 250); // Wait for resize to finish
+    });
 
     /**
      * Loads a preset pattern by name into the grid, centered near the grid's midpoint
