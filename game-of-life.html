@@ -94,6 +94,12 @@
         width: 10px;
         height: 10px;
       }
+
+      /* Make buttons more finger-friendly without drastic changes */
+      #controls .ui-btn {
+        font-size: 0.9em;
+        padding: 0.7em 1em;
+      }
     }
 
     /* Instructions styling */
@@ -136,7 +142,7 @@
       <button id="clearBtn" data-role="button">Clear</button>
 
       <!-- Speed Control as a dropdown in the same group -->
-      <select id="speedSelect" data-role="button" data-icon="arrow-d" data-iconpos="right">
+      <select id="speedSelect" data-role="button">
         <option value="0.5">Speed 0.5</option>
         <option value="1.0" selected>Speed 1.0</option>
         <option value="1.5">Speed 1.5</option>
@@ -173,6 +179,9 @@
     const cols = 50;
     let grid = createEmptyGrid(rows, cols);
 
+    // Keep track of old grid for differential rendering
+    let oldGrid = null;
+
     // Base interval for 1.0 speed = 200ms
     const baseInterval = 200;
     let playing = false;
@@ -183,6 +192,10 @@
     // On Page Create
     // -----------------------------------------------------
     $(document).on("pagecreate", "#mainPage", function () {
+      /**
+       * Initializes the game UI after jQuery Mobile page creation.
+       * Sets button event listeners and handles speed selection changes.
+       */
       buildGridUI();
 
       // Button event listeners
@@ -192,7 +205,6 @@
       $("#randomBtn").on("click", randomizeGrid);
       $("#clearBtn").on("click", clearGrid);
 
-      // Speed select changes
       $("#speedSelect").on("change", function () {
         const newVal = $(this).val();
         currentSpeedMultiplier = parseFloat(newVal);
@@ -206,6 +218,12 @@
     // -----------------------------------------------------
     // Create and Render the Grid
     // -----------------------------------------------------
+    /**
+     * Creates and returns a 2D array representing the game state.
+     * @param {number} r - Number of rows.
+     * @param {number} c - Number of columns.
+     * @returns {number[][]} A 2D array with all values set to 0.
+     */
     function createEmptyGrid(r, c) {
       const arr = [];
       for (let i = 0; i < r; i++) {
@@ -217,6 +235,10 @@
       return arr;
     }
 
+    /**
+     * Builds the grid in the DOM, creating clickable/tappable cells.
+     * Also calls renderGrid() initially to update visuals.
+     */
     function buildGridUI() {
       const $grid = $("#grid");
       $grid.empty();
@@ -243,6 +265,39 @@
       renderGrid();
     }
 
+    /**
+     * Conditionally re-renders only changed cells (based on oldGrid).
+     * If oldGrid is null, falls back to a full render.
+     * @param {number[][]} newGrid - The updated game state.
+     */
+    function renderGridDifferential(newGrid) {
+      // If there's no old grid, do full render
+      if (!oldGrid) {
+        renderGrid(); 
+        oldGrid = JSON.parse(JSON.stringify(newGrid));
+        return;
+      }
+
+      // Only update changed cells
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (oldGrid[r][c] !== newGrid[r][c]) {
+            const cellSelector = '#grid .cell[data-row="' + r + '"][data-col="' + c + '"]';
+            if (newGrid[r][c] === 1) {
+              $(cellSelector).addClass("alive");
+            } else {
+              $(cellSelector).removeClass("alive");
+            }
+          }
+        }
+      }
+      // Update the reference
+      oldGrid = JSON.parse(JSON.stringify(newGrid));
+    }
+
+    /**
+     * Performs a full rerender of all cells in the grid.
+     */
     function renderGrid() {
       $("#grid .cell").each(function () {
         const rowIdx = parseInt($(this).attr("data-row"));
@@ -258,6 +313,11 @@
     // -----------------------------------------------------
     // Game Logic
     // -----------------------------------------------------
+    /**
+     * Computes the next generation of the grid based on Conway's rules.
+     * @param {number[][]} currentGrid - The current game state.
+     * @returns {number[][]} The new generation’s game state.
+     */
     function computeNextGeneration(currentGrid) {
       const newGrid = createEmptyGrid(rows, cols);
 
@@ -287,6 +347,13 @@
       return newGrid;
     }
 
+    /**
+     * Counts the number of living neighbors around a given cell.
+     * @param {number[][]} g - The grid to assess.
+     * @param {number} row - Current cell’s row index.
+     * @param {number} col - Current cell’s column index.
+     * @returns {number} The count of live neighbors.
+     */
     function countNeighbors(g, row, col) {
       let count = 0;
       for (let dr = -1; dr <= 1; dr++) {
@@ -302,6 +369,11 @@
       return count;
     }
 
+    /**
+     * Checks if all cells are dead (grid is empty).
+     * @param {number[][]} g - The grid to inspect.
+     * @returns {boolean} True if no cell is alive; else false.
+     */
     function allCellsDead(g) {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -314,6 +386,9 @@
     // -----------------------------------------------------
     // Control Functions
     // -----------------------------------------------------
+    /**
+     * Starts the game loop and randomizes the grid if it’s empty.
+     */
     function startGame() {
       // If no cells alive, randomize first
       if (allCellsDead(grid)) {
@@ -322,12 +397,17 @@
       if (!playing) {
         playing = true;
         timer = setInterval(() => {
-          grid = computeNextGeneration(grid);
-          renderGrid();
+          const nextGen = computeNextGeneration(grid);
+          grid = nextGen;
+          // Use differential rendering
+          renderGridDifferential(grid);
         }, calculateInterval());
       }
     }
 
+    /**
+     * Stops the game loop and clears the interval timer.
+     */
     function stopGame() {
       playing = false;
       if (timer) {
@@ -336,29 +416,44 @@
       }
     }
 
+    /**
+     * Steps forward exactly one generation.
+     */
     function stepGeneration() {
       stopGame();
       grid = computeNextGeneration(grid);
-      renderGrid();
+      // Use differential rendering on step
+      renderGridDifferential(grid);
     }
 
+    /**
+     * Populates the grid with random alive cells (~20% chance).
+     */
     function randomizeGrid() {
       stopGame();
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          // ~20% chance for a cell to start alive
           grid[r][c] = Math.random() > 0.8 ? 1 : 0;
         }
       }
+      oldGrid = null; // force full redraw
       renderGrid();
     }
 
+    /**
+     * Clears the grid to all dead cells.
+     */
     function clearGrid() {
       stopGame();
       grid = createEmptyGrid(rows, cols);
+      oldGrid = null; // force full redraw
       renderGrid();
     }
 
+    /**
+     * Calculates the interval time (in ms) based on currentSpeedMultiplier.
+     * @returns {number} The interval (in milliseconds) for the timer.
+     */
     function calculateInterval() {
       // 1.0 speed = 200 ms
       // 0.5 => 400 ms, 1.5 => ~133 ms, 2.0 => 100 ms
