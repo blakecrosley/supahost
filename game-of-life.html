@@ -52,6 +52,19 @@
       justify-content: center;
     }
 
+    /* Make all buttons in control group same width */
+    #controls .ui-btn {
+      min-width: 80px;  /* Set a minimum width for all buttons */
+      width: auto;      /* Allow natural width if content is wider */
+      padding-left: 1em;
+      padding-right: 1em;
+    }
+
+    /* Force select to match button widths */
+    #controls select {
+      min-width: 80px;
+    }
+
     /* Grid container with max width and centered */
     #grid-container {
       margin: 1em auto;
@@ -98,7 +111,7 @@
       /* Make buttons more finger-friendly without drastic changes */
       #controls .ui-btn {
         font-size: 0.9em;
-        padding: 0.7em 1em;
+        padding: 0.7em 0.5em;
       }
     }
 
@@ -107,7 +120,7 @@
       margin-top: 1em;
       font-size: 0.95em;
       line-height: 1.4em;
-      text-align: center;
+      text-align: left;
     }
 
     /* Editorial description styling */
@@ -135,24 +148,36 @@
   <div role="main" class="ui-content" id="mainContent">
     <!-- Button Group (Controlgroup) -->
     <div id="controls" data-role="controlgroup" data-type="horizontal">
-      <button id="startBtn" data-role="button">Start</button>
-      <button id="stopBtn" data-role="button">Stop</button>
+      <!-- Single Play/Pause toggle button -->
+      <button id="toggleBtn" data-role="button">Play</button>
       <button id="stepBtn" data-role="button">Step</button>
       <button id="randomBtn" data-role="button">Random</button>
-      <button id="clearBtn" data-role="button">Clear</button>
-
-      <!-- Speed Control as a dropdown in the same group -->
+      <button id="clearBtn" data-role="button" style="min-width:80px;">Clear</button>
+      
+      <!-- Speed Control at far right -->
       <select id="speedSelect" data-role="button">
-        <option value="0.5">Speed 0.5</option>
-        <option value="1.0" selected>Speed 1.0</option>
-        <option value="1.5">Speed 1.5</option>
-        <option value="2.0">Speed 2.0</option>
+        <option value="0.5">0.5×</option>
+        <option value="1.0" selected>1.0×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2.0">2.0×</option>
       </select>
     </div>
 
     <!-- Simple instructions above the game -->
     <div id="instructions">
       <p>Tap or click cells to toggle them. Press <strong>Start</strong> to begin the simulation. You can <strong>Step</strong> through generations manually, <strong>Random</strong> to populate new cells, or <strong>Clear</strong> to wipe the board.</p>
+    </div>    
+
+    <h3>Pattern Examples</h3>
+    <!-- New section for pattern examples -->
+    <div id="exampleControls" data-role="controlgroup" data-type="vertical" style="margin-top:1em; text-align:center;">
+      <label for="patternSelect" style="margin-bottom:0.5em;">Examples:</label>
+      <select id="patternSelect" data-role="button">
+        <option value="">-- Select a Pattern --</option>
+        <option value="glider">Glider</option>
+        <option value="pulsar">Pulsar</option>
+        <option value="smallExploder">Small Exploder</option>
+      </select>
     </div>
 
     <!-- Grid Container -->
@@ -162,11 +187,11 @@
 
     <!-- Editorial-style description beneath the grid -->
     <div id="description">
-      <p>Conway’s Game of Life is a classic example of how complexity can blossom from just a few straightforward rules. Picture an infinite grid of cells—each one can be “on” (alive) or “off” (dead). At every turn (or “generation”), each cell checks how many neighbors are alive. If it’s too crowded, the cell dies. If it’s too lonely, same story. But if conditions are just right—namely exactly three neighbors—new life sparks into being. These four simple laws create a mesmerizing dance of patterns that can replicate, move around (“gliders”), or even form loops that generate new cells (“guns”).</p>
+      <p>Conway's Game of Life is a classic example of how complexity can blossom from just a few straightforward rules. Picture an infinite grid of cells—each one can be "on" (alive) or "off" (dead). At every turn (or "generation"), each cell checks how many neighbors are alive. If it's too crowded, the cell dies. If it's too lonely, same story. But if conditions are just right—namely exactly three neighbors—new life sparks into being. These four simple laws create a mesmerizing dance of patterns that can replicate, move around ("gliders"), or even form loops that generate new cells ("guns").</p>
 
-      <p>What makes this so intriguing for nerds of all stripes is the concept of emergence: complex behavior arising from super-simple rules. Watching the grid evolve can feel like peering into a mini-universe. One moment, you’re convinced half the cells will vanish. The next, you spot newly formed “oscillators” ticking away in perfect sync like digital clockwork. Then there are “spaceships” gliding across the screen, as if they have some built-in mission to conquer new territories—spoiler alert: they don’t, but that’s half the fun.</p>
+      <p>What makes this so intriguing for nerds of all stripes is the concept of emergence: complex behavior arising from super-simple rules. Watching the grid evolve can feel like peering into a mini-universe. One moment, you're convinced half the cells will vanish. The next, you spot newly formed "oscillators" ticking away in perfect sync like digital clockwork. Then there are "spaceships" gliding across the screen, as if they have some built-in mission to conquer new territories—spoiler alert: they don't, but that's half the fun.</p>
       
-      <p>Conway’s Game of Life has also earned a kind of legendary status among computer scientists: it’s Turing complete, which means in theory you can do any computable operation within it (with the right configuration of cells, of course). For all its playful simplicity, the Game of Life has inspired decades of deep dives into complexity, computational theory, and even philosophical ponderings on what it means to be “alive.” It’s like having a front-row seat to a microcosm of creation—minus the headache of lab equipment or code wrangling. Whether you’re a seasoned coder, a math geek, or just someone who likes a good puzzle, the Game of Life never runs out of surprises. Dive in and see for yourself how such simple rules can produce a digital world that feels uncannily, well, alive.</p>
+      <p>Conway's Game of Life has also earned a kind of legendary status among computer scientists: it's Turing complete, which means in theory you can do any computable operation within it (with the right configuration of cells, of course). For all its playful simplicity, the Game of Life has inspired decades of deep dives into complexity, computational theory, and even philosophical ponderings on what it means to be "alive." It's like having a front-row seat to a microcosm of creation—minus the headache of lab equipment or code wrangling. Whether you're a seasoned coder, a math geek, or just someone who likes a good puzzle, the Game of Life never runs out of surprises. Dive in and see for yourself how such simple rules can produce a digital world that feels uncannily, well, alive.</p>
     </div>
   </div>
 
@@ -175,6 +200,39 @@
     // -----------------------------------------------------
     // Configuration
     // -----------------------------------------------------
+    /**
+     * A dictionary of known patterns to easily load into the grid.
+     * Each key is a pattern name, and each value represents an array of [row, col]
+     * offsets where cells should be alive relative to some origin.
+     */
+    const patterns = {
+      glider: [
+        [0, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2]
+      ],
+      pulsar: [
+        // This is one period of a pulsar (centered around 0,0 for demonstration).
+        // You can expand or modify as needed. Rows and cols relative to some origin.
+        [-4, -2], [-4, -1], [-4, 0],
+        [-4, 1],  [-4, 2],
+        [-2, -4], [-1, -4], [0, -4],
+        [1, -4],  [2, -4],
+        [4, -2],  [4, -1],  [4, 0],
+        [4, 1],   [4, 2],
+        [2, 4],   [1, 4],   [0, 4],
+        [-1, 4],  [-2, 4]
+      ],
+      smallExploder: [
+        [0, 0],
+        [1, -1], [1, 0], [1, 1],
+        [2, -1],         [2, 1],
+        [3, 0]
+      ]
+    };
+
     const rows = 30;
     const cols = 50;
     let grid = createEmptyGrid(rows, cols);
@@ -188,6 +246,35 @@
     let timer = null;
     let currentSpeedMultiplier = 1.0; // default
 
+    /**
+     * Loads a preset pattern by name into the grid, centered near the grid's midpoint
+     * (if possible), then triggers a full render.
+     * @param {string} patternName - The key of the pattern in the patterns object.
+     */
+    function loadPattern(patternName) {
+      if (!patterns[patternName]) return;
+
+      // Clear grid first
+      grid = createEmptyGrid(rows, cols);
+
+      // Calculate approximate center of the grid
+      const rowOffset = Math.floor(rows / 2);
+      const colOffset = Math.floor(cols / 2);
+
+      // Apply each offset in the pattern to make cells alive
+      patterns[patternName].forEach(([r, c]) => {
+        const newR = rowOffset + r;
+        const newC = colOffset + c;
+        if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+          grid[newR][newC] = 1;
+        }
+      });
+
+      // Force a full redraw
+      oldGrid = null;
+      renderGrid();
+    }
+
     // -----------------------------------------------------
     // On Page Create
     // -----------------------------------------------------
@@ -199,18 +286,26 @@
       buildGridUI();
 
       // Button event listeners
-      $("#startBtn").on("click", startGame);
-      $("#stopBtn").on("click", stopGame);
+      $("#toggleBtn").on("click", toggleGame);
       $("#stepBtn").on("click", stepGeneration);
       $("#randomBtn").on("click", randomizeGrid);
       $("#clearBtn").on("click", clearGrid);
 
+      // Speed selection remains unchanged
       $("#speedSelect").on("change", function () {
         const newVal = $(this).val();
         currentSpeedMultiplier = parseFloat(newVal);
         if (playing) {
           stopGame();
           startGame();
+        }
+      });
+
+      // NEW: Pattern Select
+      $("#patternSelect").on("change", function() {
+        const patternName = $(this).val();
+        if (patternName) {
+          loadPattern(patternName);
         }
       });
     });
@@ -316,7 +411,7 @@
     /**
      * Computes the next generation of the grid based on Conway's rules.
      * @param {number[][]} currentGrid - The current game state.
-     * @returns {number[][]} The new generation’s game state.
+     * @returns {number[][]} The new generation's game state.
      */
     function computeNextGeneration(currentGrid) {
       const newGrid = createEmptyGrid(rows, cols);
@@ -350,8 +445,8 @@
     /**
      * Counts the number of living neighbors around a given cell.
      * @param {number[][]} g - The grid to assess.
-     * @param {number} row - Current cell’s row index.
-     * @param {number} col - Current cell’s column index.
+     * @param {number} row - Current cell's row index.
+     * @param {number} col - Current cell's column index.
      * @returns {number} The count of live neighbors.
      */
     function countNeighbors(g, row, col) {
@@ -387,7 +482,7 @@
     // Control Functions
     // -----------------------------------------------------
     /**
-     * Starts the game loop and randomizes the grid if it’s empty.
+     * Starts the game loop and randomizes the grid if it's empty.
      */
     function startGame() {
       // If no cells alive, randomize first
@@ -458,6 +553,19 @@
       // 1.0 speed = 200 ms
       // 0.5 => 400 ms, 1.5 => ~133 ms, 2.0 => 100 ms
       return baseInterval / currentSpeedMultiplier;
+    }
+
+    /**
+     * Toggles between play and pause states with a single button.
+     */
+    function toggleGame() {
+      if (playing) {
+        stopGame();
+        $("#toggleBtn").text("Play");
+      } else {
+        startGame();
+        $("#toggleBtn").text("Pause");
+      }
     }
   </script>
 </div>
