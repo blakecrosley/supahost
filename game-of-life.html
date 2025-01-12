@@ -186,15 +186,16 @@
     </div>    
 
     <h3>Pattern Examples</h3>
-    <!-- New section for pattern examples -->
-    <div id="exampleControls" data-role="controlgroup" data-type="vertical" style="margin-top:1em; text-align:center;">
-      <label for="patternSelect" style="margin-bottom:0.5em;">Examples:</label>
-      <select id="patternSelect" data-role="button">
-        <option value="">-- Select a Pattern --</option>
-        <option value="glider">Glider</option>
-        <option value="pulsar">Pulsar</option>
-        <option value="smallExploder">Small Exploder</option>
-      </select>
+    <!-- NEW CODE: Toggleable buttons (no default selection) -->
+    <div id="exampleControls" data-role="controlgroup" data-type="horizontal" style="margin-top:1em; text-align:center;">
+      <input type="checkbox" name="pattern" id="gliderBtn" value="glider" data-role="button">
+      <label for="gliderBtn">Glider</label>
+
+      <input type="checkbox" name="pattern" id="pulsarBtn" value="pulsar" data-role="button">
+      <label for="pulsarBtn">Pulsar</label>
+
+      <input type="checkbox" name="pattern" id="smallExploderBtn" value="smallExploder" data-role="button">
+      <label for="smallExploderBtn">Small Exploder</label>
     </div>
 
     <!-- Grid Container -->
@@ -357,11 +358,20 @@
         }
       });
 
-      // NEW: Pattern Select
-      $("#patternSelect").on("change", function() {
-        const patternName = $(this).val();
-        if (patternName) {
-          loadPattern(patternName);
+      // Remove the old patternSelect handler, and add this new handler for checkboxes:
+      $("#exampleControls input[type='checkbox']").on("change", function() {
+        if ($(this).is(":checked")) {
+          // Uncheck all other buttons
+          $("#exampleControls input[type='checkbox']")
+            .not(this)
+            .prop("checked", false)
+            .checkboxradio("refresh");
+
+          // Load the selected pattern
+          loadPattern($(this).val());
+        } else {
+          // User has toggled off the currently selected pattern - 
+          // we do nothing, leaving the grid as-is.
         }
       });
     });
