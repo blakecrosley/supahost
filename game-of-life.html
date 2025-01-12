@@ -140,15 +140,33 @@
       text-align: left;
     }
 
+    h3 {
+      margin-top: 2em;
+    }
+    p {
+      margin: 2em auto;
+    } 
+
     /* Editorial description styling */
     #description {
-      margin: 2em auto;
       line-height: 1.6;
       font-size: 1em;
       color: #333;
     }
-    #description p {
-      margin-bottom: 1em;
+
+    /* Make pattern buttons expand to fill width */
+    #exampleControls {
+        width: 100%;
+    }
+    
+    #exampleControls .ui-controlgroup-controls {
+        width: 100%;
+        display: flex;
+    }
+
+    #exampleControls .ui-controlgroup-controls label {
+        flex: 1;
+        width: auto;
     }
   </style>
 </head>
@@ -185,9 +203,19 @@
       <p>Tap or click cells to toggle them. Press <strong>Start</strong> to begin the simulation. You can <strong>Step</strong> through generations manually, <strong>Random</strong> to populate new cells, or <strong>Clear</strong> to wipe the board.</p>
     </div>    
 
+    <!-- Grid Container -->
+    <div id="grid-container">
+      <div id="grid"></div>
+    </div>
+
+    <!-- Pattern section moved here -->
     <h3>Pattern Examples</h3>
-    <!-- NEW CODE: Toggleable buttons (no default selection) -->
-    <div id="exampleControls" data-role="controlgroup" data-type="horizontal" style="margin-top:1em; text-align:center;">
+    <div id="instructions">
+      <p>These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows how simple shapes can evolve into complex forms.</p>
+    </div>
+    
+    <div id="exampleControls" data-role="controlgroup" data-type="horizontal" 
+         style="margin-top:1em; text-align:center;">
       <input type="checkbox" name="pattern" id="gliderBtn" value="glider" data-role="button">
       <label for="gliderBtn">Glider</label>
 
@@ -198,12 +226,8 @@
       <label for="smallExploderBtn">Small Exploder</label>
     </div>
 
-    <!-- Grid Container -->
-    <div id="grid-container">
-      <div id="grid"></div>
-    </div>
-
-    <!-- Editorial-style description beneath the grid -->
+    <!-- Editorial description with new header -->
+    <h3>About Conway's Game of Life</h3>
     <div id="description">
       <p>Conway's Game of Life is a classic example of how complexity can blossom from just a few straightforward rules. Picture an infinite grid of cells—each one can be "on" (alive) or "off" (dead). At every turn (or "generation"), each cell checks how many neighbors are alive. If it's too crowded, the cell dies. If it's too lonely, same story. But if conditions are just right—namely exactly three neighbors—new life sparks into being. These four simple laws create a mesmerizing dance of patterns that can replicate, move around ("gliders"), or even form loops that generate new cells ("guns").</p>
 
@@ -232,16 +256,20 @@
         [2, 2]
       ],
       pulsar: [
-        // This is one period of a pulsar (centered around 0,0 for demonstration).
-        // You can expand or modify as needed. Rows and cols relative to some origin.
-        [-4, -2], [-4, -1], [-4, 0],
-        [-4, 1],  [-4, 2],
-        [-2, -4], [-1, -4], [0, -4],
-        [1, -4],  [2, -4],
-        [4, -2],  [4, -1],  [4, 0],
-        [4, 1],   [4, 2],
-        [2, 4],   [1, 4],   [0, 4],
-        [-1, 4],  [-2, 4]
+        // Top
+        [-4, -2], [-4, -1], [-4, 0], [-4, 1], [-4, 2],
+        // Bottom
+        [4, -2], [4, -1], [4, 0], [4, 1], [4, 2],
+        // Left
+        [-2, -4], [-1, -4], [0, -4], [1, -4], [2, -4],
+        // Right
+        [-2, 4], [-1, 4], [0, 4], [1, 4], [2, 4],
+        // Inner vertical bars
+        [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2],
+        [-2, 2], [-1, 2], [0, 2], [1, 2], [2, 2],
+        // Inner horizontal bars
+        [-2, -1], [-2, 0], [-2, 1],
+        [2, -1], [2, 0], [2, 1]
       ],
       smallExploder: [
         [0, 0],
@@ -304,24 +332,40 @@
     });
 
     /**
-     * Loads a preset pattern by name into the grid, centered near the grid's midpoint
-     * (if possible), then triggers a full render.
+     * Loads a preset pattern by name into the grid, centered near the grid's midpoint.
      * @param {string} patternName - The key of the pattern in the patterns object.
      */
     function loadPattern(patternName) {
       if (!patterns[patternName]) return;
 
+      // Stop any existing game loop
+      stopGame();
+
       // Clear grid first
       grid = createEmptyGrid(rows, cols);
 
-      // Calculate approximate center of the grid
-      const rowOffset = Math.floor(rows / 2);
-      const colOffset = Math.floor(cols / 2);
+      // Find pattern dimensions
+      const pattern = patterns[patternName];
+      let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+      
+      pattern.forEach(([r, c]) => {
+        minRow = Math.min(minRow, r);
+        maxRow = Math.max(maxRow, r);
+        minCol = Math.min(minCol, c);
+        maxCol = Math.max(maxCol, c);
+      });
+      
+      const patternHeight = maxRow - minRow + 1;
+      const patternWidth = maxCol - minCol + 1;
+
+      // Calculate center offsets
+      const rowOffset = Math.floor(rows/2 - patternHeight/2) - minRow;
+      const colOffset = Math.floor(cols/2 - patternWidth/2) - minCol;
 
       // Apply each offset in the pattern to make cells alive
-      patterns[patternName].forEach(([r, c]) => {
-        const newR = rowOffset + r;
-        const newC = colOffset + c;
+      pattern.forEach(([r, c]) => {
+        const newR = r + rowOffset;
+        const newC = c + colOffset;
         if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
           grid[newR][newC] = 1;
         }
@@ -330,6 +374,10 @@
       // Force a full redraw
       oldGrid = null;
       renderGrid();
+
+      // Start playing automatically
+      startGame();
+      $("#toggleBtn").text("Pause");
     }
 
     // -----------------------------------------------------
@@ -358,7 +406,7 @@
         }
       });
 
-      // Remove the old patternSelect handler, and add this new handler for checkboxes:
+      // Update the checkbox handler
       $("#exampleControls input[type='checkbox']").on("change", function() {
         if ($(this).is(":checked")) {
           // Uncheck all other buttons
@@ -367,11 +415,12 @@
             .prop("checked", false)
             .checkboxradio("refresh");
 
-          // Load the selected pattern
+          // Load and auto-play the selected pattern
           loadPattern($(this).val());
         } else {
-          // User has toggled off the currently selected pattern - 
-          // we do nothing, leaving the grid as-is.
+          // When unchecking, stop the game
+          stopGame();
+          $("#toggleBtn").text("Play");
         }
       });
     });
