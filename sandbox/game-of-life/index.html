@@ -247,19 +247,19 @@
     }
 
     @media (hover: none) and (pointer: coarse) {
-      /* Adjust cell size for touch devices */
+      /* Adjust cell size for touch devices while maintaining zoom behavior */
       #grid .cell {
-        min-width: 12px;
-        min-height: 12px;
+        min-width: 8px;  /* Smaller base size to accommodate zoom levels */
+        min-height: 8px;
       }
       
-      /* Ensure grid container maintains aspect ratio on mobile */
+      /* Ensure grid container scales properly */
       #grid-container {
-        padding-bottom: 75%;
         -webkit-overflow-scrolling: touch;
+        transform: translateZ(0);
       }
       
-      /* Improve touch target size while maintaining visual size */
+      /* Improve touch accuracy */
       .cell {
         position: relative;
       }
@@ -267,19 +267,11 @@
       .cell::after {
         content: '';
         position: absolute;
-        top: -4px;
-        left: -4px;
-        right: -4px;
-        bottom: -4px;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
         z-index: 1;
-      }
-      
-      /* Ensure proper rendering on high DPI screens */
-      #grid {
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        transform: translateZ(0);
-        perspective: 1000;
       }
     }
 
@@ -1066,17 +1058,15 @@
       const oldRows = rows;
       const oldCols = cols;
 
-      // Update dimensions based on zoom
+      // Keep the existing zoom logic - more cells as we zoom "out"
       rows = Math.floor(baseRows * zoomValue);
       cols = Math.floor(baseCols * zoomValue);
 
-      // Create new grid
       const newGrid = createEmptyGrid(rows, cols);
-
-      // Center the old pattern in new grid
       const rowOffset = Math.floor((rows - oldRows) / 2);
       const colOffset = Math.floor((cols - oldCols) / 2);
 
+      // Copy existing pattern
       for (let r = 0; r < oldRows; r++) {
         for (let c = 0; c < oldCols; c++) {
           const newR = r + rowOffset;
@@ -1088,24 +1078,22 @@
       }
 
       grid = newGrid;
-      
-      // Force proper mobile viewport update
-      const gridContainer = document.getElementById('grid-container');
-      const gridWrapper = document.getElementById('gridWrapper');
-      
-      // Reset any transforms
-      gridWrapper.style.transform = '';
-      
-      // Rebuild UI with new dimensions
+
+      // Mobile-specific fixes to ensure proper rendering
+      if ('ontouchstart' in window) {
+        const gridContainer = document.getElementById('grid-container');
+        
+        // Force immediate style update
+        gridContainer.style.display = 'none';
+        void gridContainer.offsetHeight;
+        gridContainer.style.display = '';
+        
+        // Ensure viewport is properly set
+        document.querySelector('meta[name="viewport"]').setAttribute('content', 
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      }
+
       buildGridUI();
-      
-      // Force reflow
-      void gridContainer.offsetHeight;
-      
-      // Update meta viewport to ensure proper scaling
-      const viewport = document.querySelector('meta[name="viewport"]');
-      viewport.setAttribute('content', 
-        'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
     }
   </script>
 
