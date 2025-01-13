@@ -135,7 +135,7 @@
       margin-top: 0em;
       margin-bottom: 1em;
     }
-    h3 {
+    h1, h3 {
       color: white;
       font-weight: bold;
     }
@@ -240,9 +240,10 @@
         <!-- Instructions (retaining the original text or placeholders) -->
         <div id="instructions">
           <p>
-            Tap or click cells to toggle them. Press <strong>Play</strong> to start the simulation. 
-            You can <strong>Step</strong> through generations manually, <strong>Random</strong> to 
-            populate new cells, or <strong>Clear</strong> to wipe the board.
+            <strong>Select</strong> any area to create clusters of cells, or <strong>select and drag</strong> 
+            to draw living paths. Press <strong>Play</strong> to watch your creation evolve, or use <strong>Step Forward</strong> 
+            to advance one generation at a time. Use <strong>Randomize</strong> for chaos, 
+            or <strong>Clear</strong> to start fresh.
           </p>
         </div>
 
@@ -441,6 +442,20 @@
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
+      let isMouseDown = false;
+      let lastCell = null;
+
+      // Add mouse event listeners to the grid container
+      gridElem.addEventListener('mousedown', (e) => { isMouseDown = true; });
+      gridElem.addEventListener('mouseup', () => { 
+        isMouseDown = false;
+        lastCell = null;
+      });
+      gridElem.addEventListener('mouseleave', () => { 
+        isMouseDown = false;
+        lastCell = null;
+      });
+
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const cellDiv = document.createElement("div");
@@ -448,16 +463,42 @@
           cellDiv.dataset.row = String(r);
           cellDiv.dataset.col = String(c);
 
-          // Toggle cell on click
-          cellDiv.addEventListener("click", () => {
-            grid[r][c] = grid[r][c] ? 0 : 1;
+          // Handle both click and drag
+          cellDiv.addEventListener("mousedown", (e) => {
+            e.preventDefault(); // Prevent text selection
+            createClump(r, c);
             renderGrid();
+          });
+
+          cellDiv.addEventListener("mouseenter", () => {
+            if (isMouseDown && lastCell !== `${r},${c}`) {
+              lastCell = `${r},${c}`;
+              grid[r][c] = 1;
+              renderGrid();
+            }
           });
 
           gridElem.appendChild(cellDiv);
         }
       }
       renderGrid();
+    }
+
+    // Create a random clump of live cells around the clicked point
+    function createClump(centerR, centerC) {
+      const radius = 2;
+      for (let dr = -radius; dr <= radius; dr++) {
+        for (let dc = -radius; dc <= radius; dc++) {
+          const r = centerR + dr;
+          const c = centerC + dc;
+          if (r >= 0 && r < rows && c >= 0 && c < cols) {
+            // Random chance of cell being alive, higher chance closer to center
+            const distance = Math.sqrt(dr * dr + dc * dc);
+            const probability = 0.8 - (distance / radius) * 0.5;
+            grid[r][c] = Math.random() < probability ? 1 : 0;
+          }
+        }
+      }
     }
 
     // -----------------------------------------------------
@@ -565,17 +606,28 @@
     // Controls
     // -----------------------------------------------------
     function startGame() {
+      // Stop any existing game loop
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      
+      // If grid is completely empty, randomize it
       if (allCellsDead(grid)) {
-        randomizeGrid();
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            grid[r][c] = Math.random() > 0.8 ? 1 : 0;
+          }
+        }
+        renderGrid();
       }
-      if (!playing) {
-        playing = true;
-        timer = setInterval(() => {
-          const nextGen = computeNextGeneration(grid);
-          grid = nextGen;
-          renderGrid();
-        }, calculateInterval());
-      }
+      
+      // Start the game loop
+      playing = true;
+      timer = setInterval(() => {
+        grid = computeNextGeneration(grid);
+        renderGrid();
+      }, calculateInterval());
     }
 
     function stopGame() {
