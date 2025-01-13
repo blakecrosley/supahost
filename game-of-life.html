@@ -103,6 +103,7 @@
       position: relative;
       padding-bottom: 60%;
       overflow: hidden;
+      cursor: crosshair;
     }
 
     #zoomControls {
@@ -137,6 +138,7 @@
       gap: 0;
       background: var(--tn-border);
       pointer-events: all;  /* We receive pointer events here, ignoring the parent’s scale */
+      cursor: crosshair;
     }
 
     .cell {
@@ -144,6 +146,7 @@
       height: 100%;
       background-color: #24283b; /* match main background or #24283b if preferred */
       box-sizing: border-box;
+      cursor: crosshair;
     }
     .alive {
       background-color: #88f9d7; /* Vibrant green from Tokyo Night theme */
@@ -232,6 +235,11 @@
     
     .modal-dialog-game {
       max-width: 66.666667%;
+    }
+
+    .cell:active,
+    .cell.dragging {
+      cursor: cell;
     }
   </style>
 
