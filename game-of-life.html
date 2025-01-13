@@ -158,15 +158,6 @@
       margin-bottom: 2em;
     }
 
-    /* Fix button size for Play/Pause toggle */
-    #toggleBtn {
-      min-width: 110px;  /* or whatever width accommodates both states */
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-    
     /* Ensure all control buttons have consistent padding */
     .btn-group .btn {
       padding: 0.5rem 1rem;
@@ -236,16 +227,16 @@
             <!-- Button group -->
             <div class="btn-group btn-group-lg" role="group" aria-label="Game controls">
               <button id="toggleBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-play"></i> Play
+                <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
               </button>
               <button id="stepBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-skip-end"></i> Step Forward
+                <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step Forward</span>
               </button>
               <button id="randomBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-dice-6"></i> Randomize
+                <i class="bi bi-dice-6"></i> <span class="d-none d-sm-inline">Randomize</span>
               </button>
               <button id="clearBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-x-circle"></i> Clear
+                <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
               </button>
             </div>
             <!-- Speed select -->
@@ -644,7 +635,7 @@
 
       // Start playing automatically
       startGame();
-      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> Pause';
+      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
     }
 
     // -----------------------------------------------------
@@ -684,7 +675,7 @@
         clearInterval(timer);
         timer = null;
       }
-      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> Play';
+      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
 
       // Re-enable zoom dropdown
       document.getElementById("zoomSelect").disabled = false;
@@ -695,7 +686,7 @@
         stopGame();
       } else {
         startGame();
-        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> Pause';
+        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
       }
     }
 
