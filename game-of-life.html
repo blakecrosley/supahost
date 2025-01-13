@@ -3,7 +3,7 @@
 <html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <title>Conway's Game of Life (Bootstrap 5.3 Refactor)</title>
+  <title>Conway's Game of Life (Tokyo Night Edition)</title>
   <!-- Viewport for mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -23,30 +23,83 @@
     rel="stylesheet"
   />
 
+  <!-- Add this after Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <style>
-    /* Overall page styling (Bootstrap provides many resets already) */
+    /* Tokyo Night colors from https://github.com/tokyo-night/tokyo-night-vscode-theme */
+    :root {
+      --tn-bg: #1a1b26;         /* Primary background */
+      --tn-panel: #24283b;      /* Panel/secondary backgrounds */
+      --tn-foreground: #c0caf5; /* Main text color */
+      --tn-btn-bg: #414868;     /* Button background */
+      --tn-btn-bg-hover: #565f89;
+      --tn-btn-text: #c0caf5;
+      --tn-border: #565f89;
+    }
+
+    /* Overall page styling */
     body {
       font-family: 'Poppins', sans-serif;
+      background-color: var(--tn-bg) !important;
+      color: var(--tn-foreground) !important;
+      font-size: 20px;
+      line-height: 1.4;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      /* Let Bootstrap handle dark background via data-bs-theme */
-      color: #fff !important;
-      font-size: 20px;
-      line-height: 1.4;
     }
+
+    /* Navbar inherits panel color */
+    .navbar {
+      background-color: var(--tn-panel) !important;
+    }
+
+    /* Buttons */
+    .btn-secondary {
+      background-color: var(--tn-btn-bg) !important;
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
+    }
+    .btn-secondary:hover {
+      background-color: var(--tn-btn-bg-hover) !important;
+      border-color: var(--tn-border) !important;
+    }
+
+    .btn-outline-secondary {
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
+    }
+    .btn-outline-secondary:hover {
+      background-color: var(--tn-btn-bg-hover) !important;
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
+    }
+
+    /* Form Controls (like .form-select) */
+    .form-select {
+      background-color: var(--tn-panel) !important;
+      color: var(--tn-foreground) !important;
+      border-color: var(--tn-border) !important;
+    }
+    .form-select:focus {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(108,117,125,.5); /* or customize further */
+    }
+
     /* Grid container */
     #grid-container {
       margin: 1em auto;
-      border: 1px solid #ccc;
+      border: 1px solid var(--tn-border);
       border-radius: 4px;
-      background: #fff;
+      background: var(--tn-panel);
       box-sizing: border-box;
       width: 100%;
       position: relative;
       padding-bottom: 60%;
       overflow: hidden;
     }
+
     /* The grid itself */
     #grid {
       display: grid;
@@ -58,47 +111,53 @@
       width: 100%;
       height: 100%;
       gap: 1px;
-      background: #ccc;
+      background: var(--tn-border);
     }
+
     .cell {
       width: 100%;
       height: 100%;
-      background-color: #fff;
+      background-color: #1a1b26; /* match main background or #24283b if preferred */
       box-sizing: border-box;
     }
     .alive {
-      background-color: #2b2b2b;
+      background-color: #9ece6a; /* Vibrant green from Tokyo Night theme */
     }
 
-    /* Instructions */
-    #instructions {
-      margin-top: 1em;
-      font-size: 0.95em;
-      line-height: 1.4em;
-      text-align: left;
-    }
-
-    h3 {
-      margin-top: 2em;
-    }
-    p {
-      margin: 2em auto;
-    } 
-
-    /* Editorial description styling */
-    #description {
-      line-height: 1.6;
-      font-size: 1em;
-    }
-
-    /* Pattern Buttons: make them expand to fill width, at least on the container */
-    #exampleControls {
-      width: 100%;
-    }
     #exampleControls .btn-check:checked + .btn {
-      /* Toggle "active" color for checked states */
-      background-color: #0d6efd;
-      color: #fff;
+      background-color: #9ece6a !important; /* Vibrant green for active state */
+      color: #1a1b26 !important;           /* Dark text for contrast */
+      border-color: #9ece6a !important;
+    }
+
+    /* Increase margin top/bottom to 2em for headings and paragraphs */
+    h1, h2, h3, h4, h5, h6, p {
+      margin-top: 0em;
+      margin-bottom: 1em;
+    }
+    h3 {
+      color: white;
+      font-weight: bold;
+    }
+    #exampleControls {
+      margin-bottom: 2em;
+    }
+    #grid-container {
+      margin-bottom: 2em;
+    }
+
+    /* Fix button size for Play/Pause toggle */
+    #toggleBtn {
+      min-width: 110px;  /* or whatever width accommodates both states */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    /* Ensure all control buttons have consistent padding */
+    .btn-group .btn {
+      padding: 0.5rem 1rem;
     }
   </style>
 </head>
@@ -114,19 +173,27 @@
   <!-- Main container: Use a Bootstrap container and row -->
   <div class="container my-4">
     <div class="row">
-      <!-- 6 columns wide on large screens, 12 on smaller, centered offset -->
-      <div class="col-12 col-lg-6 offset-lg-3">
+      <!-- 8 columns wide on large screens, 12 on smaller, with offset for center -->
+      <div class="col-12 col-lg-8 offset-lg-2">
+        
         <!-- BEGIN game functionality section -->
-
         <!-- Control buttons row -->
         <div class="row my-3">
           <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
             <!-- Button group -->
             <div class="btn-group" role="group" aria-label="Game controls">
-              <button id="toggleBtn" type="button" class="btn btn-secondary">Play</button>
-              <button id="stepBtn" type="button" class="btn btn-secondary">Step</button>
-              <button id="randomBtn" type="button" class="btn btn-secondary">Random</button>
-              <button id="clearBtn" type="button" class="btn btn-secondary">Clear</button>
+              <button id="toggleBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-play"></i> Play
+              </button>
+              <button id="stepBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-skip-end"></i> Step Forward
+              </button>
+              <button id="randomBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-dice-6"></i> Randomize
+              </button>
+              <button id="clearBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Clear
+              </button>
             </div>
             <!-- Speed select -->
             <div class="ms-3">
@@ -140,10 +207,12 @@
           </div>
         </div>
 
-        <!-- Instructions -->
+        <!-- Instructions (retaining the original text or placeholders) -->
         <div id="instructions">
           <p>
-            Tap or click cells to toggle them. Press <strong>Start</strong> to begin...
+            Tap or click cells to toggle them. Press <strong>Play</strong> to start the simulation. 
+            You can <strong>Step</strong> through generations manually, <strong>Random</strong> to 
+            populate new cells, or <strong>Clear</strong> to wipe the board.
           </p>
         </div>
 
@@ -155,21 +224,47 @@
         <!-- Pattern section -->
         <h3>Pattern Examples</h3>
         <div id="instructions">
-          <p>These classic patterns showcase the Game's emergent behavior...</p>
+          <p>
+            These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement 
+            across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows 
+            how simple shapes can evolve into complex forms.
+          </p>
         </div>
         <div id="exampleControls" class="d-flex gap-2 flex-wrap">
-          <!-- Checkboxes for pattern selection -->
+          <!-- Example pattern checkboxes (to be toggled in script) -->
+          <div class="btn-group" role="group">
+            <input type="checkbox" class="btn-check" id="gliderBtn" autocomplete="off" value="glider">
+            <label class="btn btn-outline-secondary" for="gliderBtn">Glider</label>
+          </div>
+          <div class="btn-group" role="group">
+            <input type="checkbox" class="btn-check" id="pulsarBtn" autocomplete="off" value="pulsar">
+            <label class="btn btn-outline-secondary" for="pulsarBtn">Pulsar</label>
+          </div>
+          <div class="btn-group" role="group">
+            <input type="checkbox" class="btn-check" id="smallExploderBtn" autocomplete="off" value="smallExploder">
+            <label class="btn btn-outline-secondary" for="smallExploderBtn">Small Exploder</label>
+          </div>
         </div>
 
         <!-- Editorial description -->
         <h3>About Conway's Game of Life</h3>
         <div id="description">
           <p>
-            Conway's Game of Life is a classic example of how complexity can blossom...
+            Conway's Game of Life is a classic example of how complexity can blossom from just a few 
+            straightforward rules. Picture an infinite grid of cells—each one can be "on" (alive) or 
+            "off" (dead). Each turn (or "generation"), every cell checks how many neighbors are alive. 
+            If it's overcrowded, it dies. If it’s too lonely, it also dies. But with exactly three 
+            neighbors, a dead cell will spark into life.
+          </p>
+          <p>
+            This simple set of rules leads to endlessly fascinating behavior—from stable formations 
+            and repeating oscillators, to self-propagating "spaceships" that traverse the grid. 
+            It's a perfect demonstration of how complexity can arise from simplicity, and it's even 
+            Turing complete, meaning it can, in theory, simulate any computation.
           </p>
         </div>
-
         <!-- END game functionality section -->
+      
       </div>
     </div>
   </div>
@@ -221,7 +316,6 @@
     let rows = 30;
     let cols = 50;
     let grid = [];
-    let oldGrid = null;
     let playing = false;
     let timer = null;
     let baseInterval = 200; // ms
@@ -251,15 +345,15 @@
 
       // Pattern checkboxes
       ["gliderBtn", "pulsarBtn", "smallExploderBtn"].forEach((btnId) => {
-        document.getElementById(btnId).addEventListener("change", (e) => {
+        const btnElem = document.getElementById(btnId);
+        btnElem?.addEventListener("change", (e) => {
           const isChecked = e.target.checked;
           if (isChecked) {
             // Uncheck other patterns
             ["gliderBtn", "pulsarBtn", "smallExploderBtn"]
               .filter((otherId) => otherId !== btnId)
               .forEach((otherId) => {
-                const other = document.getElementById(otherId);
-                other.checked = false;
+                document.getElementById(otherId).checked = false;
               });
 
             // Load and auto-play the selected pattern
@@ -272,7 +366,7 @@
         });
       });
 
-      // Recalculate grid on window resize (debounce)
+      // Handle window resize with debounce
       let resizeTimer;
       window.addEventListener("resize", () => {
         clearTimeout(resizeTimer);
@@ -282,7 +376,6 @@
             rows = dims.rows;
             cols = dims.cols;
             grid = createEmptyGrid(rows, cols);
-            oldGrid = null;
             buildGridUI();
           }
         }, 250);
@@ -294,15 +387,10 @@
     // -----------------------------------------------------
     function calculateGridDimensions() {
       const containerElem = document.getElementById("grid-container");
-      const containerWidth = containerElem.clientWidth;
-      const containerHeight = containerElem.clientHeight;
-
-      // Keep these values from the original code
-      const targetCols = 50;
-      const targetRows = 30;
-
-      rows = targetRows;
-      cols = targetCols;
+      // We won't change rows & cols dynamically for this example,
+      // but if we did, we could measure containerElem.clientWidth & .clientHeight
+      rows = 30;
+      cols = 50;
       return { rows, cols };
     }
 
@@ -320,8 +408,6 @@
     function buildGridUI() {
       const gridElem = document.getElementById("grid");
       gridElem.innerHTML = "";
-
-      // Adjust CSS grid template
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
@@ -348,15 +434,11 @@
     // Rendering
     // -----------------------------------------------------
     function renderGrid() {
-      const cellDivs = document.querySelectorAll("#grid .cell");
-      cellDivs.forEach((div) => {
-        const r = parseInt(div.dataset.row);
-        const c = parseInt(div.dataset.col);
-        if (grid[r][c] === 1) {
-          div.classList.add("alive");
-        } else {
-          div.classList.remove("alive");
-        }
+      const allCells = document.querySelectorAll("#grid .cell");
+      allCells.forEach((cellDiv) => {
+        const r = parseInt(cellDiv.dataset.row);
+        const c = parseInt(cellDiv.dataset.col);
+        cellDiv.classList.toggle("alive", grid[r][c] === 1);
       });
     }
 
@@ -371,18 +453,11 @@
           const cellState = currentGrid[r][c];
           // Conway's rules
           if (cellState === 1) {
-            if (neighbors === 2 || neighbors === 3) {
-              newGrid[r][c] = 1;
-            } else {
-              newGrid[r][c] = 0;
-            }
+            // Live cell
+            newGrid[r][c] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
           } else {
-            // Dead
-            if (neighbors === 3) {
-              newGrid[r][c] = 1;
-            } else {
-              newGrid[r][c] = 0;
-            }
+            // Dead cell
+            newGrid[r][c] = (neighbors === 3) ? 1 : 0;
           }
         }
       }
@@ -393,7 +468,7 @@
       let count = 0;
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue;
+          if (dr === 0 && dc === 0) continue; // skip itself
           const nr = row + dr;
           const nc = col + dc;
           if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
@@ -425,7 +500,8 @@
 
       // Calculate bounding box of pattern
       const pattern = patterns[patternName];
-      let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+      let minRow = Infinity, maxRow = -Infinity;
+      let minCol = Infinity, maxCol = -Infinity;
       pattern.forEach(([r, c]) => {
         if (r < minRow) minRow = r;
         if (r > maxRow) maxRow = r;
@@ -447,12 +523,12 @@
         }
       });
 
-      oldGrid = null;
+      // Force a full redraw
       renderGrid();
 
       // Start playing automatically
       startGame();
-      document.getElementById("toggleBtn").textContent = "Pause";
+      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> Pause';
     }
 
     // -----------------------------------------------------
@@ -478,15 +554,15 @@
         clearInterval(timer);
         timer = null;
       }
+      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> Play';
     }
 
     function toggleGame() {
       if (playing) {
         stopGame();
-        document.getElementById("toggleBtn").textContent = "Play";
       } else {
         startGame();
-        document.getElementById("toggleBtn").textContent = "Pause";
+        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> Pause';
       }
     }
 
@@ -503,14 +579,12 @@
           grid[r][c] = Math.random() > 0.8 ? 1 : 0;
         }
       }
-      oldGrid = null;
       renderGrid();
     }
 
     function clearGrid() {
       stopGame();
       grid = createEmptyGrid(rows, cols);
-      oldGrid = null;
       renderGrid();
     }
 
@@ -519,5 +593,10 @@
       return baseInterval / currentSpeedMultiplier;
     }
   </script>
+
+  <!-- cite original Tokyo Night reference in markdown, as requested -->
+  <p style="display:none;">
+    Referenced from [Tokyo Night VSCode Theme](https://github.com/tokyo-night/tokyo-night-vscode-theme)
+  </p>
 </body>
 </html>
