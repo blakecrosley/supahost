@@ -157,6 +157,24 @@
       color: rgb(245, 133, 237);
       font-weight: bold;
     }
+
+    /* Link styling using the heading color */
+    a.instructions-link {
+      color: rgb(245, 133, 237);
+      text-decoration: underline;
+      transition: all 0.2s ease;
+    }
+    
+    a.instructions-link:hover {
+      color: rgb(250, 164, 244);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    
+    a.instructions-link:active {
+      color: rgb(219, 119, 212);
+    }
+
     p {
       margin-bottom: 1em;
     }
@@ -232,11 +250,16 @@
                 If it's overcrowded, it dies. If it's too lonely, it also dies. But with exactly three 
                 neighbors, a dead cell will spark into life.
               </p>
-              <p class="mb-large">
+              <p>
                 This simple set of rules leads to endlessly fascinating behavior—from stable formations 
                 and repeating oscillators, to self-propagating "spaceships" that traverse the grid. 
                 It's a perfect demonstration of how complexity can arise from simplicity, and it's even 
                 Turing complete, meaning it can, in theory, simulate any computation.
+              </p>
+              <p class="mb-large">
+                <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+                  How to play the game
+                </a>
               </p>
             </div>
 
@@ -255,10 +278,6 @@
                 <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
               </button>
             </div>
-            <!-- Help Button -->
-            <button type="button" class="btn btn-secondary btn-lg ms-2" data-bs-toggle="modal" data-bs-target="#instructionsModal">
-              <i class="bi bi-question-circle"></i>
-            </button>
             <!-- Speed select -->
             <div class="ms-3 d-inline-flex align-items-center">
               <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
@@ -900,18 +919,49 @@
 
   <!-- Instructions Modal -->
   <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg" style="max-width: 66.666667%;">
       <div class="modal-content" style="background: var(--tn-panel); border: 1px solid var(--tn-border);">
         <div class="modal-header border-bottom border-secondary">
           <h5 class="modal-title" id="instructionsModalLabel">How to Play</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p class="mb-0">
+          <p>
             <strong>Select</strong> any area to create clusters of cells, or <strong>select and drag</strong> 
             to draw living paths. Press <strong>Play</strong> to watch your creation evolve, or use <strong>Step Forward</strong> 
             to advance one generation at a time. Use <strong>Randomize</strong> for chaos, 
             or <strong>Clear</strong> to start fresh.
+          </p>
+          
+          <h6>The Rules</h6>
+          <p>
+            Each cell follows four simple rules in every generation:
+            <ul>
+              <li><strong>Underpopulation:</strong> A living cell with fewer than 2 neighbors dies</li>
+              <li><strong>Survival:</strong> A living cell with 2 or 3 neighbors survives</li>
+              <li><strong>Overpopulation:</strong> A living cell with more than 3 neighbors dies</li>
+              <li><strong>Reproduction:</strong> A dead cell with exactly 3 neighbors becomes alive</li>
+            </ul>
+          </p>
+          
+          <h6>Controls</h6>
+          <p>
+            <ul>
+              <li><strong>Play/Pause:</strong> Start or stop the simulation</li>
+              <li><strong>Step Forward:</strong> Advance one generation at a time</li>
+              <li><strong>Speed:</strong> Adjust how quickly generations pass</li>
+              <li><strong>Zoom:</strong> Change the grid size (only while paused)</li>
+            </ul>
+          </p>
+          
+          <h6>Pattern Examples</h6>
+          <p class="mb-0">
+            Try the preset patterns to see different behaviors:
+            <ul class="mb-0">
+              <li><strong>Glider:</strong> A pattern that moves diagonally across the grid</li>
+              <li><strong>Pulsar:</strong> A large pattern that oscillates with a period of 3 generations</li>
+              <li><strong>Small Exploder:</strong> A pattern that expands outward chaotically</li>
+            </ul>
           </p>
         </div>
       </div>
