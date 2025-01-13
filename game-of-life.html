@@ -48,11 +48,16 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding-top: 72px;
     }
 
     /* Navbar inherits panel color */
     .navbar {
-      background-color: var(--tn-panel) !important;
+      background-color: rgba(36, 40, 59, 0.8) !important;
+      border-bottom: 1px solid var(--tn-border);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     /* Buttons */
@@ -228,7 +233,7 @@
 
 <body>
   <!-- Bootstrap 5 Navbar -->
-  <nav class="navbar navbar-expand-lg">
+  <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
       <span class="navbar-brand mb-0 h1"></span>
       <a href="https://x.com/BlakeC" class="navbar-text me-3 text-decoration-none" target="_blank">
