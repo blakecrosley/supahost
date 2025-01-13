@@ -104,6 +104,10 @@
       padding-bottom: 60%;
       overflow: hidden;
       cursor: crosshair;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     #zoomControls {
@@ -240,6 +244,25 @@
     .cell:active,
     .cell.dragging {
       cursor: cell;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      /* Adjust cell size for touch devices */
+      #grid .cell {
+        min-width: 20px;
+        min-height: 20px;
+      }
+      
+      /* Prevent text selection while drawing */
+      #grid {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        touch-action: none;
+      }
     }
   </style>
 
@@ -689,20 +712,93 @@
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      let isMouseDown = false;
+      let isInteracting = false; // Works for both mouse and touch
       let lastCell = null;
+      let lastTouch = null;
 
-      // Add mouse event listeners to the grid container
-      gridElem.addEventListener('mousedown', (e) => { isMouseDown = true; });
+      // Prevent default touch behaviors to avoid scrolling while drawing
+      gridElem.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isInteracting = true;
+        const touch = e.touches[0];
+        lastTouch = touch;
+        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (cellElem?.classList.contains('cell')) {
+          const r = parseInt(cellElem.dataset.row);
+          const c = parseInt(cellElem.dataset.col);
+          createClump(r, c);
+          renderGrid();
+        }
+      }, { passive: false });
+
+      gridElem.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isInteracting) return;
+        
+        const touch = e.touches[0];
+        // Only process if touch has moved enough (reduce jitter)
+        if (lastTouch && 
+            Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
+            Math.abs(touch.clientY - lastTouch.clientY) < 2) {
+          return;
+        }
+        
+        lastTouch = touch;
+        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (cellElem?.classList.contains('cell')) {
+          const r = parseInt(cellElem.dataset.row);
+          const c = parseInt(cellElem.dataset.col);
+          const cellKey = `${r},${c}`;
+          if (lastCell !== cellKey) {
+            lastCell = cellKey;
+            // Add subtle random living cells only in immediate neighbors
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                const nr = r + dr;
+                const nc = c + dc;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                  if (Math.random() < 0.2) {
+                    grid[nr][nc] = 1;
+                  }
+                }
+              }
+            }
+            renderGrid();
+          }
+        }
+      }, { passive: false });
+
+      // Handle touch end
+      gridElem.addEventListener('touchend', () => {
+        isInteracting = false;
+        lastCell = null;
+        lastTouch = null;
+      });
+
+      gridElem.addEventListener('touchcancel', () => {
+        isInteracting = false;
+        lastCell = null;
+        lastTouch = null;
+      });
+
+      // Keep existing mouse event handlers
+      gridElem.addEventListener('mousedown', (e) => { 
+        e.preventDefault();
+        isInteracting = true; 
+      });
+      
       gridElem.addEventListener('mouseup', () => { 
-        isMouseDown = false;
+        isInteracting = false;
         lastCell = null;
       });
+      
       gridElem.addEventListener('mouseleave', () => { 
-        isMouseDown = false;
+        isInteracting = false;
         lastCell = null;
       });
 
+      // Create grid cells
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const cellDiv = document.createElement("div");
@@ -710,15 +806,15 @@
           cellDiv.dataset.row = String(r);
           cellDiv.dataset.col = String(c);
 
-          // Handle both click and drag
+          // Handle both mouse click and touch
           cellDiv.addEventListener("mousedown", (e) => {
-            e.preventDefault(); // Prevent text selection
+            e.preventDefault();
             createClump(r, c);
             renderGrid();
           });
 
           cellDiv.addEventListener("mouseenter", () => {
-            if (isMouseDown && lastCell !== `${r},${c}`) {
+            if (isInteracting && lastCell !== `${r},${c}`) {
               lastCell = `${r},${c}`;
               // Add subtle random living cells only in immediate neighbors
               for (let dr = -1; dr <= 1; dr++) {
@@ -727,7 +823,6 @@
                   const nr = r + dr;
                   const nc = c + dc;
                   if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                    // 20% chance of immediate neighbor becoming alive
                     if (Math.random() < 0.2) {
                       grid[nr][nc] = 1;
                     }
