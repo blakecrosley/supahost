@@ -253,7 +253,7 @@
         <!-- Control buttons row -->
         <div class="row" id="gameControls">
           <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
-            <h1>Conway's Game of Life</h1>
+    <h1>Conway's Game of Life</h1>
 
             <!-- Editorial description -->
             <div id="description">
@@ -275,7 +275,7 @@
                   How to play the game
                 </a>
               </p>
-            </div>
+  </div>
 
             <!-- Button group -->
             <div class="btn-group btn-group-lg" role="group" aria-label="Game controls">
@@ -296,20 +296,20 @@
             <div class="ms-3 d-inline-flex align-items-center">
               <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
               <select id="speedSelect" class="form-select form-select-lg" style="width:auto;" aria-label="Speed">
-                <option value="0.5">0.5×</option>
-                <option value="1.0" selected>1.0×</option>
-                <option value="1.5">1.5×</option>
-                <option value="2.0">2.0×</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <option value="0.5">0.5×</option>
+        <option value="1.0" selected>1.0×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2.0">2.0×</option>
+      </select>
+    </div>
+    </div>    
+    </div>
 
-        <!-- Grid Container -->
-        <div id="grid-container">
+    <!-- Grid Container -->
+    <div id="grid-container">
           <div id="gridWrapper">
-            <div id="grid"></div>
-          </div>
+      <div id="grid"></div>
+    </div>
         </div>
 
         <!-- Zoom controls -->
@@ -529,12 +529,20 @@
     let baseCols = 50;
     let rows = baseRows;
     let cols = baseCols;
-    let grid = [];
+    let grid = createEmptyGrid(rows, cols);
     let playing = false;
     let timer = null;
     let baseInterval = 200; // ms
     let currentSpeedMultiplier = 1.0;
     let currentZoom = 1.0;
+
+    // Add at the top of the script
+    const DOM = {
+      grid: document.getElementById('grid'),
+      toggleBtn: document.getElementById('toggleBtn'),
+      speedSelect: document.getElementById('speedSelect'),
+      zoomSelect: document.getElementById('zoomSelect')
+    };
 
     // On load, run initialization
     document.addEventListener("DOMContentLoaded", () => {
@@ -625,6 +633,13 @@
       return { rows, cols };
     }
 
+    // Pre-allocate neighbor offset arrays for performance
+    const NEIGHBOR_OFFSETS = [
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1],           [0, 1],
+      [1, -1],  [1, 0],  [1, 1]
+    ];
+
     function createEmptyGrid(r, c) {
       const arr = [];
       for (let i = 0; i < r; i++) {
@@ -673,7 +688,20 @@
           cellDiv.addEventListener("mouseenter", () => {
             if (isMouseDown && lastCell !== `${r},${c}`) {
               lastCell = `${r},${c}`;
-              grid[r][c] = 1;
+              // Add subtle random living cells only in immediate neighbors
+              for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                  if (dr === 0 && dc === 0) continue;
+                  const nr = r + dr;
+                  const nc = c + dc;
+                  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                    // 20% chance of immediate neighbor becoming alive
+                    if (Math.random() < 0.2) {
+                      grid[nr][nc] = 1;
+                    }
+                  }
+                }
+              }
               renderGrid();
             }
           });
@@ -722,12 +750,9 @@
         for (let c = 0; c < cols; c++) {
           const neighbors = countNeighbors(currentGrid, r, c);
           const cellState = currentGrid[r][c];
-          // Conway's rules
           if (cellState === 1) {
-            // Live cell
             newGrid[r][c] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
           } else {
-            // Dead cell
             newGrid[r][c] = (neighbors === 3) ? 1 : 0;
           }
         }
@@ -739,7 +764,7 @@
       let count = 0;
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue; // skip itself
+          if (dr === 0 && dc === 0) continue;
           const nr = row + dr;
           const nc = col + dc;
           if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
@@ -763,74 +788,68 @@
     // Pattern Loading
     // -----------------------------------------------------
     function loadPattern(patternName) {
-      if (!patterns[patternName]) return;
-      stopGame();
+      try {
+        if (!patterns[patternName]) return;
+        stopGame();
+        
+        // Clear grid first
+        grid = createEmptyGrid(rows, cols);
 
-      // Clear grid first
-      grid = createEmptyGrid(rows, cols);
+        // Calculate bounding box of pattern
+        const pattern = patterns[patternName];
+        let minRow = Infinity, maxRow = -Infinity;
+        let minCol = Infinity, maxCol = -Infinity;
+        pattern.forEach(([r, c]) => {
+          if (r < minRow) minRow = r;
+          if (r > maxRow) maxRow = r;
+          if (c < minCol) minCol = c;
+          if (c > maxCol) maxCol = c;
+        });
 
-      // Calculate bounding box of pattern
-      const pattern = patterns[patternName];
-      let minRow = Infinity, maxRow = -Infinity;
-      let minCol = Infinity, maxCol = -Infinity;
-      pattern.forEach(([r, c]) => {
-        if (r < minRow) minRow = r;
-        if (r > maxRow) maxRow = r;
-        if (c < minCol) minCol = c;
-        if (c > maxCol) maxCol = c;
-      });
+        const patternHeight = maxRow - minRow + 1;
+        const patternWidth = maxCol - minCol + 1;
+        const rowOffset = Math.floor(rows / 2 - patternHeight / 2) - minRow;
+        const colOffset = Math.floor(cols / 2 - patternWidth / 2) - minCol;
 
-      const patternHeight = maxRow - minRow + 1;
-      const patternWidth = maxCol - minCol + 1;
-      const rowOffset = Math.floor(rows / 2 - patternHeight / 2) - minRow;
-      const colOffset = Math.floor(cols / 2 - patternWidth / 2) - minCol;
+        // Populate the grid
+        pattern.forEach(([r, c]) => {
+          const newR = r + rowOffset;
+          const newC = c + colOffset;
+          if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+            grid[newR][newC] = 1;
+          }
+        });
 
-      // Populate the grid
-      pattern.forEach(([r, c]) => {
-        const newR = r + rowOffset;
-        const newC = c + colOffset;
-        if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-          grid[newR][newC] = 1;
-        }
-      });
+        // Force a full redraw
+        renderGrid();
 
-      // Force a full redraw
-      renderGrid();
-
-      // Start playing automatically
-      startGame();
-      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
+        // Start playing automatically
+        startGame();
+        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
+      } catch (error) {
+        console.error('Error loading pattern:', error);
+        clearGrid();
+      }
     }
 
     // -----------------------------------------------------
     // Controls
     // -----------------------------------------------------
     function startGame() {
-      // Stop any existing game loop
       if (timer) {
         clearInterval(timer);
         timer = null;
       }
       
-      // If grid is completely empty, randomize it
       if (allCellsDead(grid)) {
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            grid[r][c] = Math.random() > 0.8 ? 1 : 0;
-          }
-        }
-        renderGrid();
+        randomizeGrid();
       }
       
-      // Start the game loop
       playing = true;
       timer = setInterval(() => {
         grid = computeNextGeneration(grid);
         renderGrid();
       }, calculateInterval());
-
-      // Disable zoom dropdown while playing
-      document.getElementById("zoomSelect").disabled = true;
     }
 
     function stopGame() {
@@ -980,6 +999,6 @@
         </div>
       </div>
     </div>
-  </div>
+</div>
 </body>
 </html>
