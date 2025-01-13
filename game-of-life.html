@@ -398,8 +398,16 @@
       document.getElementById("speedSelect").addEventListener("change", (e) => {
         currentSpeedMultiplier = parseFloat(e.target.value);
         if (playing) {
-          stopGame();
-          startGame();
+          // Clear existing interval
+          if (timer) {
+            clearInterval(timer);
+            timer = null;
+          }
+          // Start new interval with updated speed
+          timer = setInterval(() => {
+            grid = computeNextGeneration(grid);
+            renderGrid();
+          }, calculateInterval());
         }
       });
 
