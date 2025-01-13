@@ -208,6 +208,18 @@
       opacity: 0.7;
     }
 
+    .footer-links a {
+      color: var(--tn-foreground);
+      opacity: 0.7;
+      text-decoration: none;
+      margin: 0 0.5rem;
+      transition: opacity 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+    }
+
     /* Modal styling */
     .modal-content {
       background: var(--tn-panel);
@@ -241,7 +253,7 @@
              alt="@blakec" 
              class="rounded-circle me-2" 
              style="width: 32px; height: 32px;">
-        <i class="bi bi-twitter-x"></i> @blakec
+        @blakec
       </a>
       </span>
       <div class="ms-auto">
@@ -265,7 +277,7 @@
         <!-- Control buttons row -->
         <div class="row" id="gameControls">
           <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
-    <h1>Conway's Game of Life</h1>
+            <h1>Conway's Game of Life</h1>
 
             <!-- Editorial description -->
             <div id="description">
@@ -957,8 +969,22 @@
 
   <!-- Footer -->
   <footer class="footer mt-auto py-3">
-    <div class="container text-center">
-      <span class="text-muted">© 2025 blakecrosley.com. All rights reserved.</span>
+    <div class="container d-flex justify-content-between align-items-center">
+      <span class="text-muted">© 2025 All rights reserved.</span>
+      <div class="footer-links">
+        <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
+          <i class="bi bi-twitter-x"></i>
+        </a>
+        <a href="https://github.com/blakecrosley" target="_blank" title="GitHub">
+          <i class="bi bi-github"></i>
+        </a>
+        <a href="https://blakecrosley.com" target="_blank" title="Personal Website">
+          blakecrosley.com
+        </a>
+        <a href="https://941apps.com" target="_blank" title="941 Apps">
+          941apps.com
+        </a>
+      </div>
     </div>
   </footer>
 
