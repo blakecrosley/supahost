@@ -1,91 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Use data-bs-theme="dark" to apply the dark theme across the page -->
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <title>Conway's Game of Life</title>
-  <!-- Viewport for mobile -->
+  <title>Conway's Game of Life (Bootstrap 5.3 Refactor)</title>
+  <!-- Viewport for mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- jQuery + jQuery Mobile (stable 1.4.5) from CDN -->
+  <!-- Bootstrap 5.3.3 CSS -->
   <link
     rel="stylesheet"
-    href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
   />
-  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-  <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 
-  <!-- Inline CSS -->
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" 
+    rel="stylesheet"
+  />
+
   <style>
-    /* Overall page styling */
-    body, .ui-page, .ui-content {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-    }
-
-    /* Center all main content, restrict width */
-    #mainContent {
-      max-width: 638px;
-      margin: 0 auto; /* center horizontally */
-      padding: 0 1em; /* some side padding */
-    }
-
-    /* Header */
-    #header h1 {
-      margin: 0;
-      text-align: center;
-      font-size: 1.25em;
-      padding: 0.5em;
-    }
-
-    /* Button container: add margin-top for breathing room */
-    #controls {
-      margin-top: 2em; 
-      width: 100%;
-    }
-
-    /* We keep the controlgroup horizontal, but everything inside is centered. */
-    #controls .ui-controlgroup-controls {
+    /* Overall page styling (Bootstrap provides many resets already) */
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      width: 100%;
+      flex-direction: column;
+      /* Let Bootstrap handle dark background via data-bs-theme */
+      color: #fff !important;
+      font-size: 20px;
+      line-height: 1.4;
     }
-
-    /* Make all buttons in control group same width */
-    #controls .ui-btn {
-      flex: 1;          /* Make buttons grow evenly */
-      min-width: 0;     /* Allow buttons to shrink below their content width */
-      padding-left: 1em;
-      padding-right: 1em;
-      margin: 0;        /* Remove margin between buttons */
-    }
-
-    /* Force select to match button widths */
-    #controls select {
-      flex: 1;
-      min-width: 0;
-      /* Remove default select styling */
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      border-radius: 0;
-    }
-
-    /* Remove the gap between buttons in the controlgroup */
-    .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn,
-    .ui-controlgroup-horizontal .ui-controlgroup-controls select {
-      border-right-width: 0;
-    }
-
-    /* Add border to last element */
-    .ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn:last-child,
-    .ui-controlgroup-horizontal .ui-controlgroup-controls select:last-child {
-      border-right-width: 1px;
-    }
-
-    /* Grid container with max width and centered */
+    /* Grid container */
     #grid-container {
       margin: 1em auto;
       border: 1px solid #ccc;
@@ -97,7 +47,6 @@
       padding-bottom: 60%;
       overflow: hidden;
     }
-
     /* The grid itself */
     #grid {
       display: grid;
@@ -111,28 +60,17 @@
       gap: 1px;
       background: #ccc;
     }
-
     .cell {
       width: 100%;
       height: 100%;
       background-color: #fff;
       box-sizing: border-box;
     }
-
     .alive {
       background-color: #2b2b2b;
     }
 
-    /* For narrower screens, shrink cells more */
-    @media (max-width: 600px) {
-      /* Make buttons more finger-friendly without drastic changes */
-      #controls .ui-btn {
-        font-size: 0.9em;
-        padding: 0.7em 0.5em;
-      }
-    }
-
-    /* Instructions styling */
+    /* Instructions */
     #instructions {
       margin-top: 1em;
       font-size: 0.95em;
@@ -151,109 +89,110 @@
     #description {
       line-height: 1.6;
       font-size: 1em;
-      color: #333;
     }
 
-    /* Make pattern buttons expand to fill width */
+    /* Pattern Buttons: make them expand to fill width, at least on the container */
     #exampleControls {
-        width: 100%;
+      width: 100%;
     }
-    
-    #exampleControls .ui-controlgroup-controls {
-        width: 100%;
-        display: flex;
-    }
-
-    #exampleControls .ui-controlgroup-controls label {
-        flex: 1;
-        width: auto;
+    #exampleControls .btn-check:checked + .btn {
+      /* Toggle "active" color for checked states */
+      background-color: #0d6efd;
+      color: #fff;
     }
   </style>
 </head>
 
 <body>
-<!-- Main Page -->
-<div data-role="page" id="mainPage">
-  <!-- Header -->
-  <div data-role="header" data-position="fixed" id="header">
-    <h1>Conway's Game of Life</h1>
+  <!-- Bootstrap 5 Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1 center">Conway's Game of Life</span>
+    </div>
+  </nav>
+
+  <!-- Main container: Use a Bootstrap container and row -->
+  <div class="container my-4">
+    <div class="row">
+      <!-- 6 columns wide on large screens, 12 on smaller, centered offset -->
+      <div class="col-12 col-lg-6 offset-lg-3">
+        <!-- BEGIN game functionality section -->
+
+        <!-- Control buttons row -->
+        <div class="row my-3">
+          <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
+            <!-- Button group -->
+            <div class="btn-group" role="group" aria-label="Game controls">
+              <button id="toggleBtn" type="button" class="btn btn-secondary">Play</button>
+              <button id="stepBtn" type="button" class="btn btn-secondary">Step</button>
+              <button id="randomBtn" type="button" class="btn btn-secondary">Random</button>
+              <button id="clearBtn" type="button" class="btn btn-secondary">Clear</button>
+            </div>
+            <!-- Speed select -->
+            <div class="ms-3">
+              <select id="speedSelect" class="form-select" style="width:auto;" aria-label="Speed">
+                <option value="0.5">0.5×</option>
+                <option value="1.0" selected>1.0×</option>
+                <option value="1.5">1.5×</option>
+                <option value="2.0">2.0×</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div id="instructions">
+          <p>
+            Tap or click cells to toggle them. Press <strong>Start</strong> to begin...
+          </p>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="grid-container">
+          <div id="grid"></div>
+        </div>
+
+        <!-- Pattern section -->
+        <h3>Pattern Examples</h3>
+        <div id="instructions">
+          <p>These classic patterns showcase the Game's emergent behavior...</p>
+        </div>
+        <div id="exampleControls" class="d-flex gap-2 flex-wrap">
+          <!-- Checkboxes for pattern selection -->
+        </div>
+
+        <!-- Editorial description -->
+        <h3>About Conway's Game of Life</h3>
+        <div id="description">
+          <p>
+            Conway's Game of Life is a classic example of how complexity can blossom...
+          </p>
+        </div>
+
+        <!-- END game functionality section -->
+      </div>
+    </div>
   </div>
 
-  <!-- Page Content -->
-  <div role="main" class="ui-content" id="mainContent">
-    <!-- Button Group (Controlgroup) -->
-    <div id="controls" data-role="controlgroup" data-type="horizontal">
-      <!-- Single Play/Pause toggle button -->
-      <button id="toggleBtn" data-role="button">Play</button>
-      <button id="stepBtn" data-role="button">Step</button>
-      <button id="randomBtn" data-role="button">Random</button>
-      <button id="clearBtn" data-role="button" style="min-width:80px;">Clear</button>
-      
-      <!-- Speed Control at far right -->
-      <select id="speedSelect" data-role="button" data-icon="false">
-        <option value="0.5">0.5×</option>
-        <option value="1.0" selected>1.0×</option>
-        <option value="1.5">1.5×</option>
-        <option value="2.0">2.0×</option>
-      </select>
-    </div>
+  <!-- Bootstrap 5.3.3 JS (includes Popper) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous">
+  </script>
 
-    <!-- Simple instructions above the game -->
-    <div id="instructions">
-      <p>Tap or click cells to toggle them. Press <strong>Start</strong> to begin the simulation. You can <strong>Step</strong> through generations manually, <strong>Random</strong> to populate new cells, or <strong>Clear</strong> to wipe the board.</p>
-    </div>    
-
-    <!-- Grid Container -->
-    <div id="grid-container">
-      <div id="grid"></div>
-    </div>
-
-    <!-- Pattern section moved here -->
-    <h3>Pattern Examples</h3>
-    <div id="instructions">
-      <p>These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows how simple shapes can evolve into complex forms.</p>
-    </div>
-    
-    <div id="exampleControls" data-role="controlgroup" data-type="horizontal" 
-         style="margin-top:1em; text-align:center;">
-      <input type="checkbox" name="pattern" id="gliderBtn" value="glider" data-role="button">
-      <label for="gliderBtn">Glider</label>
-
-      <input type="checkbox" name="pattern" id="pulsarBtn" value="pulsar" data-role="button">
-      <label for="pulsarBtn">Pulsar</label>
-
-      <input type="checkbox" name="pattern" id="smallExploderBtn" value="smallExploder" data-role="button">
-      <label for="smallExploderBtn">Small Exploder</label>
-    </div>
-
-    <!-- Editorial description with new header -->
-    <h3>About Conway's Game of Life</h3>
-    <div id="description">
-      <p>Conway's Game of Life is a classic example of how complexity can blossom from just a few straightforward rules. Picture an infinite grid of cells—each one can be "on" (alive) or "off" (dead). At every turn (or "generation"), each cell checks how many neighbors are alive. If it's too crowded, the cell dies. If it's too lonely, same story. But if conditions are just right—namely exactly three neighbors—new life sparks into being. These four simple laws create a mesmerizing dance of patterns that can replicate, move around ("gliders"), or even form loops that generate new cells ("guns").</p>
-
-      <p>What makes this so intriguing for nerds of all stripes is the concept of emergence: complex behavior arising from super-simple rules. Watching the grid evolve can feel like peering into a mini-universe. One moment, you're convinced half the cells will vanish. The next, you spot newly formed "oscillators" ticking away in perfect sync like digital clockwork. Then there are "spaceships" gliding across the screen, as if they have some built-in mission to conquer new territories—spoiler alert: they don't, but that's half the fun.</p>
-      
-      <p>Conway's Game of Life has also earned a kind of legendary status among computer scientists: it's Turing complete, which means in theory you can do any computable operation within it (with the right configuration of cells, of course). For all its playful simplicity, the Game of Life has inspired decades of deep dives into complexity, computational theory, and even philosophical ponderings on what it means to be "alive." It's like having a front-row seat to a microcosm of creation—minus the headache of lab equipment or code wrangling. Whether you're a seasoned coder, a math geek, or just someone who likes a good puzzle, the Game of Life never runs out of surprises. Dive in and see for yourself how such simple rules can produce a digital world that feels uncannily, well, alive.</p>
-    </div>
-  </div>
-
-  <!-- Conway's Game of Life Logic -->
+  <!-- Conway's Game of Life Script (Vanilla JS) -->
   <script>
     // -----------------------------------------------------
-    // Configuration
+    // Configuration: Patterns, Gameplay
     // -----------------------------------------------------
-    /**
-     * A dictionary of known patterns to easily load into the grid.
-     * Each key is a pattern name, and each value represents an array of [row, col]
-     * offsets where cells should be alive relative to some origin.
-     */
     const patterns = {
       glider: [
         [0, 1],
         [1, 2],
         [2, 0],
         [2, 1],
-        [2, 2]
+        [2, 2],
       ],
       pulsar: [
         // Top
@@ -266,174 +205,107 @@
         [-2, 4], [-1, 4], [0, 4], [1, 4], [2, 4],
         // Inner vertical bars
         [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2],
-        [-2, 2], [-1, 2], [0, 2], [1, 2], [2, 2],
+        [-2, 2],  [-1, 2],  [0, 2],  [1, 2],  [2, 2],
         // Inner horizontal bars
         [-2, -1], [-2, 0], [-2, 1],
-        [2, -1], [2, 0], [2, 1]
+        [2, -1],  [2, 0],  [2, 1],
       ],
       smallExploder: [
         [0, 0],
         [1, -1], [1, 0], [1, 1],
         [2, -1],         [2, 1],
-        [3, 0]
-      ]
+        [3, 0],
+      ],
     };
 
-    // Calculate grid dimensions based on container size
-    function calculateGridDimensions() {
-      const $container = $("#grid-container");
-      const containerWidth = $container.width();
-      const containerHeight = $container.height();
-      
-      // Calculate cell size to fit container perfectly
-      const targetCols = 50;
-      const targetRows = 30;
-      
-      const cols = targetCols;
-      const rows = targetRows;
-      
-      // Update grid CSS to create perfectly sized cells
-      const $grid = $("#grid");
-      $grid.css({
-        'grid-template-columns': `repeat(${cols}, 1fr)`,
-        'grid-template-rows': `repeat(${rows}, 1fr)`
-      });
-      
-      return { rows, cols };
-    }
-
-    let { rows, cols } = calculateGridDimensions();
-    let grid = createEmptyGrid(rows, cols);
-
-    // Keep track of old grid for differential rendering
+    let rows = 30;
+    let cols = 50;
+    let grid = [];
     let oldGrid = null;
-
-    // Base interval for 1.0 speed = 200ms
-    const baseInterval = 200;
     let playing = false;
     let timer = null;
-    let currentSpeedMultiplier = 1.0; // default
+    let baseInterval = 200; // ms
+    let currentSpeedMultiplier = 1.0;
 
-    // Update grid dimensions on window resize
-    let resizeTimer;
-    $(window).on('resize', function() {
-      // Debounce the resize event
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function() {
-        const newDims = calculateGridDimensions();
-        if (newDims.rows !== rows || newDims.cols !== cols) {
-          rows = newDims.rows;
-          cols = newDims.cols;
-          grid = createEmptyGrid(rows, cols);
-          oldGrid = null;
-          buildGridUI();
-        }
-      }, 250); // Wait for resize to finish
-    });
-
-    /**
-     * Loads a preset pattern by name into the grid, centered near the grid's midpoint.
-     * @param {string} patternName - The key of the pattern in the patterns object.
-     */
-    function loadPattern(patternName) {
-      if (!patterns[patternName]) return;
-
-      // Stop any existing game loop
-      stopGame();
-
-      // Clear grid first
+    // On load, run initialization
+    document.addEventListener("DOMContentLoaded", () => {
+      // Initialize the grid size
+      calculateGridDimensions();
+      // Create the grid
       grid = createEmptyGrid(rows, cols);
-
-      // Find pattern dimensions
-      const pattern = patterns[patternName];
-      let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
-      
-      pattern.forEach(([r, c]) => {
-        minRow = Math.min(minRow, r);
-        maxRow = Math.max(maxRow, r);
-        minCol = Math.min(minCol, c);
-        maxCol = Math.max(maxCol, c);
-      });
-      
-      const patternHeight = maxRow - minRow + 1;
-      const patternWidth = maxCol - minCol + 1;
-
-      // Calculate center offsets
-      const rowOffset = Math.floor(rows/2 - patternHeight/2) - minRow;
-      const colOffset = Math.floor(cols/2 - patternWidth/2) - minCol;
-
-      // Apply each offset in the pattern to make cells alive
-      pattern.forEach(([r, c]) => {
-        const newR = r + rowOffset;
-        const newC = c + colOffset;
-        if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-          grid[newR][newC] = 1;
-        }
-      });
-
-      // Force a full redraw
-      oldGrid = null;
-      renderGrid();
-
-      // Start playing automatically
-      startGame();
-      $("#toggleBtn").text("Pause");
-    }
-
-    // -----------------------------------------------------
-    // On Page Create
-    // -----------------------------------------------------
-    $(document).on("pagecreate", "#mainPage", function () {
-      /**
-       * Initializes the game UI after jQuery Mobile page creation.
-       * Sets button event listeners and handles speed selection changes.
-       */
       buildGridUI();
 
-      // Button event listeners
-      $("#toggleBtn").on("click", toggleGame);
-      $("#stepBtn").on("click", stepGeneration);
-      $("#randomBtn").on("click", randomizeGrid);
-      $("#clearBtn").on("click", clearGrid);
+      // Attach event handlers
+      document.getElementById("toggleBtn").addEventListener("click", toggleGame);
+      document.getElementById("stepBtn").addEventListener("click", stepGeneration);
+      document.getElementById("randomBtn").addEventListener("click", randomizeGrid);
+      document.getElementById("clearBtn").addEventListener("click", clearGrid);
 
-      // Speed selection remains unchanged
-      $("#speedSelect").on("change", function () {
-        const newVal = $(this).val();
-        currentSpeedMultiplier = parseFloat(newVal);
+      document.getElementById("speedSelect").addEventListener("change", (e) => {
+        currentSpeedMultiplier = parseFloat(e.target.value);
         if (playing) {
           stopGame();
           startGame();
         }
       });
 
-      // Update the checkbox handler
-      $("#exampleControls input[type='checkbox']").on("change", function() {
-        if ($(this).is(":checked")) {
-          // Uncheck all other buttons
-          $("#exampleControls input[type='checkbox']")
-            .not(this)
-            .prop("checked", false)
-            .checkboxradio("refresh");
+      // Pattern checkboxes
+      ["gliderBtn", "pulsarBtn", "smallExploderBtn"].forEach((btnId) => {
+        document.getElementById(btnId).addEventListener("change", (e) => {
+          const isChecked = e.target.checked;
+          if (isChecked) {
+            // Uncheck other patterns
+            ["gliderBtn", "pulsarBtn", "smallExploderBtn"]
+              .filter((otherId) => otherId !== btnId)
+              .forEach((otherId) => {
+                const other = document.getElementById(otherId);
+                other.checked = false;
+              });
 
-          // Load and auto-play the selected pattern
-          loadPattern($(this).val());
-        } else {
-          // When unchecking, stop the game
-          stopGame();
-          $("#toggleBtn").text("Play");
-        }
+            // Load and auto-play the selected pattern
+            loadPattern(e.target.value);
+          } else {
+            // Stop game if user unchecks current pattern
+            stopGame();
+            document.getElementById("toggleBtn").textContent = "Play";
+          }
+        });
+      });
+
+      // Recalculate grid on window resize (debounce)
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          const dims = calculateGridDimensions();
+          if (dims.rows !== rows || dims.cols !== cols) {
+            rows = dims.rows;
+            cols = dims.cols;
+            grid = createEmptyGrid(rows, cols);
+            oldGrid = null;
+            buildGridUI();
+          }
+        }, 250);
       });
     });
 
     // -----------------------------------------------------
-    // Create and Render the Grid
+    // Grid Setup
     // -----------------------------------------------------
-    /**
-     * Creates and returns a 2D array representing the game state.
-     * @param {number} r - Number of rows.
-     * @param {number} c - Number of columns.
-     * @returns {number[][]} A 2D array with all values set to 0.
-     */
+    function calculateGridDimensions() {
+      const containerElem = document.getElementById("grid-container");
+      const containerWidth = containerElem.clientWidth;
+      const containerHeight = containerElem.clientHeight;
+
+      // Keep these values from the original code
+      const targetCols = 50;
+      const targetRows = 30;
+
+      rows = targetRows;
+      cols = targetCols;
+      return { rows, cols };
+    }
+
     function createEmptyGrid(r, c) {
       const arr = [];
       for (let i = 0; i < r; i++) {
@@ -445,77 +317,45 @@
       return arr;
     }
 
-    /**
-     * Builds the grid in the DOM, creating clickable/tappable cells.
-     * Also calls renderGrid() initially to update visuals.
-     */
     function buildGridUI() {
-      const $grid = $("#grid");
-      $grid.empty();
+      const gridElem = document.getElementById("grid");
+      gridElem.innerHTML = "";
+
+      // Adjust CSS grid template
+      gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const $cell = $("<div></div>");
-          $cell
-            .addClass("cell")
-            .attr("data-row", r)
-            .attr("data-col", c);
+          const cellDiv = document.createElement("div");
+          cellDiv.classList.add("cell");
+          cellDiv.dataset.row = String(r);
+          cellDiv.dataset.col = String(c);
 
-          // jQuery Mobile "tap" event
-          $cell.on("tap", function () {
-            const rowIdx = parseInt($(this).attr("data-row"));
-            const colIdx = parseInt($(this).attr("data-col"));
-            grid[rowIdx][colIdx] = grid[rowIdx][colIdx] ? 0 : 1;
+          // Toggle cell on click
+          cellDiv.addEventListener("click", () => {
+            grid[r][c] = grid[r][c] ? 0 : 1;
             renderGrid();
           });
 
-          $grid.append($cell);
+          gridElem.appendChild(cellDiv);
         }
       }
       renderGrid();
     }
 
-    /**
-     * Conditionally re-renders only changed cells (based on oldGrid).
-     * If oldGrid is null, falls back to a full render.
-     * @param {number[][]} newGrid - The updated game state.
-     */
-    function renderGridDifferential(newGrid) {
-      // If there's no old grid, do full render
-      if (!oldGrid) {
-        renderGrid(); 
-        oldGrid = JSON.parse(JSON.stringify(newGrid));
-        return;
-      }
-
-      // Only update changed cells
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (oldGrid[r][c] !== newGrid[r][c]) {
-            const cellSelector = '#grid .cell[data-row="' + r + '"][data-col="' + c + '"]';
-            if (newGrid[r][c] === 1) {
-              $(cellSelector).addClass("alive");
-            } else {
-              $(cellSelector).removeClass("alive");
-            }
-          }
-        }
-      }
-      // Update the reference
-      oldGrid = JSON.parse(JSON.stringify(newGrid));
-    }
-
-    /**
-     * Performs a full rerender of all cells in the grid.
-     */
+    // -----------------------------------------------------
+    // Rendering
+    // -----------------------------------------------------
     function renderGrid() {
-      $("#grid .cell").each(function () {
-        const rowIdx = parseInt($(this).attr("data-row"));
-        const colIdx = parseInt($(this).attr("data-col"));
-        if (grid[rowIdx][colIdx] === 1) {
-          $(this).addClass("alive");
+      const cellDivs = document.querySelectorAll("#grid .cell");
+      cellDivs.forEach((div) => {
+        const r = parseInt(div.dataset.row);
+        const c = parseInt(div.dataset.col);
+        if (grid[r][c] === 1) {
+          div.classList.add("alive");
         } else {
-          $(this).removeClass("alive");
+          div.classList.remove("alive");
         }
       });
     }
@@ -523,31 +363,23 @@
     // -----------------------------------------------------
     // Game Logic
     // -----------------------------------------------------
-    /**
-     * Computes the next generation of the grid based on Conway's rules.
-     * @param {number[][]} currentGrid - The current game state.
-     * @returns {number[][]} The new generation's game state.
-     */
     function computeNextGeneration(currentGrid) {
       const newGrid = createEmptyGrid(rows, cols);
-
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const neighbors = countNeighbors(currentGrid, r, c);
           const cellState = currentGrid[r][c];
-
           // Conway's rules
           if (cellState === 1) {
-            // Live cell
             if (neighbors === 2 || neighbors === 3) {
-              newGrid[r][c] = 1; // stays alive
+              newGrid[r][c] = 1;
             } else {
-              newGrid[r][c] = 0; // dies
+              newGrid[r][c] = 0;
             }
           } else {
-            // Dead cell
+            // Dead
             if (neighbors === 3) {
-              newGrid[r][c] = 1; // becomes alive
+              newGrid[r][c] = 1;
             } else {
               newGrid[r][c] = 0;
             }
@@ -557,18 +389,11 @@
       return newGrid;
     }
 
-    /**
-     * Counts the number of living neighbors around a given cell.
-     * @param {number[][]} g - The grid to assess.
-     * @param {number} row - Current cell's row index.
-     * @param {number} col - Current cell's column index.
-     * @returns {number} The count of live neighbors.
-     */
     function countNeighbors(g, row, col) {
       let count = 0;
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue; // skip itself
+          if (dr === 0 && dc === 0) continue;
           const nr = row + dr;
           const nc = col + dc;
           if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
@@ -579,11 +404,6 @@
       return count;
     }
 
-    /**
-     * Checks if all cells are dead (grid is empty).
-     * @param {number[][]} g - The grid to inspect.
-     * @returns {boolean} True if no cell is alive; else false.
-     */
     function allCellsDead(g) {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -594,13 +414,51 @@
     }
 
     // -----------------------------------------------------
-    // Control Functions
+    // Pattern Loading
     // -----------------------------------------------------
-    /**
-     * Starts the game loop and randomizes the grid if it's empty.
-     */
+    function loadPattern(patternName) {
+      if (!patterns[patternName]) return;
+      stopGame();
+
+      // Clear grid first
+      grid = createEmptyGrid(rows, cols);
+
+      // Calculate bounding box of pattern
+      const pattern = patterns[patternName];
+      let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+      pattern.forEach(([r, c]) => {
+        if (r < minRow) minRow = r;
+        if (r > maxRow) maxRow = r;
+        if (c < minCol) minCol = c;
+        if (c > maxCol) maxCol = c;
+      });
+
+      const patternHeight = maxRow - minRow + 1;
+      const patternWidth = maxCol - minCol + 1;
+      const rowOffset = Math.floor(rows / 2 - patternHeight / 2) - minRow;
+      const colOffset = Math.floor(cols / 2 - patternWidth / 2) - minCol;
+
+      // Populate the grid
+      pattern.forEach(([r, c]) => {
+        const newR = r + rowOffset;
+        const newC = c + colOffset;
+        if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+          grid[newR][newC] = 1;
+        }
+      });
+
+      oldGrid = null;
+      renderGrid();
+
+      // Start playing automatically
+      startGame();
+      document.getElementById("toggleBtn").textContent = "Pause";
+    }
+
+    // -----------------------------------------------------
+    // Controls
+    // -----------------------------------------------------
     function startGame() {
-      // If no cells alive, randomize first
       if (allCellsDead(grid)) {
         randomizeGrid();
       }
@@ -609,15 +467,11 @@
         timer = setInterval(() => {
           const nextGen = computeNextGeneration(grid);
           grid = nextGen;
-          // Use differential rendering
-          renderGridDifferential(grid);
+          renderGrid();
         }, calculateInterval());
       }
     }
 
-    /**
-     * Stops the game loop and clears the interval timer.
-     */
     function stopGame() {
       playing = false;
       if (timer) {
@@ -626,19 +480,22 @@
       }
     }
 
-    /**
-     * Steps forward exactly one generation.
-     */
+    function toggleGame() {
+      if (playing) {
+        stopGame();
+        document.getElementById("toggleBtn").textContent = "Play";
+      } else {
+        startGame();
+        document.getElementById("toggleBtn").textContent = "Pause";
+      }
+    }
+
     function stepGeneration() {
       stopGame();
       grid = computeNextGeneration(grid);
-      // Use differential rendering on step
-      renderGridDifferential(grid);
+      renderGrid();
     }
 
-    /**
-     * Populates the grid with random alive cells (~20% chance).
-     */
     function randomizeGrid() {
       stopGame();
       for (let r = 0; r < rows; r++) {
@@ -646,43 +503,21 @@
           grid[r][c] = Math.random() > 0.8 ? 1 : 0;
         }
       }
-      oldGrid = null; // force full redraw
+      oldGrid = null;
       renderGrid();
     }
 
-    /**
-     * Clears the grid to all dead cells.
-     */
     function clearGrid() {
       stopGame();
       grid = createEmptyGrid(rows, cols);
-      oldGrid = null; // force full redraw
+      oldGrid = null;
       renderGrid();
     }
 
-    /**
-     * Calculates the interval time (in ms) based on currentSpeedMultiplier.
-     * @returns {number} The interval (in milliseconds) for the timer.
-     */
     function calculateInterval() {
       // 1.0 speed = 200 ms
-      // 0.5 => 400 ms, 1.5 => ~133 ms, 2.0 => 100 ms
       return baseInterval / currentSpeedMultiplier;
     }
-
-    /**
-     * Toggles between play and pause states with a single button.
-     */
-    function toggleGame() {
-      if (playing) {
-        stopGame();
-        $("#toggleBtn").text("Play");
-      } else {
-        startGame();
-        $("#toggleBtn").text("Pause");
-      }
-    }
   </script>
-</div>
 </body>
 </html>
