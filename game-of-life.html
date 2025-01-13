@@ -327,9 +327,9 @@
         <h3>The Algorithm</h3>
         <p>At its heart, the Game of Life runs on just a few elegant functions that determine life and death in our cellular universe:</p>
         
-        <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; padding: 1.5rem; margin: 1rem 0 3rem 0;">
+        <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
           <!-- Core Algorithm -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .3rem; overflow-x: auto;"><code>
+          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// The core algorithm that determines life and death</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextGeneration</span>(<span style="color: #e0af68;">currentGrid</span>) {
   <span style="color: #c0caf5;">const newGrid = createEmptyGrid(rows, cols);</span>
@@ -352,14 +352,14 @@
   <span style="color: #bb9af7;">return</span> newGrid;
 }</code></pre>
 
-          <p style="color: #c0caf5; padding: 1rem 0;">
+          <p style="color: #c0caf5; margin: 1em 0;">
             The core algorithm applies Conway's rules to each cell in the grid. For each generation, it checks every cell's 
             state and its neighbor count to determine if it lives, dies, or springs to life. This creates the mesmerizing 
             patterns we see evolving on the board.
           </p>
 
           <!-- Neighbor Counting -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .3rem; margin-top: 1rem; overflow-x: auto;"><code>
+          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 0; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Count live neighbors for each cell</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">countNeighbors</span>(<span style="color: #e0af68;">g</span>, <span style="color: #e0af68;">row</span>, <span style="color: #e0af68;">col</span>) {
   <span style="color: #c0caf5;">let count = 0;</span>
@@ -376,14 +376,14 @@
   <span style="color: #bb9af7;">return</span> count;
 }</code></pre>
 
-          <p style="color: #c0caf5; padding: 1rem 0;">
+          <p style="color: #c0caf5; margin: 1em 0;">
             The neighbor counting function scans the eight cells surrounding each position. It carefully handles edge cases 
             and provides the vital information needed to apply Conway's rules. This efficient implementation uses simple 
             addition since living cells are represented as 1's and dead cells as 0's.
           </p>
 
           <!-- Pattern Loading -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .3rem; margin-top: 1rem; overflow-x: auto;"><code>
+          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Load and center a predefined pattern on the grid</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">loadPattern</span>(<span style="color: #e0af68;">patternName</span>) {
   <span style="color: #bb9af7;">if</span> (!patterns[patternName]) <span style="color: #bb9af7;">return</span>;
@@ -406,21 +406,21 @@
   });
 }</code></pre>
 
-          <p style="color: #c0caf5; padding: 1rem 0;">
+          <p style="color: #c0caf5; margin: 1em 0;">
             Pattern loading is what allows us to place predefined structures onto the grid. It automatically centers the pattern 
             and ensures it fits within the boundaries. This function transforms the simple coordinate lists below into living 
             cells on our grid.
           </p>
 
           <!-- Pattern Definitions -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .3rem; margin-top: 1rem; overflow-x: auto;"><code>
+          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Classic patterns that demonstrate emergent behavior</span>
 <span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">patterns</span> = {
   <span style="color: #565f89;">// Glider - Moves diagonally across the grid indefinitely</span>
   <span style="color: #7aa2f7;">glider</span>: [
     [<span style="color: #ff9e64;">0</span>, <span style="color: #ff9e64;">1</span>],                     <span style="color: #565f89;">// Top</span>
     [<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">2</span>],                     <span style="color: #565f89;">// Middle</span>
-    [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">0</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">2</span>]    <span style="color: #565f89;">// Bottom</span>
+    [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">0</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">2</span>]      <span style="color: #565f89;">// Bottom</span>
   ],
 
   <span style="color: #565f89;">// Pulsar - Large symmetric oscillator with period 3</span>
@@ -439,12 +439,12 @@
   <span style="color: #7aa2f7;">smallExploder</span>: [
     [<span style="color: #ff9e64;">0</span>, <span style="color: #ff9e64;">0</span>],                     <span style="color: #565f89;">// Core</span>
     [<span style="color: #ff9e64;">1</span>, -<span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">0</span>], [<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">1</span>],    <span style="color: #565f89;">// Center</span>
-    [<span style="color: #ff9e64;">2</span>, -<span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">1</span>],         <span style="color: #565f89;">// Sides</span>
+    [<span style="color: #ff9e64;">2</span>, -<span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">1</span>],            <span style="color: #565f89;">// Sides</span>
     [<span style="color: #ff9e64;">3</span>, <span style="color: #ff9e64;">0</span>]                      <span style="color: #565f89;">// Tail</span>
   ]
 };</code></pre>
 
-          <p style="color: #c0caf5; padding: 1rem 0;">
+          <p style="color: #c0caf5; margin: 1em 0;">
             These pattern definitions encode classic Game of Life structures using coordinate pairs. Each pattern demonstrates 
             different emergent behaviors: the Glider moves endlessly across the grid, the Pulsar oscillates in place, and 
             the Small Exploder creates expanding chaos from a tiny seed.
