@@ -100,7 +100,17 @@
       overflow: hidden;
     }
 
-    /* The grid itself */
+    /* The container that we transform for zooming */
+    #gridWrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: top left;
+      pointer-events: none; /* This allows pointer events to pass through to #grid */
+    }
+
     #grid {
       display: grid;
       position: absolute;
@@ -110,8 +120,9 @@
       bottom: 0;
       width: 100%;
       height: 100%;
-      gap: 1px;
+      gap: 0;
       background: var(--tn-border);
+      pointer-events: all;  /* We receive pointer events here, ignoring the parent’s scale */
     }
 
     .cell {
@@ -249,7 +260,17 @@
 
         <!-- Grid Container -->
         <div id="grid-container">
-          <div id="grid"></div>
+          <div id="gridWrapper">
+            <div id="grid"></div>
+          </div>
+          <div style="position: absolute; bottom: 1rem; right: 1rem;">
+            <label for="zoomSelect" class="form-label me-2">Zoom</label>
+            <select id="zoomSelect" class="form-select d-inline-block" style="width:auto;">
+              <option value="1" selected>1×</option>
+              <option value="2">2×</option>
+              <option value="3">3×</option>
+            </select>
+          </div>
         </div>
 
         <!-- Pattern section -->
@@ -344,13 +365,16 @@
       ],
     };
 
-    let rows = 30;
-    let cols = 50;
+    let baseRows = 30;
+    let baseCols = 50;
+    let rows = baseRows;
+    let cols = baseCols;
     let grid = [];
     let playing = false;
     let timer = null;
     let baseInterval = 200; // ms
     let currentSpeedMultiplier = 1.0;
+    let currentZoom = 1.0;
 
     // On load, run initialization
     document.addEventListener("DOMContentLoaded", () => {
@@ -410,6 +434,14 @@
             buildGridUI();
           }
         }, 250);
+      });
+
+      // Listen for zoom changes
+      const zoomSelect = document.getElementById("zoomSelect");
+      zoomSelect.addEventListener("change", (e) => {
+        if (!playing) {
+          setZoom(parseFloat(e.target.value));
+        }
       });
     });
 
@@ -628,6 +660,9 @@
         grid = computeNextGeneration(grid);
         renderGrid();
       }, calculateInterval());
+
+      // Disable zoom dropdown while playing
+      document.getElementById("zoomSelect").disabled = true;
     }
 
     function stopGame() {
@@ -637,6 +672,9 @@
         timer = null;
       }
       document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> Play';
+
+      // Re-enable zoom dropdown
+      document.getElementById("zoomSelect").disabled = false;
     }
 
     function toggleGame() {
@@ -673,6 +711,43 @@
     function calculateInterval() {
       // 1.0 speed = 200 ms
       return baseInterval / currentSpeedMultiplier;
+    }
+
+    function setZoom(zoomValue) {
+      if (playing) return; // Don’t allow zoom changes while game is running
+
+      // Store old grid so we can copy it
+      const oldGrid = grid;
+      const oldRows = rows;
+      const oldCols = cols;
+
+      // Multiply rows & cols by the chosen zoom value
+      rows = Math.floor(baseRows * zoomValue);
+      cols = Math.floor(baseCols * zoomValue);
+
+      // Create a new empty grid
+      const newGrid = createEmptyGrid(rows, cols);
+
+      // Center the old data inside the new grid
+      const rowOffset = Math.floor((rows - oldRows) / 2);
+      const colOffset = Math.floor((cols - oldCols) / 2);
+
+      for (let r = 0; r < oldRows; r++) {
+        for (let c = 0; c < oldCols; c++) {
+          const newR = r + rowOffset;
+          const newC = c + colOffset;
+          // If the new cell indices are valid, copy old data
+          if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+            newGrid[newR][newC] = oldGrid[r][c];
+          }
+        }
+      }
+
+      // Update our global grid with the new one
+      grid = newGrid;
+
+      // Rebuild the UI so we see the new number of squares
+      buildGridUI();
     }
   </script>
 
