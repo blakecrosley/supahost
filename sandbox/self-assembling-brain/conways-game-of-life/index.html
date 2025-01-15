@@ -249,35 +249,32 @@
     @media (hover: none) and (pointer: coarse) {
       #grid-container {
         -webkit-overflow-scrolling: touch;
-        transform: translate3d(0,0,0);
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
-        perspective: 1000;
-        -webkit-perspective: 1000;
       }
 
       #gridWrapper {
         transform-origin: center center;
         -webkit-transform-origin: center center;
         will-change: transform;
-        transition: transform 0.2s ease-out;
       }
 
       #grid {
-        transform: translate3d(0,0,0);
-        -webkit-transform: translate3d(0,0,0);
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
-        will-change: transform, grid-template-columns, grid-template-rows;
       }
 
       .cell {
+        /* Remove min-width/height constraints - let the grid system handle it */
         min-width: initial;
         min-height: initial;
-        transform: translate3d(0,0,0);
-        -webkit-transform: translate3d(0,0,0);
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
         touch-action: none;
-        will-change: background-color;
       }
     }
 
@@ -744,12 +741,23 @@
     }
 
     function buildGridUI() {
+      // Cache DOM element
       const gridElem = document.getElementById("grid");
-      gridElem.innerHTML = "";
+      
+      // Create document fragment for batch DOM updates
+      const fragment = document.createDocumentFragment();
+      
+      // Prepare grid template
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      let isInteracting = false; // Works for both mouse and touch
+      // Clear existing content efficiently
+      while (gridElem.firstChild) {
+        cellPool.release(gridElem.firstChild);
+        gridElem.removeChild(gridElem.firstChild);
+      }
+
+      let isInteracting = false;
       let lastCell = null;
       let lastTouch = null;
 
@@ -819,7 +827,7 @@
         lastTouch = null;
       });
 
-      // Keep existing mouse event handlers
+      // Mouse event handlers
       gridElem.addEventListener('mousedown', (e) => { 
         e.preventDefault();
         isInteracting = true; 
@@ -838,8 +846,8 @@
       // Create grid cells
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const cellDiv = document.createElement("div");
-          cellDiv.classList.add("cell");
+          const cellDiv = cellPool.get();
+          cellDiv.className = "cell";
           cellDiv.dataset.row = String(r);
           cellDiv.dataset.col = String(c);
 
@@ -870,9 +878,12 @@
             }
           });
 
-          gridElem.appendChild(cellDiv);
+          fragment.appendChild(cellDiv);
         }
       }
+
+      // Batch append all cells
+      gridElem.appendChild(fragment);
       renderGrid();
     }
 
@@ -1070,49 +1081,18 @@
     function setZoom(zoomValue) {
       if (playing) return;
 
-      // Debounce zoom changes
-      if (this.zoomTimeout) {
-        clearTimeout(this.zoomTimeout);
-      }
-      
-      // Adjust zoom value for mobile
-      let adjustedZoom = zoomValue;
-      if ('ontouchstart' in window) {
-        // Map UI zoom levels to actual mobile zoom values
-        const mobileZoomMap = {
-          1: 1,          // 1x stays the same
-          2: 1.5,        // 2x is halfway between 1x and current max
-          3: 2,          // 3x is what used to be our 2x level
-        };
-        adjustedZoom = mobileZoomMap[zoomValue] || zoomValue;
-      }
-      
-      this.zoomTimeout = setTimeout(() => {
-        performZoom(adjustedZoom);
-      }, 150);
-    }
+      // Disable interactions during zoom transition
+      const gridContainer = document.getElementById('grid-container');
+      gridContainer.style.pointerEvents = 'none';
 
-    function performZoom(zoomValue) {
       // Store old grid state
       const oldGrid = grid;
       const oldRows = rows;
       const oldCols = cols;
 
-      // Adjust base dimensions for mobile
-      let adjustedBaseRows = baseRows;
-      let adjustedBaseCols = baseCols;
-      if ('ontouchstart' in window) {
-        // Scale down base dimensions for mobile
-        adjustedBaseRows = Math.floor(baseRows * 0.8);
-        adjustedBaseCols = Math.floor(baseCols * 0.8);
-      }
-      
-      rows = Math.floor(adjustedBaseRows * zoomValue);
-      cols = Math.floor(adjustedBaseCols * zoomValue);
-
-      // Temporarily hide grid during transformation
-      const gridContainer = document.getElementById('grid-container');
-      gridContainer.style.visibility = 'hidden';
+      // Keep existing zoom logic - more cells as we zoom "out"
+      rows = Math.floor(baseRows * zoomValue);
+      cols = Math.floor(baseCols * zoomValue);
 
       const newGrid = createEmptyGrid(rows, cols);
       const rowOffset = Math.floor((rows - oldRows) / 2);
@@ -1133,50 +1113,27 @@
 
       // Mobile-specific fixes
       if ('ontouchstart' in window) {
+        const gridContainer = document.getElementById('grid-container');
         const gridWrapper = document.getElementById('gridWrapper');
         
         // Use CSS transform with hardware acceleration
         gridWrapper.style.transform = `scale3d(${1 / zoomValue}, ${1 / zoomValue}, 1)`;
         
-        // Use RequestAnimationFrame for smoother transitions
+        // Batch DOM updates
         requestAnimationFrame(() => {
-          gridContainer.style.visibility = 'visible';
+          buildGridUI();
+          
+          // Re-enable interactions after a short delay
+          setTimeout(() => {
+            gridContainer.style.pointerEvents = 'auto';
+          }, 100);
         });
         
-        // Update viewport for precise touch handling
-        const viewport = document.querySelector('meta[name="viewport"]');
-        viewport.setAttribute('content', 
-          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+        return; // Exit early for mobile
       }
 
-      // Use efficient DOM manipulation
-      const gridElem = document.getElementById('grid');
-      gridElem.innerHTML = '';
-      
-      // Create document fragment for batch DOM updates
-      const fragment = document.createDocumentFragment();
-      const cellTemplate = document.createElement('div');
-      cellTemplate.className = 'cell';
-      
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const cell = cellTemplate.cloneNode(false);
-          cell.dataset.row = String(r);
-          cell.dataset.col = String(c);
-          fragment.appendChild(cell);
-        }
-      }
-      
-      gridElem.appendChild(fragment);
-      
-      // Update grid styles in batch
-      gridElem.style.cssText = `
-        grid-template-columns: repeat(${cols}, 1fr);
-        grid-template-rows: repeat(${rows}, 1fr);
-      `;
-
-      // Render the grid after DOM updates
-      renderGrid();
+      buildGridUI();
+      gridContainer.style.pointerEvents = 'auto';
     }
 
     // Add cell pooling for large grids
