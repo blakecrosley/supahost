@@ -108,10 +108,6 @@
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
-      touch-action: none;
-      -webkit-overflow-scrolling: touch;
-      position: relative;
-      overflow: hidden;
     }
 
     #zoomControls {
@@ -130,18 +126,20 @@
       left: 0;
       width: 100%;
       height: 100%;
-      transform-origin: top left;
-      will-change: transform;
     }
 
     #grid {
+      display: grid;
       position: absolute;
       top: 0;
       left: 0;
+      right: 0;
+      bottom: 0;
       width: 100%;
       height: 100%;
-      touch-action: none;
-      will-change: transform;
+      gap: 0;
+      background: var(--tn-border);
+      cursor: crosshair;
     }
 
     .cell {
@@ -150,8 +148,6 @@
       background-color: #24283b; /* match main background or #24283b if preferred */
       box-sizing: border-box;
       cursor: crosshair;
-      touch-action: none;
-      -webkit-tap-highlight-color: transparent;
     }
     .alive {
       background-color: #88f9d7; /* Vibrant green from Tokyo Night theme */
@@ -1068,10 +1064,12 @@
     function setZoom(zoomValue) {
       if (playing) return;
 
+      // Store old grid state
       const oldGrid = grid;
       const oldRows = rows;
       const oldCols = cols;
 
+      // Only use grid resizing for zoom
       rows = Math.floor(baseRows * zoomValue);
       cols = Math.floor(baseCols * zoomValue);
 
@@ -1081,44 +1079,22 @@
 
       // Copy existing pattern
       for (let r = 0; r < oldRows; r++) {
-        for (let c = 0; c < oldCols; c++) {
-          const newR = r + rowOffset;
-          const newC = c + colOffset;
-          if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-            newGrid[newR][newC] = oldGrid[r][c];
+          for (let c = 0; c < oldCols; c++) {
+              const newR = r + rowOffset;
+              const newC = c + colOffset;
+              if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+                  newGrid[newR][newC] = oldGrid[r][c];
+              }
           }
-        }
       }
 
       grid = newGrid;
 
-      // Mobile-specific fixes
-      if ('ontouchstart' in window) {
-        const gridContainer = document.getElementById('grid-container');
-        const gridWrapper = document.getElementById('gridWrapper');
-        
-        // Update both the wrapper and grid dimensions
-        gridWrapper.style.width = `${100 * zoomValue}%`;
-        gridWrapper.style.height = `${100 * zoomValue}%`;
-        
-        // Use scale transform with transform-origin: top left
-        gridWrapper.style.transform = `scale(${1 / zoomValue})`;
-        gridWrapper.style.transformOrigin = 'top left';
-        
-        // Force layout recalculation
-        void gridContainer.offsetHeight;
-        
-        // Ensure touch events align properly
-        const gridElement = document.getElementById('grid');
-        gridElement.style.width = '100%';
-        gridElement.style.height = '100%';
-        gridElement.style.position = 'absolute';
-        
-        // Update touch action handling
-        gridElement.style.touchAction = 'none';
-        gridContainer.style.touchAction = 'none';
-      }
-
+      // Remove transform-based zoom
+      const gridWrapper = document.getElementById('gridWrapper');
+      gridWrapper.style.transform = '';
+      
+      // Update grid UI without forcing viewport constraints
       buildGridUI();
     }
 
