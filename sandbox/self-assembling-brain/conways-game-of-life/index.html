@@ -766,10 +766,20 @@
 
       // Helper function to adjust touch coordinates based on zoom
       function adjustTouchCoordinates(touch) {
-        const rect = gridElem.getBoundingClientRect();
+        // Get both container and wrapper bounds for precise scaling
+        const containerRect = document.getElementById('grid-container').getBoundingClientRect();
+        const wrapperRect = document.getElementById('gridWrapper').getBoundingClientRect();
+        
+        // Calculate the effective scale from the wrapper's transformed size
+        const effectiveScale = wrapperRect.width / containerRect.width;
+        
+        // Transform coordinates from screen space to grid space
+        const x = (touch.clientX - containerRect.left) / effectiveScale;
+        const y = (touch.clientY - containerRect.top) / effectiveScale;
+        
         return {
-          clientX: (touch.clientX - rect.left) * currentZoom + rect.left,
-          clientY: (touch.clientY - rect.top) * currentZoom + rect.top
+          clientX: x + containerRect.left,
+          clientY: y + containerRect.top
         };
       }
 
@@ -1100,48 +1110,51 @@
       const gridContainer = document.getElementById('grid-container');
       gridContainer.style.pointerEvents = 'none';
 
-      // Store old grid state
-      const oldGrid = grid;
-      const oldRows = rows;
-      const oldCols = cols;
-
-      // Keep existing zoom logic - more cells as we zoom "out"
+      // Important: Update the grid dimensions before applying transform
       rows = Math.floor(baseRows * zoomValue);
       cols = Math.floor(baseCols * zoomValue);
-
+      
+      // Create new grid with correct dimensions
       const newGrid = createEmptyGrid(rows, cols);
+      
+      // Copy existing pattern, centered
+      const oldGrid = grid;
+      const oldRows = grid.length;
+      const oldCols = grid[0].length;
       const rowOffset = Math.floor((rows - oldRows) / 2);
       const colOffset = Math.floor((cols - oldCols) / 2);
 
-      // Copy existing pattern
-      for (let r = 0; r < oldRows; r++) {
-        for (let c = 0; c < oldCols; c++) {
-          const newR = r + rowOffset;
-          const newC = c + colOffset;
-          if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-            newGrid[newR][newC] = oldGrid[r][c];
-          }
-        }
-      }
-
-      grid = newGrid;
-
       // Mobile-specific fixes
       if ('ontouchstart' in window) {
-        const gridContainer = document.getElementById('grid-container');
         const gridWrapper = document.getElementById('gridWrapper');
         
-        // Use CSS transform with hardware acceleration
-        gridWrapper.style.transform = `scale3d(${1 / zoomValue}, ${1 / zoomValue}, 1)`;
+        // Apply transform with precise scaling
+        gridWrapper.style.transform = `matrix(${1/zoomValue}, 0, 0, ${1/zoomValue}, 0, 0)`;
+        gridWrapper.style.transformOrigin = '0 0';
+        
+        // Force browser to acknowledge new transform immediately
+        void gridWrapper.offsetHeight;
         
         // Batch DOM updates
         requestAnimationFrame(() => {
+          // Copy grid state before rebuilding UI
+          for (let r = 0; r < oldRows; r++) {
+            for (let c = 0; c < oldCols; c++) {
+              const newR = r + rowOffset;
+              const newC = c + colOffset;
+              if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+                newGrid[newR][newC] = oldGrid[r][c];
+              }
+            }
+          }
+          grid = newGrid;
+          
           buildGridUI();
           
           // Re-enable interactions after a short delay
           setTimeout(() => {
             gridContainer.style.pointerEvents = 'auto';
-          }, 100);
+          }, 50); // Reduced delay for better responsiveness
         });
         
         return; // Exit early for mobile
