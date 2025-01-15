@@ -108,12 +108,10 @@
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
-      transform-style: preserve-3d;
-      -webkit-transform-style: preserve-3d;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      perspective: 1000px;
-      -webkit-perspective: 1000px;
+      touch-action: none;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      overflow: hidden;
     }
 
     #zoomControls {
@@ -134,8 +132,6 @@
       height: 100%;
       transform-origin: top left;
       will-change: transform;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
     }
 
     #grid {
@@ -144,9 +140,8 @@
       left: 0;
       width: 100%;
       height: 100%;
+      touch-action: none;
       will-change: transform;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
     }
 
     .cell {
@@ -156,9 +151,7 @@
       box-sizing: border-box;
       cursor: crosshair;
       touch-action: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .alive {
       background-color: #88f9d7; /* Vibrant green from Tokyo Night theme */
@@ -758,24 +751,12 @@
       let lastCell = null;
       let lastTouch = null;
 
-      function getTouchPosition(touch) {
-        const rect = gridElem.getBoundingClientRect();
-        const scaleX = cols / rect.width;
-        const scaleY = rows / rect.height;
-        
-        return {
-          x: (touch.clientX - rect.left) * scaleX,
-          y: (touch.clientY - rect.top) * scaleY
-        };
-      }
-
+      // Prevent default touch behaviors to avoid scrolling while drawing
       gridElem.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isInteracting = true;
         const touch = e.touches[0];
         lastTouch = touch;
-        
-        const pos = getTouchPosition(touch);
         const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
         if (cellElem?.classList.contains('cell')) {
           const r = parseInt(cellElem.dataset.row);
@@ -790,6 +771,7 @@
         if (!isInteracting) return;
         
         const touch = e.touches[0];
+        // Only process if touch has moved enough (reduce jitter)
         if (lastTouch && 
             Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
             Math.abs(touch.clientY - lastTouch.clientY) < 2) {
@@ -797,7 +779,6 @@
         }
         
         lastTouch = touch;
-        const pos = getTouchPosition(touch);
         const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
         if (cellElem?.classList.contains('cell')) {
           const r = parseInt(cellElem.dataset.row);
@@ -805,7 +786,19 @@
           const cellKey = `${r},${c}`;
           if (lastCell !== cellKey) {
             lastCell = cellKey;
-            createClump(r, c);
+            // Add subtle random living cells only in immediate neighbors
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                const nr = r + dr;
+                const nc = c + dc;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                  if (Math.random() < 0.2) {
+                    grid[nr][nc] = 1;
+                  }
+                }
+              }
+            }
             renderGrid();
           }
         }
@@ -1075,12 +1068,10 @@
     function setZoom(zoomValue) {
       if (playing) return;
 
-      // Store old grid state
       const oldGrid = grid;
       const oldRows = rows;
       const oldCols = cols;
 
-      // Update grid dimensions
       rows = Math.floor(baseRows * zoomValue);
       cols = Math.floor(baseCols * zoomValue);
 
@@ -1101,42 +1092,34 @@
 
       grid = newGrid;
 
-      // Mobile-specific handling
-      const gridContainer = document.getElementById('grid-container');
-      const gridWrapper = document.getElementById('gridWrapper');
-      const gridElement = document.getElementById('grid');
-
-      // Reset any existing transforms
-      gridWrapper.style.transform = '';
-      gridElement.style.transform = '';
-
-      // Update grid structure
-      buildGridUI();
-
-      // Apply the zoom scaling to the wrapper
-      gridWrapper.style.width = `${100 * zoomValue}%`;
-      gridWrapper.style.height = `${100 * zoomValue}%`;
-      
-      // Center the expanded grid
-      const offsetX = (zoomValue - 1) * 50;
-      const offsetY = (zoomValue - 1) * 50;
-      gridWrapper.style.transform = `translate(-${offsetX}%, -${offsetY}%)`;
-
-      // Ensure touch events are properly handled
+      // Mobile-specific fixes
       if ('ontouchstart' in window) {
+        const gridContainer = document.getElementById('grid-container');
+        const gridWrapper = document.getElementById('gridWrapper');
+        
+        // Update both the wrapper and grid dimensions
+        gridWrapper.style.width = `${100 * zoomValue}%`;
+        gridWrapper.style.height = `${100 * zoomValue}%`;
+        
+        // Use scale transform with transform-origin: top left
+        gridWrapper.style.transform = `scale(${1 / zoomValue})`;
+        gridWrapper.style.transformOrigin = 'top left';
+        
         // Force layout recalculation
         void gridContainer.offsetHeight;
         
-        // Update viewport
-        const viewport = document.querySelector('meta[name="viewport"]');
-        viewport.setAttribute('content', 
-          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+        // Ensure touch events align properly
+        const gridElement = document.getElementById('grid');
+        gridElement.style.width = '100%';
+        gridElement.style.height = '100%';
+        gridElement.style.position = 'absolute';
         
-        // Add touch-specific CSS
-        gridContainer.style.touchAction = 'none';
-        gridWrapper.style.touchAction = 'none';
+        // Update touch action handling
         gridElement.style.touchAction = 'none';
+        gridContainer.style.touchAction = 'none';
       }
+
+      buildGridUI();
     }
 
     // Add cell pooling for large grids
