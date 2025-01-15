@@ -744,6 +744,9 @@
       // Cache DOM element
       const gridElem = document.getElementById("grid");
       
+      // Get current zoom level for touch coordinate adjustment
+      const currentZoom = parseFloat(document.getElementById("zoomSelect").value);
+      
       // Create document fragment for batch DOM updates
       const fragment = document.createDocumentFragment();
       
@@ -761,13 +764,23 @@
       let lastCell = null;
       let lastTouch = null;
 
+      // Helper function to adjust touch coordinates based on zoom
+      function adjustTouchCoordinates(touch) {
+        const rect = gridElem.getBoundingClientRect();
+        return {
+          clientX: (touch.clientX - rect.left) * currentZoom + rect.left,
+          clientY: (touch.clientY - rect.top) * currentZoom + rect.top
+        };
+      }
+
       // Prevent default touch behaviors to avoid scrolling while drawing
       gridElem.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isInteracting = true;
         const touch = e.touches[0];
-        lastTouch = touch;
-        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
+        const adjustedTouch = adjustTouchCoordinates(touch);
+        lastTouch = adjustedTouch;
+        const cellElem = document.elementFromPoint(adjustedTouch.clientX, adjustedTouch.clientY);
         if (cellElem?.classList.contains('cell')) {
           const r = parseInt(cellElem.dataset.row);
           const c = parseInt(cellElem.dataset.col);
@@ -781,15 +794,17 @@
         if (!isInteracting) return;
         
         const touch = e.touches[0];
+        const adjustedTouch = adjustTouchCoordinates(touch);
+        
         // Only process if touch has moved enough (reduce jitter)
         if (lastTouch && 
-            Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
-            Math.abs(touch.clientY - lastTouch.clientY) < 2) {
+            Math.abs(adjustedTouch.clientX - lastTouch.clientX) < 2 * currentZoom && 
+            Math.abs(adjustedTouch.clientY - lastTouch.clientY) < 2 * currentZoom) {
           return;
         }
         
-        lastTouch = touch;
-        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
+        lastTouch = adjustedTouch;
+        const cellElem = document.elementFromPoint(adjustedTouch.clientX, adjustedTouch.clientY);
         if (cellElem?.classList.contains('cell')) {
           const r = parseInt(cellElem.dataset.row);
           const c = parseInt(cellElem.dataset.col);
