@@ -1075,8 +1075,20 @@
         clearTimeout(this.zoomTimeout);
       }
       
+      // Adjust zoom value for mobile
+      let adjustedZoom = zoomValue;
+      if ('ontouchstart' in window) {
+        // Map UI zoom levels to actual mobile zoom values
+        const mobileZoomMap = {
+          1: 1,          // 1x stays the same
+          2: 1.5,        // 2x is halfway between 1x and current max
+          3: 2,          // 3x is what used to be our 2x level
+        };
+        adjustedZoom = mobileZoomMap[zoomValue] || zoomValue;
+      }
+      
       this.zoomTimeout = setTimeout(() => {
-        performZoom(zoomValue);
+        performZoom(adjustedZoom);
       }, 150);
     }
 
@@ -1086,9 +1098,17 @@
       const oldRows = rows;
       const oldCols = cols;
 
-      // Keep existing zoom logic - more cells as we zoom "out"
-      rows = Math.floor(baseRows * zoomValue);
-      cols = Math.floor(baseCols * zoomValue);
+      // Adjust base dimensions for mobile
+      let adjustedBaseRows = baseRows;
+      let adjustedBaseCols = baseCols;
+      if ('ontouchstart' in window) {
+        // Scale down base dimensions for mobile
+        adjustedBaseRows = Math.floor(baseRows * 0.8);
+        adjustedBaseCols = Math.floor(baseCols * 0.8);
+      }
+      
+      rows = Math.floor(adjustedBaseRows * zoomValue);
+      cols = Math.floor(adjustedBaseCols * zoomValue);
 
       // Temporarily hide grid during transformation
       const gridContainer = document.getElementById('grid-container');
