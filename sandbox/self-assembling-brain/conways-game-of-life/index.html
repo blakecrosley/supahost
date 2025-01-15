@@ -293,6 +293,11 @@
         -webkit-transform-style: flat;
       }
     }
+
+    .form-select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -1002,6 +1007,9 @@
       }
       
       playing = true;
+      // Disable zoom control while playing
+      document.getElementById("zoomSelect").disabled = true;
+      
       timer = setInterval(() => {
         grid = computeNextGeneration(grid);
         renderGrid();
@@ -1016,7 +1024,7 @@
       }
       document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
 
-      // Re-enable zoom dropdown
+      // Re-enable zoom control when stopped
       document.getElementById("zoomSelect").disabled = false;
     }
 
@@ -1104,6 +1112,19 @@
 
       buildGridUI();
     }
+
+    // Add cell pooling for large grids
+    const cellPool = {
+      cells: [],
+      get() {
+        return this.cells.pop() || document.createElement('div');
+      },
+      release(cell) {
+        if (this.cells.length < 1000) { // Pool size limit
+          this.cells.push(cell);
+        }
+      }
+    };
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
