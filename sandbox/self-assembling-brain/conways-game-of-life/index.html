@@ -122,12 +122,11 @@
     /* The container that we transform for zooming */
     #gridWrapper {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 50%;
+      left: 50%;
+      transform-origin: 50% 50%;
       width: 100%;
       height: 100%;
-      transform-origin: top left;
-      pointer-events: none; /* This allows pointer events to pass through to #grid */
     }
 
     #grid {
@@ -766,20 +765,24 @@
 
       // Helper function to adjust touch coordinates based on zoom
       function adjustTouchCoordinates(touch) {
-        // Get both container and wrapper bounds for precise scaling
-        const containerRect = document.getElementById('grid-container').getBoundingClientRect();
-        const wrapperRect = document.getElementById('gridWrapper').getBoundingClientRect();
+        const container = document.getElementById('grid-container');
+        const wrapper = document.getElementById('gridWrapper');
+        const containerRect = container.getBoundingClientRect();
         
-        // Calculate the effective scale from the wrapper's transformed size
-        const effectiveScale = wrapperRect.width / containerRect.width;
+        // Get current transform matrix values
+        const transform = window.getComputedStyle(wrapper).transform;
+        const matrix = new DOMMatrix(transform);
         
-        // Transform coordinates from screen space to grid space
-        const x = (touch.clientX - containerRect.left) / effectiveScale;
-        const y = (touch.clientY - containerRect.top) / effectiveScale;
+        // Calculate relative position within container
+        const relativeX = touch.clientX - containerRect.left;
+        const relativeY = touch.clientY - containerRect.top;
+        
+        // Inverse transform the coordinates
+        const point = new DOMPoint(relativeX, relativeY).matrixTransform(matrix.inverse());
         
         return {
-          clientX: x + containerRect.left,
-          clientY: y + containerRect.top
+          clientX: point.x + containerRect.left,
+          clientY: point.y + containerRect.top
         };
       }
 
@@ -1108,7 +1111,13 @@
 
       // Disable interactions during zoom transition
       const gridContainer = document.getElementById('grid-container');
+      const gridWrapper = document.getElementById('gridWrapper');
       gridContainer.style.pointerEvents = 'none';
+
+      // Calculate container dimensions
+      const containerRect = gridContainer.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const containerHeight = containerRect.height;
 
       // Important: Update the grid dimensions before applying transform
       rows = Math.floor(baseRows * zoomValue);
@@ -1126,15 +1135,19 @@
 
       // Mobile-specific fixes
       if ('ontouchstart' in window) {
-        const gridWrapper = document.getElementById('gridWrapper');
+        // Calculate the scaled dimensions
+        const scale = 1 / zoomValue;
+        const scaledWidth = containerWidth * scale;
+        const scaledHeight = containerHeight * scale;
         
-        // Apply transform with precise scaling
-        gridWrapper.style.transform = `matrix(${1/zoomValue}, 0, 0, ${1/zoomValue}, 0, 0)`;
-        gridWrapper.style.transformOrigin = '0 0';
+        // Calculate translation to keep center point
+        const translateX = (containerWidth - scaledWidth) / 2;
+        const translateY = (containerHeight - scaledHeight) / 2;
         
-        // Force browser to acknowledge new transform immediately
-        void gridWrapper.offsetHeight;
-        
+        // Apply transform matrix with translation to maintain center
+        gridWrapper.style.transform = 
+          `matrix(${scale}, 0, 0, ${scale}, ${translateX}, ${translateY})`;
+
         // Batch DOM updates
         requestAnimationFrame(() => {
           // Copy grid state before rebuilding UI
@@ -1154,10 +1167,10 @@
           // Re-enable interactions after a short delay
           setTimeout(() => {
             gridContainer.style.pointerEvents = 'auto';
-          }, 50); // Reduced delay for better responsiveness
+          }, 50);
         });
         
-        return; // Exit early for mobile
+        return;
       }
 
       buildGridUI();
