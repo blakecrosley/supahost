@@ -122,11 +122,12 @@
     /* The container that we transform for zooming */
     #gridWrapper {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform-origin: 50% 50%;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
+      transform-origin: top left;
+      pointer-events: none; /* This allows pointer events to pass through to #grid */
     }
 
     #grid {
@@ -740,60 +741,22 @@
     }
 
     function buildGridUI() {
-      // Cache DOM element
       const gridElem = document.getElementById("grid");
-      
-      // Get current zoom level for touch coordinate adjustment
-      const currentZoom = parseFloat(document.getElementById("zoomSelect").value);
-      
-      // Create document fragment for batch DOM updates
-      const fragment = document.createDocumentFragment();
-      
-      // Prepare grid template
+      gridElem.innerHTML = "";
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      // Clear existing content efficiently
-      while (gridElem.firstChild) {
-        cellPool.release(gridElem.firstChild);
-        gridElem.removeChild(gridElem.firstChild);
-      }
-
-      let isInteracting = false;
+      let isInteracting = false; // Works for both mouse and touch
       let lastCell = null;
       let lastTouch = null;
-
-      // Helper function to adjust touch coordinates based on zoom
-      function adjustTouchCoordinates(touch) {
-        const container = document.getElementById('grid-container');
-        const wrapper = document.getElementById('gridWrapper');
-        const containerRect = container.getBoundingClientRect();
-        
-        // Get current transform matrix values
-        const transform = window.getComputedStyle(wrapper).transform;
-        const matrix = new DOMMatrix(transform);
-        
-        // Calculate relative position within container
-        const relativeX = touch.clientX - containerRect.left;
-        const relativeY = touch.clientY - containerRect.top;
-        
-        // Inverse transform the coordinates
-        const point = new DOMPoint(relativeX, relativeY).matrixTransform(matrix.inverse());
-        
-        return {
-          clientX: point.x + containerRect.left,
-          clientY: point.y + containerRect.top
-        };
-      }
 
       // Prevent default touch behaviors to avoid scrolling while drawing
       gridElem.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isInteracting = true;
         const touch = e.touches[0];
-        const adjustedTouch = adjustTouchCoordinates(touch);
-        lastTouch = adjustedTouch;
-        const cellElem = document.elementFromPoint(adjustedTouch.clientX, adjustedTouch.clientY);
+        lastTouch = touch;
+        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
         if (cellElem?.classList.contains('cell')) {
           const r = parseInt(cellElem.dataset.row);
           const c = parseInt(cellElem.dataset.col);
@@ -807,17 +770,15 @@
         if (!isInteracting) return;
         
         const touch = e.touches[0];
-        const adjustedTouch = adjustTouchCoordinates(touch);
-        
         // Only process if touch has moved enough (reduce jitter)
         if (lastTouch && 
-            Math.abs(adjustedTouch.clientX - lastTouch.clientX) < 2 * currentZoom && 
-            Math.abs(adjustedTouch.clientY - lastTouch.clientY) < 2 * currentZoom) {
+            Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
+            Math.abs(touch.clientY - lastTouch.clientY) < 2) {
           return;
         }
         
-        lastTouch = adjustedTouch;
-        const cellElem = document.elementFromPoint(adjustedTouch.clientX, adjustedTouch.clientY);
+        lastTouch = touch;
+        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
         if (cellElem?.classList.contains('cell')) {
           const r = parseInt(cellElem.dataset.row);
           const c = parseInt(cellElem.dataset.col);
@@ -855,7 +816,7 @@
         lastTouch = null;
       });
 
-      // Mouse event handlers
+      // Keep existing mouse event handlers
       gridElem.addEventListener('mousedown', (e) => { 
         e.preventDefault();
         isInteracting = true; 
@@ -874,8 +835,8 @@
       // Create grid cells
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const cellDiv = cellPool.get();
-          cellDiv.className = "cell";
+          const cellDiv = document.createElement("div");
+          cellDiv.classList.add("cell");
           cellDiv.dataset.row = String(r);
           cellDiv.dataset.col = String(c);
 
@@ -906,12 +867,9 @@
             }
           });
 
-          fragment.appendChild(cellDiv);
+          gridElem.appendChild(cellDiv);
         }
       }
-
-      // Batch append all cells
-      gridElem.appendChild(fragment);
       renderGrid();
     }
 
@@ -1109,72 +1067,50 @@
     function setZoom(zoomValue) {
       if (playing) return;
 
-      // Disable interactions during zoom transition
-      const gridContainer = document.getElementById('grid-container');
-      const gridWrapper = document.getElementById('gridWrapper');
-      gridContainer.style.pointerEvents = 'none';
+      // Store old grid state
+      const oldGrid = grid;
+      const oldRows = rows;
+      const oldCols = cols;
 
-      // Calculate container dimensions
-      const containerRect = gridContainer.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-      const containerHeight = containerRect.height;
-
-      // Important: Update the grid dimensions before applying transform
+      // Keep existing zoom logic - more cells as we zoom "out"
       rows = Math.floor(baseRows * zoomValue);
       cols = Math.floor(baseCols * zoomValue);
-      
-      // Create new grid with correct dimensions
+
       const newGrid = createEmptyGrid(rows, cols);
-      
-      // Copy existing pattern, centered
-      const oldGrid = grid;
-      const oldRows = grid.length;
-      const oldCols = grid[0].length;
       const rowOffset = Math.floor((rows - oldRows) / 2);
       const colOffset = Math.floor((cols - oldCols) / 2);
 
+      // Copy existing pattern
+      for (let r = 0; r < oldRows; r++) {
+        for (let c = 0; c < oldCols; c++) {
+          const newR = r + rowOffset;
+          const newC = c + colOffset;
+          if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+            newGrid[newR][newC] = oldGrid[r][c];
+          }
+        }
+      }
+
+      grid = newGrid;
+
       // Mobile-specific fixes
       if ('ontouchstart' in window) {
-        // Calculate the scaled dimensions
-        const scale = 1 / zoomValue;
-        const scaledWidth = containerWidth * scale;
-        const scaledHeight = containerHeight * scale;
+        const gridContainer = document.getElementById('grid-container');
+        const gridWrapper = document.getElementById('gridWrapper');
         
-        // Calculate translation to keep center point
-        const translateX = (containerWidth - scaledWidth) / 2;
-        const translateY = (containerHeight - scaledHeight) / 2;
+        // Critical: Set initial scale to handle touch coordinates correctly
+        gridWrapper.style.transform = `scale(${1 / zoomValue})`;
         
-        // Apply transform matrix with translation to maintain center
-        gridWrapper.style.transform = 
-          `matrix(${scale}, 0, 0, ${scale}, ${translateX}, ${translateY})`;
-
-        // Batch DOM updates
-        requestAnimationFrame(() => {
-          // Copy grid state before rebuilding UI
-          for (let r = 0; r < oldRows; r++) {
-            for (let c = 0; c < oldCols; c++) {
-              const newR = r + rowOffset;
-              const newC = c + colOffset;
-              if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-                newGrid[newR][newC] = oldGrid[r][c];
-              }
-            }
-          }
-          grid = newGrid;
-          
-          buildGridUI();
-          
-          // Re-enable interactions after a short delay
-          setTimeout(() => {
-            gridContainer.style.pointerEvents = 'auto';
-          }, 50);
-        });
+        // Force layout recalculation
+        void gridContainer.offsetHeight;
         
-        return;
+        // Update viewport for precise touch handling
+        const viewport = document.querySelector('meta[name="viewport"]');
+        viewport.setAttribute('content', 
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
       }
 
       buildGridUI();
-      gridContainer.style.pointerEvents = 'auto';
     }
 
     // Add cell pooling for large grids
