@@ -249,32 +249,35 @@
     @media (hover: none) and (pointer: coarse) {
       #grid-container {
         -webkit-overflow-scrolling: touch;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
+        transform: translate3d(0,0,0);
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
+        perspective: 1000;
+        -webkit-perspective: 1000;
       }
 
       #gridWrapper {
         transform-origin: center center;
         -webkit-transform-origin: center center;
         will-change: transform;
+        transition: transform 0.2s ease-out;
       }
 
       #grid {
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
+        transform: translate3d(0,0,0);
+        -webkit-transform: translate3d(0,0,0);
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
+        will-change: transform, grid-template-columns, grid-template-rows;
       }
 
       .cell {
-        /* Remove min-width/height constraints - let the grid system handle it */
         min-width: initial;
         min-height: initial;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
+        transform: translate3d(0,0,0);
+        -webkit-transform: translate3d(0,0,0);
         touch-action: none;
+        will-change: background-color;
       }
     }
 
@@ -1067,6 +1070,17 @@
     function setZoom(zoomValue) {
       if (playing) return;
 
+      // Debounce zoom changes
+      if (this.zoomTimeout) {
+        clearTimeout(this.zoomTimeout);
+      }
+      
+      this.zoomTimeout = setTimeout(() => {
+        performZoom(zoomValue);
+      }, 150);
+    }
+
+    function performZoom(zoomValue) {
       // Store old grid state
       const oldGrid = grid;
       const oldRows = rows;
@@ -1075,6 +1089,10 @@
       // Keep existing zoom logic - more cells as we zoom "out"
       rows = Math.floor(baseRows * zoomValue);
       cols = Math.floor(baseCols * zoomValue);
+
+      // Temporarily hide grid during transformation
+      const gridContainer = document.getElementById('grid-container');
+      gridContainer.style.visibility = 'hidden';
 
       const newGrid = createEmptyGrid(rows, cols);
       const rowOffset = Math.floor((rows - oldRows) / 2);
@@ -1095,14 +1113,15 @@
 
       // Mobile-specific fixes
       if ('ontouchstart' in window) {
-        const gridContainer = document.getElementById('grid-container');
         const gridWrapper = document.getElementById('gridWrapper');
         
-        // Critical: Set initial scale to handle touch coordinates correctly
-        gridWrapper.style.transform = `scale(${1 / zoomValue})`;
+        // Use CSS transform with hardware acceleration
+        gridWrapper.style.transform = `scale3d(${1 / zoomValue}, ${1 / zoomValue}, 1)`;
         
-        // Force layout recalculation
-        void gridContainer.offsetHeight;
+        // Use RequestAnimationFrame for smoother transitions
+        requestAnimationFrame(() => {
+          gridContainer.style.visibility = 'visible';
+        });
         
         // Update viewport for precise touch handling
         const viewport = document.querySelector('meta[name="viewport"]');
@@ -1110,7 +1129,34 @@
           'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
       }
 
-      buildGridUI();
+      // Use efficient DOM manipulation
+      const gridElem = document.getElementById('grid');
+      gridElem.innerHTML = '';
+      
+      // Create document fragment for batch DOM updates
+      const fragment = document.createDocumentFragment();
+      const cellTemplate = document.createElement('div');
+      cellTemplate.className = 'cell';
+      
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = cellTemplate.cloneNode(false);
+          cell.dataset.row = String(r);
+          cell.dataset.col = String(c);
+          fragment.appendChild(cell);
+        }
+      }
+      
+      gridElem.appendChild(fragment);
+      
+      // Update grid styles in batch
+      gridElem.style.cssText = `
+        grid-template-columns: repeat(${cols}, 1fr);
+        grid-template-rows: repeat(${rows}, 1fr);
+      `;
+
+      // Render the grid after DOM updates
+      renderGrid();
     }
 
     // Add cell pooling for large grids
