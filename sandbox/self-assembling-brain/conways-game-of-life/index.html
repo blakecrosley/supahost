@@ -49,6 +49,7 @@
       display: flex;
       flex-direction: column;
       padding-top: 72px;
+      padding-bottom: 0px;
     }
 
     /* Navbar inherits panel color */
@@ -205,6 +206,7 @@
       position: relative;
       bottom: 0;
       width: 100%;
+      padding: 1rem 0;
     }
     
     .text-muted {
@@ -216,7 +218,7 @@
       color: var(--tn-foreground);
       opacity: 0.7;
       text-decoration: none;
-      margin: 0 0.5rem;
+      margin: 0.5rem;
       transition: opacity 0.2s ease;
     }
 
@@ -339,6 +341,73 @@
       opacity: 1;
       transition: opacity 0.2s ease-in;
     }
+
+    /* Add to your existing styles */
+    .navbar-toggler {
+      border-color: var(--tn-border);
+      padding: 0.25rem 0.5rem;
+    }
+
+    .navbar-toggler:focus {
+      box-shadow: none;
+      border-color: var(--tn-foreground);
+    }
+
+    .navbar-toggler .bi-list {
+      font-size: 1.5rem;
+    }
+
+    /* Mobile-specific navbar styles */
+    @media (max-width: 991.98px) {
+      .navbar .navbar-collapse {
+        padding: 1rem 0;
+      }
+      
+      .navbar .navbar-nav {
+        gap: 0.5rem;
+      }
+      
+      .navbar .btn {
+        width: 100%;
+        margin: 0 !important;
+      }
+    }
+
+    /* Mobile footer styles */
+    @media (max-width: 768px) {
+      .footer {
+        margin: 0;
+        padding: 1rem 0;
+      }
+
+      .footer .container {
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .footer-social {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin: 0.5rem 0;
+      }
+    }
+
+    .footer-container {
+      padding: 0;
+      margin: 0;
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -353,28 +422,37 @@
   <!-- Bootstrap 5 Navbar -->
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
-      <span class="navbar-brand mb-0 h1"></span>
-      <a href="https://x.com/BlakeC" class="navbar-text me-3 text-decoration-none" target="_blank">
+      <a href="https://x.com/BlakeC" class="navbar-brand text-decoration-none" target="_blank">
         <img src="../../../assets/profile.jpg" 
              alt="@blakec" 
              class="rounded-circle me-2" 
              style="width: 32px; height: 32px;">
         @blakec
       </a>
-      </span>
-      <div class="ms-auto">
-        <a href="https://blakecrosley.com" class="btn btn-outline-secondary me-2" target="_blank">
-          blakecrosley.com
-        </a>
-        <a href="https://941apps.com" class="btn btn-outline-secondary" target="_blank">
-          941apps.com
-        </a>
+      
+      <!-- Hamburger button for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarContent" aria-controls="navbarContent" 
+              aria-expanded="false" aria-label="Toggle navigation">
+        <i class="bi bi-list text-light"></i>
+      </button>
+      
+      <!-- Collapsible content -->
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <div class="navbar-nav ms-auto">
+          <a href="https://blakecrosley.com" class="btn btn-outline-secondary me-2" target="_blank">
+            blakecrosley.com
+          </a>
+          <a href="https://941apps.com" class="btn btn-outline-secondary" target="_blank">
+            941apps.com
+          </a>
+        </div>
       </div>
     </div>
   </nav>
 
   <!-- Main container: Use a Bootstrap container and row -->
-  <div class="container my-4">
+  <div class="container-fluid">
     <div class="row">
       <!-- 8 columns wide on large screens, 12 on smaller, with offset for center -->
       <div class="col-12 col-lg-8 offset-lg-2">
@@ -612,7 +690,34 @@
     <!-- END game functionality section -->
   
   </div>
-</div>
+  </div>
+  <!-- Footer -->
+  <div class="container-fluid footer-container">
+    <div class="row">
+      <footer class="footer mt-auto">
+        <div class="container d-flex justify-content-between align-items-center">
+          <span class="text-muted">© 2025 All rights reserved.</span>
+          <div class="footer-links">
+            <div class="footer-social">
+              <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
+                <i class="bi bi-twitter-x"></i>
+              </a>
+              <a href="https://github.com/blakecrosley" target="_blank" title="GitHub">
+                <i class="bi bi-github"></i>
+              </a>
+            </div>
+            <a href="https://blakecrosley.com" target="_blank" title="Personal Website">
+              blakecrosley.com
+            </a>
+            <a href="https://941apps.com" target="_blank" title="941 Apps">
+              941apps.com
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
 
   <!-- Bootstrap 5.3.3 JS (includes Popper) -->
   <script
@@ -1232,27 +1337,6 @@
   <p style="display:none;">
     Referenced from [Tokyo Night VSCode Theme](https://github.com/tokyo-night/tokyo-night-vscode-theme)
   </p>
-
-  <!-- Footer -->
-  <footer class="footer mt-auto py-3">
-    <div class="container d-flex justify-content-between align-items-center">
-      <span class="text-muted">© 2025 All rights reserved.</span>
-      <div class="footer-links">
-        <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
-          <i class="bi bi-twitter-x"></i>
-        </a>
-        <a href="https://github.com/blakecrosley" target="_blank" title="GitHub">
-          <i class="bi bi-github"></i>
-        </a>
-        <a href="https://blakecrosley.com" target="_blank" title="Personal Website">
-          blakecrosley.com
-        </a>
-        <a href="https://941apps.com" target="_blank" title="941 Apps">
-          941apps.com
-        </a>
-      </div>
-    </div>
-  </footer>
 
   <!-- Instructions Modal -->
   <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
