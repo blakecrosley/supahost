@@ -48,7 +48,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-top: 72px;
+      padding-top: 120px;
       padding-bottom: 0px;
     }
 
@@ -390,23 +390,64 @@
       }
 
       .footer-links {
-        display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
       }
       
       .footer-social {
-        display: flex;
         justify-content: center;
-        gap: 1.5rem;
         margin: 0.5rem 0;
+      }
+      
+      .footer-links a {
+        margin: 0.5rem;
       }
     }
 
     .footer-container {
       padding: 0;
       margin: 0;
+    }
+
+    /* Footer base styles */
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    /* Mobile footer styles */
+    @media (max-width: 768px) {
+      .footer {
+        margin: 0;
+        padding: 1rem 0;
+      }
+
+      .footer .container {
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      
+      .footer-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .footer-social {
+        justify-content: center;
+        margin: 0.5rem 0;
+      }
     }
   </style>
 
@@ -480,7 +521,7 @@
               </p>
               <p class="mb-large">
                 <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
-                  How to play the game
+                  How it works
                 </a>
               </p>
   </div>
@@ -696,9 +737,9 @@
     <div class="row">
       <footer class="footer mt-auto">
         <div class="container d-flex justify-content-between align-items-center">
-          <span class="text-muted">© 2025 All rights reserved.</span>
+          <span class="text-muted">© 2025</span>
           <div class="footer-links">
-            <div class="footer-social">
+            <div class="">
               <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
                 <i class="bi bi-twitter-x"></i>
               </a>
@@ -1343,7 +1384,7 @@
     <div class="modal-dialog modal-lg modal-dialog-game">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="instructionsModalLabel">How to Play</h5>
+          <h5 class="modal-title" id="instructionsModalLabel">How it works</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
