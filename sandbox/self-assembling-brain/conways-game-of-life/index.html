@@ -295,6 +295,50 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
+
+    #loadingState {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--tn-panel);
+      border-radius: .5rem;
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 0.25rem solid var(--tn-border);
+      border-top-color: var(--tn-foreground);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #grid-container {
+      position: relative; /* Ensure this is set */
+    }
+
+    /* Fade transition classes */
+    .fade-out {
+      opacity: 0;
+      transition: opacity 0.2s ease-out;
+    }
+
+    .fade-in {
+      opacity: 1;
+      transition: opacity 0.2s ease-in;
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -393,53 +437,57 @@
 
     <!-- Grid Container -->
     <div id="grid-container">
-          <div id="gridWrapper">
-      <div id="grid"></div>
+      <div id="loadingState">
+        <div class="spinner"></div>
+        <div>Loading game board...</div>
+      </div>
+      <div id="gridWrapper">
+        <div id="grid"></div>
+      </div>
     </div>
-        </div>
 
-        <!-- Zoom controls -->
-        <div class="d-flex justify-content-end align-items-center" id="zoomControls">
-          <label for="zoomSelect" class="form-label me-2 mb-0">Zoom</label>
-          <select id="zoomSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
-            <option value="1" selected>1×</option>
-            <option value="2">2×</option>
-            <option value="3">3×</option>
-          </select>
-        </div>
+    <!-- Zoom controls -->
+    <div class="d-flex justify-content-end align-items-center" id="zoomControls">
+      <label for="zoomSelect" class="form-label me-2 mb-0">Zoom</label>
+      <select id="zoomSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+        <option value="3">3×</option>
+      </select>
+    </div>
 
-        <!-- Pattern section -->
-        <h3>Pattern Examples</h3>
-        <div id="instructions">
-          <p>
-            These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement 
-            across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows 
-            how simple shapes can evolve into complex forms.
-          </p>
-        </div>
-        <div id="exampleControls" class="d-flex gap-2 flex-wrap mb-large">
-          <!-- Example pattern checkboxes (to be toggled in script) -->
-          <div class="btn-group" role="group">
-            <input type="checkbox" class="btn-check" id="gliderBtn" autocomplete="off" value="glider">
-            <label class="btn btn-outline-secondary" for="gliderBtn">Glider</label>
-          </div>
-          <div class="btn-group" role="group">
-            <input type="checkbox" class="btn-check" id="pulsarBtn" autocomplete="off" value="pulsar">
-            <label class="btn btn-outline-secondary" for="pulsarBtn">Pulsar</label>
-          </div>
-          <div class="btn-group" role="group">
-            <input type="checkbox" class="btn-check" id="smallExploderBtn" autocomplete="off" value="smallExploder">
-            <label class="btn btn-outline-secondary" for="smallExploderBtn">Small Exploder</label>
-          </div>
-        </div>
+    <!-- Pattern section -->
+    <h3>Pattern Examples</h3>
+    <div id="instructions">
+      <p>
+        These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement 
+        across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows 
+        how simple shapes can evolve into complex forms.
+      </p>
+    </div>
+    <div id="exampleControls" class="d-flex gap-2 flex-wrap mb-large">
+      <!-- Example pattern checkboxes (to be toggled in script) -->
+      <div class="btn-group" role="group">
+        <input type="checkbox" class="btn-check" id="gliderBtn" autocomplete="off" value="glider">
+        <label class="btn btn-outline-secondary" for="gliderBtn">Glider</label>
+      </div>
+      <div class="btn-group" role="group">
+        <input type="checkbox" class="btn-check" id="pulsarBtn" autocomplete="off" value="pulsar">
+        <label class="btn btn-outline-secondary" for="pulsarBtn">Pulsar</label>
+      </div>
+      <div class="btn-group" role="group">
+        <input type="checkbox" class="btn-check" id="smallExploderBtn" autocomplete="off" value="smallExploder">
+        <label class="btn btn-outline-secondary" for="smallExploderBtn">Small Exploder</label>
+      </div>
+    </div>
 
-        <!-- Code Showcase -->
-        <h3>The Algorithm</h3>
-        <p>At its heart, the Game of Life runs on just a few elegant functions that determine life and death in our cellular universe:</p>
-        
-        <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
-          <!-- Core Algorithm -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
+    <!-- Code Showcase -->
+    <h3>The Algorithm</h3>
+    <p>At its heart, the Game of Life runs on just a few elegant functions that determine life and death in our cellular universe:</p>
+    
+    <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
+      <!-- Core Algorithm -->
+      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// The core algorithm that determines life and death</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextGeneration</span>(<span style="color: #e0af68;">currentGrid</span>) {
   <span style="color: #c0caf5;">const newGrid = createEmptyGrid(rows, cols);</span>
@@ -462,14 +510,14 @@
   <span style="color: #bb9af7;">return</span> newGrid;
 }</code></pre>
 
-          <p style="color: #c0caf5; margin: 1em 0;">
-            The core algorithm applies Conway's rules to each cell in the grid. For each generation, it checks every cell's 
-            state and its neighbor count to determine if it lives, dies, or springs to life. This creates the mesmerizing 
-            patterns we see evolving on the board.
-          </p>
+      <p style="color: #c0caf5; margin: 1em 0;">
+        The core algorithm applies Conway's rules to each cell in the grid. For each generation, it checks every cell's 
+        state and its neighbor count to determine if it lives, dies, or springs to life. This creates the mesmerizing 
+        patterns we see evolving on the board.
+      </p>
 
-          <!-- Neighbor Counting -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 0; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+      <!-- Neighbor Counting -->
+      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 0; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Count live neighbors for each cell</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">countNeighbors</span>(<span style="color: #e0af68;">g</span>, <span style="color: #e0af68;">row</span>, <span style="color: #e0af68;">col</span>) {
   <span style="color: #c0caf5;">let count = 0;</span>
@@ -486,14 +534,14 @@
   <span style="color: #bb9af7;">return</span> count;
 }</code></pre>
 
-          <p style="color: #c0caf5; margin: 1em 0;">
-            The neighbor counting function scans the eight cells surrounding each position. It carefully handles edge cases 
-            and provides the vital information needed to apply Conway's rules. This efficient implementation uses simple 
-            addition since living cells are represented as 1's and dead cells as 0's.
-          </p>
+      <p style="color: #c0caf5; margin: 1em 0;">
+        The neighbor counting function scans the eight cells surrounding each position. It carefully handles edge cases 
+        and provides the vital information needed to apply Conway's rules. This efficient implementation uses simple 
+        addition since living cells are represented as 1's and dead cells as 0's.
+      </p>
 
-          <!-- Pattern Loading -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+      <!-- Pattern Loading -->
+      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Load and center a predefined pattern on the grid</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">loadPattern</span>(<span style="color: #e0af68;">patternName</span>) {
   <span style="color: #bb9af7;">if</span> (!patterns[patternName]) <span style="color: #bb9af7;">return</span>;
@@ -516,14 +564,14 @@
   });
 }</code></pre>
 
-          <p style="color: #c0caf5; margin: 1em 0;">
-            Pattern loading is what allows us to place predefined structures onto the grid. It automatically centers the pattern 
-            and ensures it fits within the boundaries. This function transforms the simple coordinate lists below into living 
-            cells on our grid.
-          </p>
+      <p style="color: #c0caf5; margin: 1em 0;">
+        Pattern loading is what allows us to place predefined structures onto the grid. It automatically centers the pattern 
+        and ensures it fits within the boundaries. This function transforms the simple coordinate lists below into living 
+        cells on our grid.
+      </p>
 
-          <!-- Pattern Definitions -->
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+      <!-- Pattern Definitions -->
+      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Classic patterns that demonstrate emergent behavior</span>
 <span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">patterns</span> = {
   <span style="color: #565f89;">// Glider - Moves diagonally across the grid indefinitely</span>
@@ -554,18 +602,17 @@
   ]
 };</code></pre>
 
-          <p style="color: #c0caf5; margin: 1em 0;">
-            These pattern definitions encode classic Game of Life structures using coordinate pairs. Each pattern demonstrates 
-            different emergent behaviors: the Glider moves endlessly across the grid, the Pulsar oscillates in place, and 
-            the Small Exploder creates expanding chaos from a tiny seed.
-          </p>
-        </div>
-
-        <!-- END game functionality section -->
-      
-      </div>
+      <p style="color: #c0caf5; margin: 1em 0;">
+        These pattern definitions encode classic Game of Life structures using coordinate pairs. Each pattern demonstrates 
+        different emergent behaviors: the Glider moves endlessly across the grid, the Pulsar oscillates in place, and 
+        the Small Exploder creates expanding chaos from a tiny seed.
+      </p>
     </div>
+
+    <!-- END game functionality section -->
+  
   </div>
+</div>
 
   <!-- Bootstrap 5.3.3 JS (includes Popper) -->
   <script
@@ -737,17 +784,137 @@
       return arr;
     }
 
+    function showLoading() {
+      const loadingState = document.getElementById('loadingState');
+      const gridWrapper = document.getElementById('gridWrapper');
+      
+      // Fade out grid
+      gridWrapper.classList.add('fade-out');
+      
+      // Show loading state with fade in
+      loadingState.style.display = 'flex';
+      // Force reflow
+      void loadingState.offsetWidth;
+      loadingState.classList.add('fade-in');
+    }
+
+    function hideLoading() {
+      const loadingState = document.getElementById('loadingState');
+      const gridWrapper = document.getElementById('gridWrapper');
+      
+      // Fade in grid
+      gridWrapper.classList.remove('fade-out');
+      
+      // Hide loading state
+      loadingState.classList.remove('fade-in');
+      setTimeout(() => {
+        loadingState.style.display = 'none';
+      }, 200); // Match transition duration
+    }
+
+    async function setZoom(zoomValue) {
+      if (playing) return;
+
+      showLoading();
+
+      try {
+        // Store old grid state
+        const oldGrid = grid;
+        const oldRows = rows;
+        const oldCols = cols;
+
+        // Update dimensions
+        rows = Math.floor(baseRows * zoomValue);
+        cols = Math.floor(baseCols * zoomValue);
+
+        const newGrid = createEmptyGrid(rows, cols);
+        const rowOffset = Math.floor((rows - oldRows) / 2);
+        const colOffset = Math.floor((cols - oldCols) / 2);
+
+        // Copy existing pattern
+        for (let r = 0; r < oldRows; r++) {
+          for (let c = 0; c < oldCols; c++) {
+            const newR = r + rowOffset;
+            const newC = c + colOffset;
+            if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+              newGrid[newR][newC] = oldGrid[r][c];
+            }
+          }
+        }
+
+        grid = newGrid;
+
+        // Remove transform-based zoom
+        const gridWrapper = document.getElementById('gridWrapper');
+        gridWrapper.style.transform = '';
+        
+        // Build the grid UI
+        await buildGridUI();
+
+        // Hide loading after everything is done
+        hideLoading();
+      } catch (error) {
+        console.error('Error during zoom:', error);
+        hideLoading();
+      }
+    }
+
     function buildGridUI() {
       const gridElem = document.getElementById("grid");
+      
+      // Clear and set up grid
       gridElem.innerHTML = "";
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      let isInteracting = false; // Works for both mouse and touch
+      // Create cells in batches
+      const fragment = document.createDocumentFragment();
+      const batchSize = 100;
+      let cellsCreated = 0;
+
+      return new Promise(resolve => {
+        function createNextBatch() {
+          const startCell = cellsCreated;
+          const endCell = Math.min(cellsCreated + batchSize, rows * cols);
+          
+          for (let i = startCell; i < endCell; i++) {
+            const r = Math.floor(i / cols);
+            const c = i % cols;
+            
+            const cellDiv = document.createElement("div");
+            cellDiv.className = "cell";
+            cellDiv.dataset.row = String(r);
+            cellDiv.dataset.col = String(c);
+            
+            fragment.appendChild(cellDiv);
+          }
+          
+          cellsCreated = endCell;
+          
+          if (cellsCreated < rows * cols) {
+            requestAnimationFrame(createNextBatch);
+          } else {
+            gridElem.appendChild(fragment);
+            
+            // Add touch handlers to grid container after cells are created
+            setupTouchHandlers(gridElem);
+            setupMouseHandlers(gridElem);
+            
+            renderGrid();
+            resolve();
+          }
+        }
+        
+        createNextBatch();
+      });
+    }
+
+    // Separate touch handler setup
+    function setupTouchHandlers(gridElem) {
+      let isInteracting = false;
       let lastCell = null;
       let lastTouch = null;
 
-      // Prevent default touch behaviors to avoid scrolling while drawing
       gridElem.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isInteracting = true;
@@ -767,7 +934,6 @@
         if (!isInteracting) return;
         
         const touch = e.touches[0];
-        // Only process if touch has moved enough (reduce jitter)
         if (lastTouch && 
             Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
             Math.abs(touch.clientY - lastTouch.clientY) < 2) {
@@ -782,25 +948,12 @@
           const cellKey = `${r},${c}`;
           if (lastCell !== cellKey) {
             lastCell = cellKey;
-            // Add subtle random living cells only in immediate neighbors
-            for (let dr = -1; dr <= 1; dr++) {
-              for (let dc = -1; dc <= 1; dc++) {
-                if (dr === 0 && dc === 0) continue;
-                const nr = r + dr;
-                const nc = c + dc;
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                  if (Math.random() < 0.2) {
-                    grid[nr][nc] = 1;
-                  }
-                }
-              }
-            }
+            createClump(r, c);
             renderGrid();
           }
         }
       }, { passive: false });
 
-      // Handle touch end
       gridElem.addEventListener('touchend', () => {
         isInteracting = false;
         lastCell = null;
@@ -812,62 +965,40 @@
         lastCell = null;
         lastTouch = null;
       });
+    }
 
-      // Keep existing mouse event handlers
-      gridElem.addEventListener('mousedown', (e) => { 
-        e.preventDefault();
-        isInteracting = true; 
+    // Separate mouse handler setup
+    function setupMouseHandlers(gridElem) {
+      let isInteracting = false;
+      let lastCell = null;
+
+      gridElem.addEventListener('mousedown', () => {
+        isInteracting = true;
       });
-      
-      gridElem.addEventListener('mouseup', () => { 
+
+      gridElem.addEventListener('mouseup', () => {
         isInteracting = false;
         lastCell = null;
       });
-      
-      gridElem.addEventListener('mouseleave', () => { 
+
+      gridElem.addEventListener('mouseleave', () => {
         isInteracting = false;
         lastCell = null;
       });
 
-      // Create grid cells
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const cellDiv = document.createElement("div");
-          cellDiv.classList.add("cell");
-          cellDiv.dataset.row = String(r);
-          cellDiv.dataset.col = String(c);
-
-          // Handle both mouse click and touch
-          cellDiv.addEventListener("mousedown", (e) => {
-            e.preventDefault();
+      // Delegate mouse events at the grid level
+      gridElem.addEventListener('mouseover', (e) => {
+        const cellDiv = e.target;
+        if (cellDiv.classList.contains('cell')) {
+          const r = parseInt(cellDiv.dataset.row);
+          const c = parseInt(cellDiv.dataset.col);
+          if (isInteracting && lastCell !== `${r},${c}`) {
+            lastCell = `${r},${c}`;
             createClump(r, c);
             renderGrid();
-          });
-
-          cellDiv.addEventListener("mouseenter", () => {
-            if (isInteracting && lastCell !== `${r},${c}`) {
-              lastCell = `${r},${c}`;
-              // Add subtle random living cells only in immediate neighbors
-              for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                  if (dr === 0 && dc === 0) continue;
-                  const nr = r + dr;
-                  const nc = c + dc;
-                  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                    if (Math.random() < 0.2) {
-                      grid[nr][nc] = 1;
-                    }
-                  }
-                }
-              }
-              renderGrid();
-            }
-          });
-
-          gridElem.appendChild(cellDiv);
+          }
         }
-      }
-      renderGrid();
+      });
     }
 
     // Create a random clump of live cells around the clicked point
@@ -1060,56 +1191,6 @@
       // 1.0 speed = 200 ms
       return baseInterval / currentSpeedMultiplier;
     }
-
-    function setZoom(zoomValue) {
-      if (playing) return;
-
-      // Store old grid state
-      const oldGrid = grid;
-      const oldRows = rows;
-      const oldCols = cols;
-
-      // Only use grid resizing for zoom
-      rows = Math.floor(baseRows * zoomValue);
-      cols = Math.floor(baseCols * zoomValue);
-
-      const newGrid = createEmptyGrid(rows, cols);
-      const rowOffset = Math.floor((rows - oldRows) / 2);
-      const colOffset = Math.floor((cols - oldCols) / 2);
-
-      // Copy existing pattern
-      for (let r = 0; r < oldRows; r++) {
-          for (let c = 0; c < oldCols; c++) {
-              const newR = r + rowOffset;
-              const newC = c + colOffset;
-              if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-                  newGrid[newR][newC] = oldGrid[r][c];
-              }
-          }
-      }
-
-      grid = newGrid;
-
-      // Remove transform-based zoom
-      const gridWrapper = document.getElementById('gridWrapper');
-      gridWrapper.style.transform = '';
-      
-      // Update grid UI without forcing viewport constraints
-      buildGridUI();
-    }
-
-    // Add cell pooling for large grids
-    const cellPool = {
-      cells: [],
-      get() {
-        return this.cells.pop() || document.createElement('div');
-      },
-      release(cell) {
-        if (this.cells.length < 1000) { // Pool size limit
-          this.cells.push(cell);
-        }
-      }
-    };
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
