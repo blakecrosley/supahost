@@ -914,10 +914,12 @@
       let isInteracting = false;
       let lastCell = null;
       let lastTouch = null;
+      let hasMoved = false;  // Add this to track if touch has moved
 
       gridElem.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isInteracting = true;
+        hasMoved = false;  // Reset movement flag
         const touch = e.touches[0];
         lastTouch = touch;
         const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -933,6 +935,7 @@
         e.preventDefault();
         if (!isInteracting) return;
         
+        hasMoved = true;  // Set movement flag
         const touch = e.touches[0];
         if (lastTouch && 
             Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
@@ -954,7 +957,18 @@
         }
       }, { passive: false });
 
-      gridElem.addEventListener('touchend', () => {
+      gridElem.addEventListener('touchend', (e) => {
+        if (isInteracting && !hasMoved) {
+          // If it was just a tap (no movement), create another clump
+          const touch = e.changedTouches[0];
+          const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
+          if (cellElem?.classList.contains('cell')) {
+            const r = parseInt(cellElem.dataset.row);
+            const c = parseInt(cellElem.dataset.col);
+            createClump(r, c);
+            renderGrid();
+          }
+        }
         isInteracting = false;
         lastCell = null;
         lastTouch = null;
@@ -971,12 +985,47 @@
     function setupMouseHandlers(gridElem) {
       let isInteracting = false;
       let lastCell = null;
+      let hasMoved = false;  // Add this to track if mouse has moved
 
-      gridElem.addEventListener('mousedown', () => {
+      gridElem.addEventListener('mousedown', (e) => {
         isInteracting = true;
+        hasMoved = false;  // Reset movement flag
+        const cellDiv = e.target;
+        if (cellDiv.classList.contains('cell')) {
+          const r = parseInt(cellDiv.dataset.row);
+          const c = parseInt(cellDiv.dataset.col);
+          createClump(r, c);
+          renderGrid();
+        }
       });
 
-      gridElem.addEventListener('mouseup', () => {
+      gridElem.addEventListener('mousemove', (e) => {
+        if (isInteracting) {
+          hasMoved = true;  // Set movement flag
+          const cellDiv = e.target;
+          if (cellDiv.classList.contains('cell')) {
+            const r = parseInt(cellDiv.dataset.row);
+            const c = parseInt(cellDiv.dataset.col);
+            if (lastCell !== `${r},${c}`) {
+              lastCell = `${r},${c}`;
+              createClump(r, c);
+              renderGrid();
+            }
+          }
+        }
+      });
+
+      gridElem.addEventListener('mouseup', (e) => {
+        if (isInteracting && !hasMoved) {
+          // If it was just a click (no movement), create another clump
+          const cellDiv = e.target;
+          if (cellDiv.classList.contains('cell')) {
+            const r = parseInt(cellDiv.dataset.row);
+            const c = parseInt(cellDiv.dataset.col);
+            createClump(r, c);
+            renderGrid();
+          }
+        }
         isInteracting = false;
         lastCell = null;
       });
@@ -984,20 +1033,6 @@
       gridElem.addEventListener('mouseleave', () => {
         isInteracting = false;
         lastCell = null;
-      });
-
-      // Delegate mouse events at the grid level
-      gridElem.addEventListener('mouseover', (e) => {
-        const cellDiv = e.target;
-        if (cellDiv.classList.contains('cell')) {
-          const r = parseInt(cellDiv.dataset.row);
-          const c = parseInt(cellDiv.dataset.col);
-          if (isInteracting && lastCell !== `${r},${c}`) {
-            lastCell = `${r},${c}`;
-            createClump(r, c);
-            renderGrid();
-          }
-        }
       });
     }
 
