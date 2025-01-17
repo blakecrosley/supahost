@@ -2,8 +2,8 @@
 <!-- Use data-bs-theme="dark" to apply the dark theme across the page -->
 <html lang="en" data-bs-theme="dark">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4JE9G63Y9Z"></script>
+  <!-- Google tag (gtag.js) - GitHub Pages specific -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
   <script>
     // Initialize dataLayer first
     window.dataLayer = window.dataLayer || [];
@@ -11,9 +11,11 @@
     
     // Add these configurations
     gtag('js', new Date());
-    gtag('config', 'G-4JE9G63Y9Z', {
+    gtag('config', 'G-XXXXXXXX', {
+      'cookie_domain': 'github.blakecrosley.com',
+      'transport_url': 'http://github.blakecrosley.com',
       'send_page_view': true,
-      'debug_mode': true  // Remove this in production
+      'page_location': 'http://github.blakecrosley.com/sandbox/self-assembling-brain/conways-game-of-life/'
     });
   </script>
   <meta charset="UTF-8" />
