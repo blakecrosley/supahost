@@ -5,11 +5,16 @@
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4JE9G63Y9Z"></script>
   <script>
+    // Initialize dataLayer first
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
+    
+    // Add these configurations
     gtag('js', new Date());
-
-    gtag('config', 'G-4JE9G63Y9Z');
+    gtag('config', 'G-4JE9G63Y9Z', {
+      'send_page_view': true,
+      'debug_mode': true  // Remove this in production
+    });
   </script>
   <meta charset="UTF-8" />
   <title>Conway's Game of Life - Blake Crosley Sandbox</title>
