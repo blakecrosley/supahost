@@ -3,19 +3,21 @@
 <html lang="en" data-bs-theme="dark">
 <head>
   <!-- Google tag (gtag.js) -->
-  <script>
-    // Initialize dataLayer before gtag loads
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    
-    // Configure before loading gtag.js
-    gtag('js', new Date());
-    gtag('config', 'G-4JE9G63Y9Z', {
-      'send_page_view': true,
-      'transport_type': 'beacon'
-    });
-  </script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4JE9G63Y9Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){
+      dataLayer.push(arguments);
+      // Add this to ensure page views are sent on every load
+      if(arguments[0] === 'js') {
+        gtag('config', 'G-4JE9G63Y9Z', {
+          'send_page_view': true,
+          'transport_type': 'beacon'
+        });
+      }
+    }
+    gtag('js', new Date());
+  </script>
   <meta charset="UTF-8" />
   <title>Conway's Game of Life - Blake Crosley Sandbox</title>
   <!-- Viewport for mobile responsiveness -->
