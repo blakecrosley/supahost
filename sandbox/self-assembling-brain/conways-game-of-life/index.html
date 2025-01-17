@@ -9,7 +9,11 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-4JE9G63Y9Z');
+    gtag('config', 'G-4JE9G63Y9Z', {
+      cookie_domain: 'github.blakecrosley.com',
+      page_location: window.location.href,
+      page_path: window.location.pathname + window.location.search
+    });
   </script>
   <meta charset="UTF-8" />
   <title>Conway's Game of Life - Blake Crosley Sandbox</title>
