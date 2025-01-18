@@ -648,14 +648,11 @@
 <span style="color: #565f89;">// Count live neighbors for each cell</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">countNeighbors</span>(<span style="color: #e0af68;">g</span>, <span style="color: #e0af68;">row</span>, <span style="color: #e0af68;">col</span>) {
   <span style="color: #c0caf5;">let count = 0;</span>
-  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> dr = -<span style="color: #ff9e64;">1</span>; dr <= <span style="color: #ff9e64;">1</span>; dr++) {
-    <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> dc = -<span style="color: #ff9e64;">1</span>; dc <= <span style="color: #ff9e64;">1</span>; dc++) {
-      <span style="color: #bb9af7;">if</span> (dr === <span style="color: #ff9e64;">0</span> && dc === <span style="color: #ff9e64;">0</span>) <span style="color: #bb9af7;">continue</span>; <span style="color: #565f89;">// skip itself</span>
-      <span style="color: #c0caf5;">const nr = row + dr;</span>
-      <span style="color: #c0caf5;">const nc = col + dc;</span>
-      <span style="color: #bb9af7;">if</span> (nr >= <span style="color: #ff9e64;">0</span> && nr < rows && nc >= <span style="color: #ff9e64;">0</span> && nc < cols) {
-        count += g[nr][nc];
-      }
+  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < <span style="color: #ff9e64;">8</span>; i++) {
+    <span style="color: #c0caf5;">const nr = row + NEIGHBOR_OFFSETS[i * 2];</span>
+    <span style="color: #c0caf5;">const nc = col + NEIGHBOR_OFFSETS[i * 2 + 1];</span>
+    <span style="color: #bb9af7;">if</span> (nr >= <span style="color: #ff9e64;">0</span> && nr < rows && nc >= <span style="color: #ff9e64;">0</span> && nc < cols) {
+      count += g[nr][nc];
     }
   }
   <span style="color: #bb9af7;">return</span> count;
@@ -920,13 +917,7 @@
       return { rows, cols };
     }
 
-    // Pre-allocate neighbor offset arrays for performance
-    const NEIGHBOR_OFFSETS = [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1],           [0, 1],
-      [1, -1],  [1, 0],  [1, 1]
-    ];
-
+    // Revert the grid data structure to the original array-based implementation
     function createEmptyGrid(r, c) {
       const arr = [];
       for (let i = 0; i < r; i++) {
@@ -937,6 +928,10 @@
       }
       return arr;
     }
+
+    // Keep the optimized neighbor offsets
+    const NEIGHBOR_OFFSETS = new Int8Array([-1,-1, -1,0, -1,1, 0,-1, 0,1, 1,-1, 1,0, 1,1]);
+    const NEIGHBOR_COUNT = 8;
 
     function showLoading() {
       const loadingState = document.getElementById('loadingState');
@@ -1015,51 +1010,53 @@
 
     function buildGridUI() {
       const gridElem = document.getElementById("grid");
-      
-      // Clear and set up grid
       gridElem.innerHTML = "";
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      // Create cells in batches
-      const fragment = document.createDocumentFragment();
-      const batchSize = 100;
+      // Increased batch size and using DocumentFragment more efficiently
+      const BATCH_SIZE = 500; // Increased from 100
+      const totalCells = rows * cols;
       let cellsCreated = 0;
 
       return new Promise(resolve => {
+        const cellCache = new Array(BATCH_SIZE).fill(null).map(() => {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          return cell;
+        });
+
         function createNextBatch() {
-          const startCell = cellsCreated;
-          const endCell = Math.min(cellsCreated + batchSize, rows * cols);
+          const fragment = document.createDocumentFragment();
+          const batchEnd = Math.min(cellsCreated + BATCH_SIZE, totalCells);
           
-          for (let i = startCell; i < endCell; i++) {
+          for (let i = cellsCreated; i < batchEnd; i++) {
             const r = Math.floor(i / cols);
             const c = i % cols;
             
-            const cellDiv = document.createElement("div");
-            cellDiv.className = "cell";
+            // Clone from cache instead of creating new elements
+            const cellDiv = cellCache[i % BATCH_SIZE].cloneNode(false);
             cellDiv.dataset.row = String(r);
             cellDiv.dataset.col = String(c);
             
             fragment.appendChild(cellDiv);
           }
           
-          cellsCreated = endCell;
-          
-          if (cellsCreated < rows * cols) {
-            requestAnimationFrame(createNextBatch);
+          gridElem.appendChild(fragment);
+          cellsCreated = batchEnd;
+
+          if (cellsCreated < totalCells) {
+            // Use setTimeout for better UI responsiveness
+            setTimeout(createNextBatch, 0);
           } else {
-            gridElem.appendChild(fragment);
-            
-            // Add touch handlers to grid container after cells are created
             setupTouchHandlers(gridElem);
             setupMouseHandlers(gridElem);
-            
             renderGrid();
             resolve();
           }
         }
-        
-        createNextBatch();
+
+        requestAnimationFrame(createNextBatch);
       });
     }
 
@@ -1211,11 +1208,14 @@
     // Rendering
     // -----------------------------------------------------
     function renderGrid() {
-      const allCells = document.querySelectorAll("#grid .cell");
-      allCells.forEach((cellDiv) => {
-        const r = parseInt(cellDiv.dataset.row);
-        const c = parseInt(cellDiv.dataset.col);
-        cellDiv.classList.toggle("alive", grid[r][c] === 1);
+      const cells = document.querySelectorAll('#grid .cell');
+      
+      requestAnimationFrame(() => {
+        cells.forEach((cellDiv) => {
+          const r = parseInt(cellDiv.dataset.row);
+          const c = parseInt(cellDiv.dataset.col);
+          cellDiv.classList.toggle('alive', grid[r][c] === 1);
+        });
       });
     }
 
@@ -1224,30 +1224,35 @@
     // -----------------------------------------------------
     function computeNextGeneration(currentGrid) {
       const newGrid = createEmptyGrid(rows, cols);
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
+      
+      // Process cells in chunks for better performance
+      const CHUNK_SIZE = 1000;
+      const totalCells = rows * cols;
+      
+      for (let start = 0; start < totalCells; start += CHUNK_SIZE) {
+        const end = Math.min(start + CHUNK_SIZE, totalCells);
+        
+        for (let i = start; i < end; i++) {
+          const r = Math.floor(i / cols);
+          const c = i % cols;
           const neighbors = countNeighbors(currentGrid, r, c);
           const cellState = currentGrid[r][c];
-          if (cellState === 1) {
-            newGrid[r][c] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
-          } else {
-            newGrid[r][c] = (neighbors === 3) ? 1 : 0;
-          }
+          
+          // Simplified rule checking
+          newGrid[r][c] = (neighbors === 3 || (cellState === 1 && neighbors === 2)) ? 1 : 0;
         }
       }
+      
       return newGrid;
     }
 
     function countNeighbors(g, row, col) {
       let count = 0;
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue;
-          const nr = row + dr;
-          const nc = col + dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-            count += g[nr][nc];
-          }
+      for (let i = 0; i < NEIGHBOR_COUNT * 2; i += 2) {
+        const nr = row + NEIGHBOR_OFFSETS[i];
+        const nc = col + NEIGHBOR_OFFSETS[i + 1];
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+          count += g[nr][nc];
         }
       }
       return count;
@@ -1324,13 +1329,32 @@
       }
       
       playing = true;
-      // Disable zoom control while playing
       document.getElementById("zoomSelect").disabled = true;
       
-      timer = setInterval(() => {
-        grid = computeNextGeneration(grid);
-        renderGrid();
-      }, calculateInterval());
+      let lastFrame = performance.now();
+      
+      function gameLoop() {
+        if (!playing) return;
+        
+        const now = performance.now();
+        const elapsed = now - lastFrame;
+        
+        if (elapsed > calculateInterval()) {
+          grid = computeNextGeneration(grid);
+          renderGrid();
+          FPS.update();
+          lastFrame = now;
+          
+          // Log FPS every 60 frames
+          if (FPS.frames.length === 30) {
+            console.log(`Average FPS: ${FPS.getAverageFPS().toFixed(2)}`);
+          }
+        }
+        
+        requestAnimationFrame(gameLoop);
+      }
+      
+      requestAnimationFrame(gameLoop);
     }
 
     function stopGame() {
@@ -1380,6 +1404,29 @@
       // 1.0 speed = 200 ms
       return baseInterval / currentSpeedMultiplier;
     }
+
+    // Add after other performance optimizations
+
+    const FPS = {
+      frames: [],
+      lastFrameTimeStamp: performance.now(),
+      
+      update() {
+        const now = performance.now();
+        const delta = now - this.lastFrameTimeStamp;
+        this.lastFrameTimeStamp = now;
+        const fps = 1000 / delta;
+        
+        this.frames.push(fps);
+        if (this.frames.length > 30) {
+          this.frames.shift();
+        }
+      },
+      
+      getAverageFPS() {
+        return this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
+      }
+    };
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
