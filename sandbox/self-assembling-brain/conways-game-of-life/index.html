@@ -840,27 +840,19 @@
         [2, 2],
       ],
       pulsar: [
-        // Top
         [-4, -2], [-4, -1], [-4, 0], [-4, 1], [-4, 2],
-        // Bottom
         [4, -2], [4, -1], [4, 0], [4, 1], [4, 2],
-        // Left
         [-2, -4], [-1, -4], [0, -4], [1, -4], [2, -4],
-        // Right
         [-2, 4], [-1, 4], [0, 4], [1, 4], [2, 4],
-        // Inner vertical bars
         [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2],
-        [-2, 2],  [-1, 2],  [0, 2],  [1, 2],  [2, 2],
-        // Inner horizontal bars
+        [-2, 2], [-1, 2], [0, 2], [1, 2], [2, 2],
         [-2, -1], [-2, 0], [-2, 1],
-        [2, -1],  [2, 0],  [2, 1],
+        [2, -1], [2, 0], [2, 1]
       ],
       smallExploder: [
-        [0, 0],
-        [1, -1], [1, 0], [1, 1],
-        [2, -1],         [2, 1],
-        [3, 0],
-      ],
+        [0, 0], [1, -1], [1, 0], [1, 1],
+        [2, -1], [2, 1], [3, 0]
+      ]
     };
 
     let baseRows = 30;
@@ -1491,6 +1483,31 @@
       constructor(gameState) {
         this.state = gameState;
         this.lastFrame = performance.now();
+        
+        // Move patterns into controller
+        this.patterns = {
+          glider: [
+            [0, 1], [1, 2], [2, 0], [2, 1], [2, 2]
+          ],
+          pulsar: [
+            [-4, -2], [-4, -1], [-4, 0], [-4, 1], [-4, 2],
+            [4, -2], [4, -1], [4, 0], [4, 1], [4, 2],
+            [-2, -4], [-1, -4], [0, -4], [1, -4], [2, -4],
+            [-2, 4], [-1, 4], [0, 4], [1, 4], [2, 4],
+            [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2],
+            [-2, 2], [-1, 2], [0, 2], [1, 2], [2, 2],
+            [-2, -1], [-2, 0], [-2, 1],
+            [2, -1], [2, 0], [2, 1]
+          ],
+          smallExploder: [
+            [0, 0], [1, -1], [1, 0], [1, 1],
+            [2, -1], [2, 1], [3, 0]
+          ]
+        };
+
+        // Optimization constants
+        this.NEIGHBOR_OFFSETS = new Int8Array([-1,-1, -1,0, -1,1, 0,-1, 0,1, 1,-1, 1,0, 1,1]);
+        this.NEIGHBOR_COUNT = 8;
       }
 
       startGame() {
@@ -1510,6 +1527,15 @@
         requestAnimationFrame(() => this.gameLoop());
       }
 
+      stopGame() {
+        this.state.playing = false;
+        if (this.state.timer) {
+          clearInterval(this.state.timer);
+          this.state.timer = null;
+        }
+        document.getElementById("zoomSelect").disabled = false;
+      }
+
       gameLoop() {
         if (!this.state.playing) return;
         
@@ -1517,8 +1543,7 @@
         const elapsed = now - this.lastFrame;
         
         if (elapsed > this.state.calculateInterval()) {
-          this.state.grid = this.computeNextGeneration();
-          this.renderGrid();
+          this.state.grid = this.computeNextGeneration(this.state.grid);
           this.state.updateFPS();
           this.lastFrame = now;
           
@@ -1530,7 +1555,108 @@
         requestAnimationFrame(() => this.gameLoop());
       }
 
-      // ... other methods moved from global scope
+      computeNextGeneration(currentGrid) {
+        const newGrid = this.state.createEmptyGrid(this.state.rows, this.state.cols);
+        const totalCells = this.state.rows * this.state.cols;
+        const CHUNK_SIZE = 1000;
+        
+        for (let start = 0; start < totalCells; start += CHUNK_SIZE) {
+          const end = Math.min(start + CHUNK_SIZE, totalCells);
+          
+          for (let i = start; i < end; i++) {
+            const r = Math.floor(i / this.state.cols);
+            const c = i % this.state.cols;
+            const neighbors = this.countNeighbors(currentGrid, r, c);
+            const cellState = currentGrid[r][c];
+            
+            newGrid[r][c] = (neighbors === 3 || (cellState === 1 && neighbors === 2)) ? 1 : 0;
+          }
+        }
+        
+        return newGrid;
+      }
+
+      countNeighbors(grid, row, col) {
+        let count = 0;
+        for (let i = 0; i < this.NEIGHBOR_COUNT * 2; i += 2) {
+          const nr = row + this.NEIGHBOR_OFFSETS[i];
+          const nc = col + this.NEIGHBOR_OFFSETS[i + 1];
+          if (nr >= 0 && nr < this.state.rows && nc >= 0 && nc < this.state.cols) {
+            count += grid[nr][nc];
+          }
+        }
+        return count;
+      }
+
+      allCellsDead() {
+        for (let r = 0; r < this.state.rows; r++) {
+          for (let c = 0; c < this.state.cols; c++) {
+            if (this.state.grid[r][c] === 1) return false;
+          }
+        }
+        return true;
+      }
+
+      randomizeGrid() {
+        for (let r = 0; r < this.state.rows; r++) {
+          for (let c = 0; c < this.state.cols; c++) {
+            this.state.grid[r][c] = Math.random() > 0.8 ? 1 : 0;
+          }
+        }
+      }
+
+      clearGrid() {
+        this.state.grid = this.state.createEmptyGrid(this.state.rows, this.state.cols);
+      }
+
+      loadPattern(patternName) {
+        try {
+          if (!this.patterns[patternName]) return;
+          this.clearGrid();
+
+          const pattern = this.patterns[patternName];
+          let minRow = Infinity, maxRow = -Infinity;
+          let minCol = Infinity, maxCol = -Infinity;
+          
+          pattern.forEach(([r, c]) => {
+            if (r < minRow) minRow = r;
+            if (r > maxRow) maxRow = r;
+            if (c < minCol) minCol = c;
+            if (c > maxCol) maxCol = c;
+          });
+
+          const patternHeight = maxRow - minRow + 1;
+          const patternWidth = maxCol - minCol + 1;
+          const rowOffset = Math.floor(this.state.rows / 2 - patternHeight / 2) - minRow;
+          const colOffset = Math.floor(this.state.cols / 2 - patternWidth / 2) - minCol;
+
+          pattern.forEach(([r, c]) => {
+            const newR = r + rowOffset;
+            const newC = c + colOffset;
+            if (newR >= 0 && newR < this.state.rows && newC >= 0 && newC < this.state.cols) {
+              this.state.grid[newR][newC] = 1;
+            }
+          });
+        } catch (error) {
+          console.error('Error loading pattern:', error);
+          this.clearGrid();
+        }
+      }
+
+      createClump(centerR, centerC) {
+        const radius = 2;
+        for (let dr = -radius; dr <= radius; dr++) {
+          for (let dc = -radius; dc <= radius; dc++) {
+            const r = centerR + dr;
+            const c = centerC + dc;
+            if (r >= 0 && r < this.state.rows && c >= 0 && c < this.state.cols) {
+              const distance = Math.sqrt(dr * dr + dc * dc);
+              const probability = 0.8 - (distance / radius) * 0.5;
+              this.state.grid[r][c] = Math.random() < probability ? 1 : 0;
+            }
+          }
+        }
+      }
     }
 
     class GameUIController {
