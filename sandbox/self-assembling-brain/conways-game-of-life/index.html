@@ -774,6 +774,60 @@
 
   <!-- Conway's Game of Life Script (Vanilla JS) -->
   <script>
+    // Add this before the existing code
+    class GameState {
+      constructor(baseRows = 30, baseCols = 50) {
+        this.baseRows = baseRows;
+        this.baseCols = baseCols;
+        this.rows = baseRows;
+        this.cols = baseCols;
+        this.playing = false;
+        this.timer = null;
+        this.baseInterval = 200;
+        this.currentSpeedMultiplier = 1.0;
+        this.currentZoom = 1.0;
+        this.grid = this.createEmptyGrid(this.rows, this.cols);
+        
+        // FPS tracking
+        this.frames = [];
+        this.lastFrameTimeStamp = performance.now();
+      }
+
+      createEmptyGrid(r, c) {
+        const arr = [];
+        for (let i = 0; i < r; i++) {
+          arr[i] = [];
+          for (let j = 0; j < c; j++) {
+            arr[i][j] = 0;
+          }
+        }
+        return arr;
+      }
+
+      calculateInterval() {
+        return this.baseInterval / this.currentSpeedMultiplier;
+      }
+
+      updateFPS() {
+        const now = performance.now();
+        const delta = now - this.lastFrameTimeStamp;
+        this.lastFrameTimeStamp = now;
+        const fps = 1000 / delta;
+        
+        this.frames.push(fps);
+        if (this.frames.length > 30) {
+          this.frames.shift();
+        }
+      }
+
+      getAverageFPS() {
+        return this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
+      }
+    }
+
+    // Initialize state
+    const gameState = new GameState();
+
     // -----------------------------------------------------
     // Configuration: Patterns, Gameplay
     // -----------------------------------------------------
@@ -1427,6 +1481,74 @@
         return this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
       }
     };
+
+    class GameController {
+      constructor(gameState) {
+        this.state = gameState;
+        this.lastFrame = performance.now();
+      }
+
+      startGame() {
+        if (this.state.timer) {
+          clearInterval(this.state.timer);
+          this.state.timer = null;
+        }
+        
+        if (this.allCellsDead()) {
+          this.randomizeGrid();
+        }
+        
+        this.state.playing = true;
+        document.getElementById("zoomSelect").disabled = true;
+        
+        this.lastFrame = performance.now();
+        requestAnimationFrame(() => this.gameLoop());
+      }
+
+      gameLoop() {
+        if (!this.state.playing) return;
+        
+        const now = performance.now();
+        const elapsed = now - this.lastFrame;
+        
+        if (elapsed > this.state.calculateInterval()) {
+          this.state.grid = this.computeNextGeneration();
+          this.renderGrid();
+          this.state.updateFPS();
+          this.lastFrame = now;
+          
+          if (this.state.frames.length === 30) {
+            console.log(`Average FPS: ${this.state.getAverageFPS().toFixed(2)}`);
+          }
+        }
+        
+        requestAnimationFrame(() => this.gameLoop());
+      }
+
+      // ... other methods moved from global scope
+    }
+
+    class GameUIController {
+      constructor(gameController) {
+        this.game = gameController;
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        document.getElementById("toggleBtn").addEventListener("click", () => this.toggleGame());
+        document.getElementById("stepBtn").addEventListener("click", () => this.stepGeneration());
+        // ... other listeners
+      }
+
+      updatePlayButton(playing) {
+        const btn = document.getElementById("toggleBtn");
+        btn.innerHTML = playing ? 
+          '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>' :
+          '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
+      }
+
+      // ... other UI methods
+    }
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
