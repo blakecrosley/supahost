@@ -884,10 +884,15 @@
 
     // On load, run initialization
     document.addEventListener("DOMContentLoaded", () => {
+      // Initialize our state management system
+      const gameState = new GameState();
+      const gameController = new GameController(gameState);
+      const uiController = new GameUIController(gameController);
+      
       // Initialize the grid size
       calculateGridDimensions();
       // Create the grid
-      grid = createEmptyGrid(rows, cols);
+      gameState.grid = gameState.createEmptyGrid(gameState.rows, gameState.cols);
       buildGridUI();
 
       // Attach event handlers
