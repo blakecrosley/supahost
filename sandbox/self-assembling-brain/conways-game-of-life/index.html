@@ -1043,26 +1043,19 @@
         rows = Math.floor(baseRows * zoomValue);
         cols = Math.floor(baseCols * zoomValue);
 
-        // Create new grid asynchronously
         const newGrid = createEmptyGrid(rows, cols);
         const rowOffset = Math.floor((rows - oldRows) / 2);
         const colOffset = Math.floor((cols - oldCols) / 2);
 
-        // Copy existing pattern in chunks
-        const CHUNK_SIZE = 1000;
-        for (let r = 0; r < oldRows; r += CHUNK_SIZE) {
-          const endR = Math.min(r + CHUNK_SIZE, oldRows);
+        // Copy existing pattern
+        for (let r = 0; r < oldRows; r++) {
           for (let c = 0; c < oldCols; c++) {
-            for (let currentR = r; currentR < endR; currentR++) {
-              const newR = currentR + rowOffset;
-              const newC = c + colOffset;
-              if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
-                newGrid[newR][newC] = oldGrid[currentR][c];
-              }
+            const newR = r + rowOffset;
+            const newC = c + colOffset;
+            if (newR >= 0 && newR < rows && newC >= 0 && newC < cols) {
+              newGrid[newR][newC] = oldGrid[r][c];
             }
           }
-          // Allow UI to breathe between chunks
-          await new Promise(resolve => setTimeout(resolve, 0));
         }
 
         grid = newGrid;
@@ -1071,9 +1064,10 @@
         const gridWrapper = document.getElementById('gridWrapper');
         gridWrapper.style.transform = '';
         
-        // Build the grid UI with immediate interaction
+        // Build the grid UI
         await buildGridUI();
 
+        // Hide loading after everything is done
         hideLoading();
       } catch (error) {
         console.error('Error during zoom:', error);
@@ -1088,13 +1082,12 @@
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
       // Increased batch size and using DocumentFragment more efficiently
-      const BATCH_SIZE = 1000; // Increased from 500
+      const BATCH_SIZE = 500; // Increased from 100
       const totalCells = rows * cols;
       let cellsCreated = 0;
 
       return new Promise(resolve => {
-        // Pre-create cell pool
-        const cellPool = new Array(BATCH_SIZE).fill(null).map(() => {
+        const cellCache = new Array(BATCH_SIZE).fill(null).map(() => {
           const cell = document.createElement('div');
           cell.className = 'cell';
           return cell;
@@ -1108,10 +1101,10 @@
             const r = Math.floor(i / cols);
             const c = i % cols;
             
-            // Clone from pool instead of creating new elements
-            const cellDiv = cellPool[i % BATCH_SIZE].cloneNode(false);
-            cellDiv.dataset.row = r;
-            cellDiv.dataset.col = c;
+            // Clone from cache instead of creating new elements
+            const cellDiv = cellCache[i % BATCH_SIZE].cloneNode(false);
+            cellDiv.dataset.row = String(r);
+            cellDiv.dataset.col = String(c);
             
             fragment.appendChild(cellDiv);
           }
@@ -1120,14 +1113,9 @@
           cellsCreated = batchEnd;
 
           if (cellsCreated < totalCells) {
-            // Use requestIdleCallback if available, fallback to setTimeout
-            if (window.requestIdleCallback) {
-              requestIdleCallback(() => createNextBatch(), { timeout: 50 });
-            } else {
-              setTimeout(createNextBatch, 0);
-            }
+            // Use setTimeout for better UI responsiveness
+            setTimeout(createNextBatch, 0);
           } else {
-            // Enable interaction immediately after first batch
             setupTouchHandlers(gridElem);
             setupMouseHandlers(gridElem);
             renderGrid();
@@ -1135,7 +1123,6 @@
           }
         }
 
-        // Start with requestAnimationFrame for first batch
         requestAnimationFrame(createNextBatch);
       });
     }
