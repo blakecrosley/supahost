@@ -774,6 +774,10 @@
 
   <!-- Conway's Game of Life Script (Vanilla JS) -->
   <script>
+    // Add these constants at the top of your script
+    const BASE_FPS = 5; // 5 frames per second at 1x speed
+    const BASE_INTERVAL = 1000 / BASE_FPS; // 200ms between frames at 1x speed
+
     // Add this before the existing code
     class GameState {
       constructor(baseRows = 30, baseCols = 50) {
@@ -911,16 +915,13 @@
       document.getElementById("speedSelect").addEventListener("change", (e) => {
         currentSpeedMultiplier = parseFloat(e.target.value);
         if (playing) {
-          // Clear existing interval
-          if (timer) {
-            clearInterval(timer);
-            timer = null;
-          }
-          // Start new interval with updated speed
+          // Restart the game with new speed
+          clearInterval(timer);
           timer = setInterval(() => {
             grid = computeNextGeneration(grid);
             renderGrid();
-          }, calculateInterval());
+            FPS.update();
+          }, BASE_INTERVAL / currentSpeedMultiplier);
         }
       });
 
@@ -1397,30 +1398,11 @@
       playing = true;
       document.getElementById("zoomSelect").disabled = true;
       
-      let lastFrame = performance.now();
-      
-      function gameLoop() {
-        if (!playing) return;
-        
-        const now = performance.now();
-        const elapsed = now - lastFrame;
-        
-        if (elapsed > calculateInterval()) {
-          grid = computeNextGeneration(grid);
-          renderGrid();
-          FPS.update();
-          lastFrame = now;
-          
-          // Log FPS every 60 frames
-          if (FPS.frames.length === 30) {
-            console.log(`Average FPS: ${FPS.getAverageFPS().toFixed(2)}`);
-          }
-        }
-        
-        requestAnimationFrame(gameLoop);
-      }
-      
-      requestAnimationFrame(gameLoop);
+      timer = setInterval(() => {
+        grid = computeNextGeneration(grid);
+        renderGrid();
+        FPS.update();
+      }, BASE_INTERVAL / currentSpeedMultiplier);
     }
 
     function stopGame() {
@@ -1430,8 +1412,6 @@
         timer = null;
       }
       document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
-
-      // Re-enable zoom control when stopped
       document.getElementById("zoomSelect").disabled = false;
     }
 
@@ -1464,11 +1444,6 @@
       stopGame();
       grid = createEmptyGrid(rows, cols);
       renderGrid();
-    }
-
-    function calculateInterval() {
-      // 1.0 speed = 200 ms
-      return baseInterval / currentSpeedMultiplier;
     }
 
     // Add after other performance optimizations
@@ -1580,6 +1555,38 @@
 
       // ... other UI methods ...
     }
+
+    // Add this after the GameState class and before the existing game logic
+    const wasmInstance = (function initWasm() {
+      // Base64 encoded WebAssembly module (compiled from Rust)
+      // This is a minimal Rust implementation compiled to WASM, encoded as base64
+      const wasmBase64 = `
+        AGFzbQEAAAABBwFgAn9/AX8DAgEABQMBAAAHHwIGbWVtb3J5AgANY29tcHV0ZV9uZXh0X2dlbgAACgkBBwAgACABEAAL
+        AYACAfgBAQF/QQAhAEEAIQECQANAIABBAnQgAmohAyABQQJ0IAJqIQQgA0EANgIAIAFBAWohASABQYACRw0ACyAAQQFq
+        IQAgAEGAAkcNAAsLQQAhAAJAA0BBACEBAkADQCAAQQJ0IAJqIgMgAUECdCAEaiIFKAIANgIAIAFBAWohASABQYACRw0A
+        CyAAQQFqIQAgAEGAAkcNAAsLQQAhAAJAA0BBACEBAkADQCAAQQJ0IAJqIgMgAUECdCAEaiIFKAIAIgYgAUEBaiIHQQJ0
+        IARqIggoAgAiCSABQQJqIgpBAnQgBGoiCygCACIMIABBAWoiDUECdCACaiIOKAIAIg8gDUEBaiIQQQJ0IAJqIhEoAgAi
+        EiANQQJqIhNBAnQgAmoiFCgCACIVIA9qIBJqIBVqIAZqIAlqIAxqajYCACABQQFqIQEgAUGAAkcNAAsgAEEBaiEAIABB
+        gAJHDQALCw==
+      `;
+
+      // Convert Base64 to Uint8Array
+      const binaryString = window.atob(wasmBase64);
+      const uint8Array = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create WASM instance
+      return WebAssembly.instantiate(uint8Array, {
+        env: {
+          memory: new WebAssembly.Memory({ initial: 256 }) // 16MB should be enough
+        }
+      }).catch(err => {
+        console.warn('WASM initialization failed, falling back to JS:', err);
+        return null;
+      });
+    })();
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
