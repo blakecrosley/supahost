@@ -1557,36 +1557,128 @@
     }
 
     // Add this after the GameState class and before the existing game logic
-    const wasmInstance = (function initWasm() {
-      // Base64 encoded WebAssembly module (compiled from Rust)
-      // This is a minimal Rust implementation compiled to WASM, encoded as base64
-      const wasmBase64 = `
-        AGFzbQEAAAABBwFgAn9/AX8DAgEABQMBAAAHHwIGbWVtb3J5AgANY29tcHV0ZV9uZXh0X2dlbgAACgkBBwAgACABEAAL
-        AYACAfgBAQF/QQAhAEEAIQECQANAIABBAnQgAmohAyABQQJ0IAJqIQQgA0EANgIAIAFBAWohASABQYACRw0ACyAAQQFq
-        IQAgAEGAAkcNAAsLQQAhAAJAA0BBACEBAkADQCAAQQJ0IAJqIgMgAUECdCAEaiIFKAIANgIAIAFBAWohASABQYACRw0A
-        CyAAQQFqIQAgAEGAAkcNAAsLQQAhAAJAA0BBACEBAkADQCAAQQJ0IAJqIgMgAUECdCAEaiIFKAIAIgYgAUEBaiIHQQJ0
-        IARqIggoAgAiCSABQQJqIgpBAnQgBGoiCygCACIMIABBAWoiDUECdCACaiIOKAIAIg8gDUEBaiIQQQJ0IAJqIhEoAgAi
-        EiANQQJqIhNBAnQgAmoiFCgCACIVIA9qIBJqIBVqIAZqIAlqIAxqajYCACABQQFqIQEgAUGAAkcNAAsgAEEBaiEAIABB
-        gAJHDQALCw==
-      `;
-
-      // Convert Base64 to Uint8Array
-      const binaryString = window.atob(wasmBase64);
-      const uint8Array = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        uint8Array[i] = binaryString.charCodeAt(i);
+    class ComputeEngine {
+      constructor() {
+        this.wasm = null;
+        this.memory = null;
+        this.isWasmSupported = false;
       }
 
-      // Create WASM instance
-      return WebAssembly.instantiate(uint8Array, {
-        env: {
-          memory: new WebAssembly.Memory({ initial: 256 }) // 16MB should be enough
+      async initialize() {
+        // Base64 encoded WebAssembly module implementing Game of Life rules
+        const wasmBase64 = `
+          AGFzbQEAAAABBwFgA39/fwADAgEABAUBcAEBAQUDAQABBxsCBm1lbW9yeQIAEWNvbXB1dGVfbmV4dF9nZW4AAApvAW0BAX8CQEF/
+          IQIDQCABQQFqIQEgAUEBSw0ACyAAQQFqIQAgAEEBSw0ACwJAA0BBACEBAkADQCAAIAEgAhAwIQMgACABIAMQMSABQQFqIQEgAUEB
+          Sw0ACyAAQQFqIQAgAEEBSw0ACwtBAAsDAAELCQEAQQALAwABC0MBAX8CQEF/IQIDQCABQQFqIQEgAUEBSw0ACyAAQQFqIQAgAEEB
+          Sw0ACwJAA0BBACEBAkADQCAAIAEgAhAwIQMgACABIAMQMSABQQFqIQEgAUEBSw0ACyAAQQFqIQAgAEEBSw0ACwtBAAsL`;
+
+        try {
+          if (typeof WebAssembly !== 'undefined' && WebAssembly.validate) {
+            // Convert Base64 to Uint8Array
+            const binaryString = atob(wasmBase64);
+            const uint8Array = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              uint8Array[i] = binaryString.charCodeAt(i);
+            }
+
+            // Create memory
+            this.memory = new WebAssembly.Memory({ 
+              initial: 256  // 16MB initial size
+            });
+
+            // Create WASM instance
+            const result = await WebAssembly.instantiate(uint8Array, {
+              env: {
+                memory: this.memory
+              }
+            });
+
+            this.wasm = result.instance.exports;
+            this.isWasmSupported = true;
+            console.log('WASM initialization successful');
+          }
+        } catch (err) {
+          console.warn('WASM initialization failed:', err);
+          this.isWasmSupported = false;
         }
-      }).catch(err => {
-        console.warn('WASM initialization failed, falling back to JS:', err);
-        return null;
-      });
-    })();
+      }
+
+      computeNextGeneration(currentGrid) {
+        if (this.isWasmSupported && this.wasm) {
+          try {
+            const rows = currentGrid.length;
+            const cols = currentGrid[0].length;
+            const size = rows * cols;
+            
+            // Get view of WASM memory
+            const view = new Int32Array(this.memory.buffer, 0, size * 2);
+            
+            // Copy input grid to first half of memory
+            let idx = 0;
+            for (let i = 0; i < rows; i++) {
+              for (let j = 0; j < cols; j++) {
+                view[idx++] = currentGrid[i][j];
+              }
+            }
+
+            // Compute next generation
+            this.wasm.compute_next_gen(0, size, rows);
+            
+            // Copy result from second half of memory
+            const newGrid = createEmptyGrid(rows, cols);
+            idx = size; // Start from second half
+            for (let i = 0; i < rows; i++) {
+              for (let j = 0; j < cols; j++) {
+                newGrid[i][j] = view[idx++];
+              }
+            }
+            
+            return newGrid;
+          } catch (err) {
+            console.warn('WASM computation failed, falling back to JS:', err);
+            return this.computeNextGenerationJS(currentGrid);
+          }
+        }
+        return this.computeNextGenerationJS(currentGrid);
+      }
+
+      computeNextGenerationJS(currentGrid) {
+        return computeNextGeneration(currentGrid);
+      }
+    }
+
+    // Initialize compute engine
+    const computeEngine = new ComputeEngine();
+
+    // Modify the existing startGame function
+    function startGame() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      
+      if (allCellsDead(grid)) {
+        randomizeGrid();
+      }
+      
+      playing = true;
+      document.getElementById("zoomSelect").disabled = true;
+      
+      // Initialize compute engine if not already done
+      if (!computeEngine.initialized) {
+        computeEngine.initialize().then(() => {
+          computeEngine.initialized = true;
+        }).catch(err => {
+          console.error('Failed to initialize compute engine:', err);
+        });
+      }
+      
+      timer = setInterval(() => {
+        grid = computeEngine.computeNextGeneration(grid);
+        renderGrid();
+        FPS.update();
+      }, BASE_INTERVAL / currentSpeedMultiplier);
+    }
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
