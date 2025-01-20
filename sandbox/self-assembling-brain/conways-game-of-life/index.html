@@ -15,19 +15,6 @@
   <!-- Viewport for mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- CSP allowing inline scripts/styles (since we can't move them) -->
-  <meta 
-    http-equiv="Content-Security-Policy"
-    content="
-      default-src 'self';
-      img-src 'self' https: data:;
-      script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net;
-      style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com data:;
-      upgrade-insecure-requests;
-    "
-  >
-
   <!-- Twitter Card data -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@BlakeC">
@@ -76,12 +63,7 @@
   />
 
   <!-- Add this after Bootstrap CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    integrity="sha384-XFtrkIl+ANN+dIsAt1lnQK5SXtJil31MuV2Sfw5/1C1I1rd9LL1ZU0ZbIQbDesHp"
-    crossorigin="anonymous"
-  >
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
     /* Tokyo Night colors from https://github.com/tokyo-night/tokyo-night-vscode-theme */
@@ -828,12 +810,12 @@
   </div>
 
 
-  <!-- Bootstrap 5.3.3 JS Bundle (includes Popper) -->
+  <!-- Bootstrap 5.3.3 JS (includes Popper) -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-E6fVUUGeWS57aamEeyiO7fpf7omcVahaGYqkqd2SyHp3NKugf7IjqkV0ftTn22s8"
-    crossorigin="anonymous"
-  ></script>
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous">
+  </script>
 
   <!-- Conway's Game of Life Script (Vanilla JS) -->
   <script>
