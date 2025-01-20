@@ -457,6 +457,16 @@
         margin: 0.5rem 0;
       }
     }
+
+    /* Add these new styles */
+    .cell.hover-highlight {
+        background-color: #2a2e43; /* Slightly lighter than the default #24283b */
+        transition: background-color 0.1s ease;
+    }
+
+    .alive.hover-highlight {
+        background-color: #9ffae2; /* Slightly lighter than the alive color #88f9d7 */
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -1118,6 +1128,7 @@
           } else {
             setupTouchHandlers(gridElem);
             setupMouseHandlers(gridElem);
+            setupHoverEffect(gridElem);
             renderGrid();
             resolve();
           }
@@ -1679,6 +1690,77 @@
         FPS.update();
       }, BASE_INTERVAL / currentSpeedMultiplier);
     }
+
+    function setupHoverEffect(gridElem) {
+        let lastHighlightedCells = new Set();
+        
+        function calculateCirclePoints(centerR, centerC, radius) {
+            const points = new Set();
+            const radiusSquared = radius * radius;
+            
+            // Scan a square area and check if points lie within circle
+            for (let dr = -radius; dr <= radius; dr++) {
+                for (let dc = -radius; dc <= radius; dc++) {
+                    // Use distance formula to check if point lies in circle
+                    if ((dr * dr + dc * dc) <= radiusSquared) {
+                        const r = centerR + dr;
+                        const c = centerC + dc;
+                        if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                            points.add(`${r},${c}`);
+                        }
+                    }
+                }
+            }
+            return points;
+        }
+
+        function updateHighlight(e) {
+            const cellDiv = e.target;
+            if (!cellDiv.classList.contains('cell')) return;
+
+            // Clear previous highlights
+            lastHighlightedCells.forEach(key => {
+                const [r, c] = key.split(',').map(Number);
+                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                cell?.classList.remove('hover-highlight');
+            });
+            lastHighlightedCells.clear();
+
+            // Calculate new highlight positions
+            const centerR = parseInt(cellDiv.dataset.row);
+            const centerC = parseInt(cellDiv.dataset.col);
+            const radius = 1; // Adjust this value to change circle size
+            
+            const highlightPoints = calculateCirclePoints(centerR, centerC, radius);
+            
+            // Apply new highlights
+            highlightPoints.forEach(key => {
+                const [r, c] = key.split(',');
+                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                if (cell) {
+                    cell.classList.add('hover-highlight');
+                    lastHighlightedCells.add(key);
+                }
+            });
+        }
+
+        function clearHighlights() {
+            lastHighlightedCells.forEach(key => {
+                const [r, c] = key.split(',').map(Number);
+                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                cell?.classList.remove('hover-highlight');
+            });
+            lastHighlightedCells.clear();
+        }
+
+        gridElem.addEventListener('mousemove', updateHighlight);
+        gridElem.addEventListener('mouseleave', clearHighlights);
+    }
+
+    // Add this line to your buildGridUI function, right after setupMouseHandlers:
+    setupTouchHandlers(gridElem);
+    setupMouseHandlers(gridElem);
+    setupHoverEffect(gridElem); // Add this line
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
