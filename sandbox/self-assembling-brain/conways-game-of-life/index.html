@@ -572,14 +572,15 @@
     </div>    
     </div>
 
-    <!-- Grid Container -->
+    <!-- Transform #grid into a <canvas> for rendering -->
     <div id="grid-container">
       <div id="loadingState">
         <div class="spinner"></div>
         <div>Loading game board...</div>
       </div>
       <div id="gridWrapper">
-        <div id="grid"></div>
+        <!-- Replace the old <div id="grid"></div> with a canvas -->
+        <canvas id="grid"></canvas>
       </div>
     </div>
 
@@ -1085,188 +1086,256 @@
       }
     }
 
+    // 1. Modified "buildGridUI" to create/size the canvas instead of DOM cells
     function buildGridUI() {
-      const gridElem = document.getElementById("grid");
-      gridElem.innerHTML = "";
-      gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-      gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-
-      // Use consistent batch chunking for large grids
-      const BATCH_SIZE = 500; // keep as is
-      const totalCells = rows * cols;
-      let cellsCreated = 0;
-
       return new Promise(resolve => {
-        // Pre-cache div elements to improve performance
-        const cellCache = new Array(BATCH_SIZE).fill(null).map(() => {
-          const cell = document.createElement('div');
-          cell.className = 'cell';
-          return cell;
-        });
+        const containerElem = document.getElementById("grid-container");
+        const gridElem = document.getElementById("grid"); // now a <canvas>
 
-        function createNextBatch() {
-          const fragment = document.createDocumentFragment();
-          const batchEnd = Math.min(cellsCreated + BATCH_SIZE, totalCells);
-          
-          for (let i = cellsCreated; i < batchEnd; i++) {
-            const r = Math.floor(i / cols);
-            const c = i % cols;
-            
-            // Reuse cached cells
-            const cellDiv = cellCache[i % BATCH_SIZE].cloneNode(false);
-            cellDiv.dataset.row = String(r);
-            cellDiv.dataset.col = String(c);
+        gridElem.innerHTML = "";
+        console.log("[Canvas Rendering] Initializing canvas UI...");
 
-            fragment.appendChild(cellDiv);
-          }
+        // Intentionally match canvas size to container
+        gridElem.width = containerElem.clientWidth;
+        gridElem.height = containerElem.clientHeight;
 
-          gridElem.appendChild(fragment);
-          cellsCreated = batchEnd;
+        // Setup unified handlers
+        setupCanvasHandlers(gridElem);
 
-          if (cellsCreated < totalCells) {
-            // Use requestAnimationFrame for consistent chunk creation
-            requestAnimationFrame(createNextBatch);
-          } else {
-            setupTouchHandlers(gridElem);
-            setupMouseHandlers(gridElem);
-            setupHoverEffect(gridElem);
-            renderGrid();
-            resolve();
-          }
-        }
+        console.log("[Canvas Rendering] Canvas-based UI built. Width:",
+          gridElem.width, "Height:", gridElem.height);
 
-        requestAnimationFrame(createNextBatch);
+        // Render immediately
+        renderGrid();
+        resolve();
       });
     }
 
-    // Separate touch handler setup
-    function setupTouchHandlers(gridElem) {
-      let isInteracting = false;
-      let lastCell = null;
-      let lastTouch = null;
-      let hasMoved = false;  // Add this to track if touch has moved
+    // 2. Canvas-based rendering for the Game of Life
+    function renderGrid() {
+      const canvas = document.getElementById("grid");
+      if (!canvas || !canvas.getContext) {
+        console.warn("[Canvas Rendering] Canvas or context not available.");
+        return;
+      }
+      const ctx = canvas.getContext("2d");
 
-      gridElem.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        isInteracting = true;
-        hasMoved = false;  // Reset movement flag
-        const touch = e.touches[0];
-        lastTouch = touch;
-        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (cellElem?.classList.contains('cell')) {
-          const r = parseInt(cellElem.dataset.row);
-          const c = parseInt(cellElem.dataset.col);
-          createClump(r, c);
-          renderGrid();
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#24283b";  
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cellWidth = canvas.width / cols;
+      const cellHeight = canvas.height / rows;
+
+      console.log("[Canvas Rendering] Drawing generation on canvas...");
+
+      // Normal pass: draw alive cells
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (grid[r][c] === 1) {
+            ctx.fillStyle = "#88f9d7"; // alive cell color
+            ctx.fillRect(c * cellWidth, r * cellHeight, cellWidth, cellHeight);
+          }
         }
+      }
+
+      // Draw hover highlight if we have one
+      if (lastHoverCell) {
+        highlightHoverRegion(ctx, lastHoverCell.row, lastHoverCell.col, cellWidth, cellHeight);
+      }
+    }
+
+    // Track animation state
+    let hoverAnimationFrame = null;
+    let hoverOpacity = 0;
+    const HOVER_FADE_SPEED = 0.15;
+
+    // Track hover position for smooth transitions
+    let currentHoverPos = { x: 0, y: 0 };
+    let targetHoverPos = { x: 0, y: 0 };
+    const HOVER_EASE = 0.3; // Adjust this to control movement speed (0-1)
+    
+    // Lerp helper for smooth transitions
+    function lerp(start, end, t) {
+      return start + (end - start) * t;
+    }
+
+    // Highlight hovered cell plus neighbors
+    function highlightHoverRegion(ctx, centerR, centerC, cellWidth, cellHeight) {
+      ctx.save();
+      
+      // Smoothly animate both opacity and position
+      hoverOpacity = Math.min(hoverOpacity + HOVER_FADE_SPEED, 1.0);
+      
+      // Calculate actual render position with easing
+      currentHoverPos.x = lerp(currentHoverPos.x, targetHoverPos.x, HOVER_EASE);
+      currentHoverPos.y = lerp(currentHoverPos.y, targetHoverPos.y, HOVER_EASE);
+      
+      // Convert smooth position back to grid coordinates
+      const smoothR = Math.floor(currentHoverPos.y / cellHeight);
+      const smoothC = Math.floor(currentHoverPos.x / cellWidth);
+      
+      ctx.globalAlpha = hoverOpacity;
+
+      // Helper to fill a single cell with the correct highlight color
+      function fillHighlightedCell(r, c) {
+        if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+        if (grid[r][c] === 1) {
+          ctx.fillStyle = "#9ffae2"; // alive hover
+        } else {
+          ctx.fillStyle = "#2a2e43"; // dead hover
+        }
+        
+        // Apply subtle scaling effect based on distance from center
+        const distX = Math.abs(c - smoothC);
+        const distY = Math.abs(r - smoothR);
+        const dist = Math.sqrt(distX * distX + distY * distY);
+        const scale = 1 - Math.min(dist * 0.1, 0.2); // Subtle scale effect
+        
+        const centerX = c * cellWidth + cellWidth / 2;
+        const centerY = r * cellHeight + cellHeight / 2;
+        
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.scale(scale, scale);
+        ctx.fillRect(-cellWidth/2, -cellHeight/2, cellWidth, cellHeight);
+        ctx.restore();
+      }
+
+      // Draw center cell first
+      fillHighlightedCell(smoothR, smoothC);
+
+      // Draw cardinal directions (cross pattern)
+      fillHighlightedCell(smoothR - 1, smoothC); // top
+      fillHighlightedCell(smoothR, smoothC + 1); // right
+      fillHighlightedCell(smoothR + 1, smoothC); // bottom
+      fillHighlightedCell(smoothR, smoothC - 1); // left
+
+      ctx.restore();
+
+      // Continue animation if either opacity or position is still transitioning
+      const stillMoving = 
+        Math.abs(currentHoverPos.x - targetHoverPos.x) > 0.01 ||
+        Math.abs(currentHoverPos.y - targetHoverPos.y) > 0.01;
+      
+      if (hoverOpacity < 1.0 || stillMoving) {
+        hoverAnimationFrame = requestAnimationFrame(() => renderGrid());
+      }
+    }
+
+    // 3. Setup mouse/touch to handle drag drawing & hover
+    function setupCanvasHandlers(canvas) {
+      // MOUSE
+      canvas.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        handlePointer(e.clientX, e.clientY, canvas, /*draw*/true);
+      });
+      canvas.addEventListener("mousemove", (e) => {
+        handlePointer(e.clientX, e.clientY, canvas, isDrawing);
+      });
+      canvas.addEventListener("mouseup", () => {
+        isDrawing = false;
+        lastDrawnCell = null;
+      });
+      canvas.addEventListener("mouseleave", () => {
+        isDrawing = false;
+        lastDrawnCell = null;
+        if (hoverAnimationFrame) {
+          cancelAnimationFrame(hoverAnimationFrame);
+          hoverAnimationFrame = null;
+        }
+        lastHoverCell = null;
+        hoverOpacity = 0;
+        // Reset positions
+        currentHoverPos = { x: 0, y: 0 };
+        targetHoverPos = { x: 0, y: 0 };
+        renderGrid();
+      });
+
+      // TOUCH
+      canvas.addEventListener("touchstart", (e) => {
+        isDrawing = true;
+        const touch = e.touches[0];
+        handlePointer(touch.clientX, touch.clientY, canvas, /*draw*/true);
       }, { passive: false });
 
-      gridElem.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (!isInteracting) return;
-        
-        hasMoved = true;  // Set movement flag
+      canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault(); // prevent scrolling
+        if (!isDrawing) return;
         const touch = e.touches[0];
-        if (lastTouch && 
-            Math.abs(touch.clientX - lastTouch.clientX) < 2 && 
-            Math.abs(touch.clientY - lastTouch.clientY) < 2) {
-          return;
-        }
-        
-        lastTouch = touch;
-        const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (cellElem?.classList.contains('cell')) {
-          const r = parseInt(cellElem.dataset.row);
-          const c = parseInt(cellElem.dataset.col);
-          const cellKey = `${r},${c}`;
-          if (lastCell !== cellKey) {
-            lastCell = cellKey;
-            createClump(r, c);
-            renderGrid();
-          }
-        }
+        handlePointer(touch.clientX, touch.clientY, canvas, /*draw*/true);
       }, { passive: false });
 
-      gridElem.addEventListener('touchend', (e) => {
-        if (isInteracting && !hasMoved) {
-          // If it was just a tap (no movement), create another clump
-          const touch = e.changedTouches[0];
-          const cellElem = document.elementFromPoint(touch.clientX, touch.clientY);
-          if (cellElem?.classList.contains('cell')) {
-            const r = parseInt(cellElem.dataset.row);
-            const c = parseInt(cellElem.dataset.col);
-            createClump(r, c);
-            renderGrid();
-          }
+      canvas.addEventListener("touchend", () => {
+        isDrawing = false;
+        lastDrawnCell = null;
+      });
+      canvas.addEventListener("touchcancel", () => {
+        isDrawing = false;
+        lastDrawnCell = null;
+        if (hoverAnimationFrame) {
+          cancelAnimationFrame(hoverAnimationFrame);
+          hoverAnimationFrame = null;
         }
-        isInteracting = false;
-        lastCell = null;
-        lastTouch = null;
+        lastHoverCell = null;
+        hoverOpacity = 0;
+        // Reset positions
+        currentHoverPos = { x: 0, y: 0 };
+        targetHoverPos = { x: 0, y: 0 };
+        renderGrid();
       });
 
-      gridElem.addEventListener('touchcancel', () => {
-        isInteracting = false;
-        lastCell = null;
-        lastTouch = null;
-      });
+      console.log("[Canvas Rendering] Canvas event handlers set up.");
     }
 
-    // Separate mouse handler setup
-    function setupMouseHandlers(gridElem) {
-      let isInteracting = false;
-      let lastCell = null;
-      let hasMoved = false;  // Add this to track if mouse has moved
+    // 4. Convert pointer coordinates => row & col, set hover, optionally create clumps
+    function handlePointer(clientX, clientY, canvas, shouldDraw) {
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
-      gridElem.addEventListener('mousedown', (e) => {
-        isInteracting = true;
-        hasMoved = false;  // Reset movement flag
-        const cellDiv = e.target;
-        if (cellDiv.classList.contains('cell')) {
-          const r = parseInt(cellDiv.dataset.row);
-          const c = parseInt(cellDiv.dataset.col);
-          createClump(r, c);
-          renderGrid();
+      const cellWidth = canvas.width / cols;
+      const cellHeight = canvas.height / rows;
+      const col = Math.floor(x / cellWidth);
+      const row = Math.floor(y / cellHeight);
+
+      // If hovering a new cell, update target position
+      if (!lastHoverCell || lastHoverCell.row !== row || lastHoverCell.col !== col) {
+        // Cancel any existing hover animation
+        if (hoverAnimationFrame) {
+          cancelAnimationFrame(hoverAnimationFrame);
+          hoverAnimationFrame = null;
         }
-      });
-
-      gridElem.addEventListener('mousemove', (e) => {
-        if (isInteracting) {
-          hasMoved = true;  // Set movement flag
-          const cellDiv = e.target;
-          if (cellDiv.classList.contains('cell')) {
-            const r = parseInt(cellDiv.dataset.row);
-            const c = parseInt(cellDiv.dataset.col);
-            if (lastCell !== `${r},${c}`) {
-              lastCell = `${r},${c}`;
-              createClump(r, c);
-              renderGrid();
-            }
-          }
+        
+        // Set target position for smooth transition
+        targetHoverPos.x = col * cellWidth;
+        targetHoverPos.y = row * cellHeight;
+        
+        // If this is the first hover, snap immediately
+        if (!lastHoverCell) {
+          currentHoverPos.x = targetHoverPos.x;
+          currentHoverPos.y = targetHoverPos.y;
         }
-      });
+        
+        hoverOpacity = 0;
+        lastHoverCell = { row, col };
+      }
 
-      gridElem.addEventListener('mouseup', (e) => {
-        if (isInteracting && !hasMoved) {
-          // If it was just a click (no movement), create another clump
-          const cellDiv = e.target;
-          if (cellDiv.classList.contains('cell')) {
-            const r = parseInt(cellDiv.dataset.row);
-            const c = parseInt(cellDiv.dataset.col);
-            createClump(r, c);
-            renderGrid();
-          }
+      // If we should draw random clumps (click/drag)
+      if (shouldDraw) {
+        const cellKey = `${row},${col}`;
+        if (lastDrawnCell !== cellKey) {
+          lastDrawnCell = cellKey;
+          createClump(row, col);
         }
-        isInteracting = false;
-        lastCell = null;
-      });
+      }
 
-      gridElem.addEventListener('mouseleave', () => {
-        isInteracting = false;
-        lastCell = null;
-      });
+      // Re-render with updated hover highlight or new cells
+      renderGrid();
     }
 
-    // Create a random clump of live cells around the clicked point
+    // 4. "createClump" remains the same but is now triggered from the canvas handlers:
     function createClump(centerR, centerC) {
       const radius = 2;
       for (let dr = -radius; dr <= radius; dr++) {
@@ -1274,28 +1343,12 @@
           const r = centerR + dr;
           const c = centerC + dc;
           if (r >= 0 && r < rows && c >= 0 && c < cols) {
-            // Random chance of cell being alive, higher chance closer to center
             const distance = Math.sqrt(dr * dr + dc * dc);
             const probability = 0.8 - (distance / radius) * 0.5;
             grid[r][c] = Math.random() < probability ? 1 : 0;
           }
         }
       }
-    }
-
-    // -----------------------------------------------------
-    // Rendering
-    // -----------------------------------------------------
-    function renderGrid() {
-      const cells = document.querySelectorAll('#grid .cell');
-      
-      requestAnimationFrame(() => {
-        cells.forEach((cellDiv) => {
-          const r = parseInt(cellDiv.dataset.row);
-          const c = parseInt(cellDiv.dataset.col);
-          cellDiv.classList.toggle('alive', grid[r][c] === 1);
-        });
-      });
     }
 
     // -----------------------------------------------------
@@ -1692,76 +1745,10 @@
       }, BASE_INTERVAL / currentSpeedMultiplier);
     }
 
-    function setupHoverEffect(gridElem) {
-        let lastHighlightedCells = new Set();
-        
-        function calculateCirclePoints(centerR, centerC, radius) {
-            const points = new Set();
-            const radiusSquared = radius * radius;
-            
-            // Scan a square area and check if points lie within circle
-            for (let dr = -radius; dr <= radius; dr++) {
-                for (let dc = -radius; dc <= radius; dc++) {
-                    // Use distance formula to check if point lies in circle
-                    if ((dr * dr + dc * dc) <= radiusSquared) {
-                        const r = centerR + dr;
-                        const c = centerC + dc;
-                        if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                            points.add(`${r},${c}`);
-                        }
-                    }
-                }
-            }
-            return points;
-        }
-
-        function updateHighlight(e) {
-            const cellDiv = e.target;
-            if (!cellDiv.classList.contains('cell')) return;
-
-            // Clear previous highlights
-            lastHighlightedCells.forEach(key => {
-                const [r, c] = key.split(',').map(Number);
-                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-                cell?.classList.remove('hover-highlight');
-            });
-            lastHighlightedCells.clear();
-
-            // Calculate new highlight positions
-            const centerR = parseInt(cellDiv.dataset.row);
-            const centerC = parseInt(cellDiv.dataset.col);
-            const radius = 1; // Adjust this value to change circle size
-            
-            const highlightPoints = calculateCirclePoints(centerR, centerC, radius);
-            
-            // Apply new highlights
-            highlightPoints.forEach(key => {
-                const [r, c] = key.split(',');
-                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-                if (cell) {
-                    cell.classList.add('hover-highlight');
-                    lastHighlightedCells.add(key);
-                }
-            });
-        }
-
-        function clearHighlights() {
-            lastHighlightedCells.forEach(key => {
-                const [r, c] = key.split(',').map(Number);
-                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-                cell?.classList.remove('hover-highlight');
-            });
-            lastHighlightedCells.clear();
-        }
-
-        gridElem.addEventListener('mousemove', updateHighlight);
-        gridElem.addEventListener('mouseleave', clearHighlights);
-    }
-
-    // Add this line to your buildGridUI function, right after setupMouseHandlers:
-    setupTouchHandlers(gridElem);
-    setupMouseHandlers(gridElem);
-    setupHoverEffect(gridElem); // Add this line
+    // Track current drawing + hover state
+    let isDrawing = false;       // Are we currently clicking/dragging?
+    let lastHoverCell = null;    // Which cell (row,col) is hovered?
+    let lastDrawnCell = null;    // Keep track so we don't re-draw same cell repeatedly
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
