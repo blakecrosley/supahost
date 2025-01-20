@@ -1382,8 +1382,8 @@
       const col = Math.floor(x / cellWidth);
       const row = Math.floor(y / cellHeight);
 
-      // If hovering a new cell, update target position
-      if (!lastHoverCell || lastHoverCell.row !== row || lastHoverCell.col !== col) {
+      // Only handle hover effects on non-touch devices
+      if (!isTouchDevice() && (!lastHoverCell || lastHoverCell.row !== row || lastHoverCell.col !== col)) {
         // Cancel any existing hover animation
         if (hoverAnimationFrame) {
           cancelAnimationFrame(hoverAnimationFrame);
@@ -1415,8 +1415,10 @@
         }
       }
 
-      // Re-render with updated hover highlight or new cells
-      renderGrid();
+      // Only re-render if we're drawing or if we're showing hover effects
+      if (shouldDraw || !isTouchDevice()) {
+        renderGrid();
+      }
     }
 
     // 4. "createClump" remains the same but is now triggered from the canvas handlers:
@@ -1833,6 +1835,13 @@
     let isDrawing = false;       // Are we currently clicking/dragging?
     let lastHoverCell = null;    // Which cell (row,col) is hovered?
     let lastDrawnCell = null;    // Keep track so we don't re-draw same cell repeatedly
+
+    // Detect mobile or touch devices
+    const isTouchDevice = () => {
+      return (('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0));
+    };
   </script>
 
   <!-- cite original Tokyo Night reference in markdown, as requested -->
