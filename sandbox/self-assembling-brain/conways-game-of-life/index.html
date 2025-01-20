@@ -1091,12 +1091,13 @@
       gridElem.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       gridElem.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      // Increased batch size and using DocumentFragment more efficiently
-      const BATCH_SIZE = 500; // Increased from 100
+      // Use consistent batch chunking for large grids
+      const BATCH_SIZE = 500; // keep as is
       const totalCells = rows * cols;
       let cellsCreated = 0;
 
       return new Promise(resolve => {
+        // Pre-cache div elements to improve performance
         const cellCache = new Array(BATCH_SIZE).fill(null).map(() => {
           const cell = document.createElement('div');
           cell.className = 'cell';
@@ -1111,20 +1112,20 @@
             const r = Math.floor(i / cols);
             const c = i % cols;
             
-            // Clone from cache instead of creating new elements
+            // Reuse cached cells
             const cellDiv = cellCache[i % BATCH_SIZE].cloneNode(false);
             cellDiv.dataset.row = String(r);
             cellDiv.dataset.col = String(c);
-            
+
             fragment.appendChild(cellDiv);
           }
-          
+
           gridElem.appendChild(fragment);
           cellsCreated = batchEnd;
 
           if (cellsCreated < totalCells) {
-            // Use setTimeout for better UI responsiveness
-            setTimeout(createNextBatch, 0);
+            // Use requestAnimationFrame for consistent chunk creation
+            requestAnimationFrame(createNextBatch);
           } else {
             setupTouchHandlers(gridElem);
             setupMouseHandlers(gridElem);
