@@ -1120,13 +1120,17 @@
       }
       const ctx = canvas.getContext("2d");
 
+      // Disable anti-aliasing for crisp edges
+      ctx.imageSmoothingEnabled = false;
+      
       // Clear the canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#24283b";  
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const cellWidth = canvas.width / cols;
-      const cellHeight = canvas.height / rows;
+      // Calculate cell size ensuring whole pixels
+      const cellWidth = Math.ceil(canvas.width / cols);
+      const cellHeight = Math.ceil(canvas.height / rows);
 
       console.log("[Canvas Rendering] Drawing generation on canvas...");
 
@@ -1135,7 +1139,13 @@
         for (let c = 0; c < cols; c++) {
           if (grid[r][c] === 1) {
             ctx.fillStyle = "#88f9d7"; // alive cell color
-            ctx.fillRect(c * cellWidth, r * cellHeight, cellWidth, cellHeight);
+            // Use integer positions and add 1 to width/height to ensure overlap
+            ctx.fillRect(
+              Math.floor(c * cellWidth), 
+              Math.floor(r * cellHeight), 
+              cellWidth + 1, 
+              cellHeight + 1
+            );
           }
         }
       }
@@ -1193,13 +1203,20 @@
         const dist = Math.sqrt(distX * distX + distY * distY);
         const scale = 1 - Math.min(dist * 0.1, 0.2); // Subtle scale effect
         
-        const centerX = c * cellWidth + cellWidth / 2;
-        const centerY = r * cellHeight + cellHeight / 2;
+        // Calculate actual render position with scaling
+        const centerX = Math.floor(c * cellWidth + cellWidth / 2);
+        const centerY = Math.floor(r * cellHeight + cellHeight / 2);
         
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.scale(scale, scale);
-        ctx.fillRect(-cellWidth/2, -cellHeight/2, cellWidth, cellHeight);
+        // Add 1 to dimensions to ensure overlap
+        ctx.fillRect(
+          -Math.floor(cellWidth/2), 
+          -Math.floor(cellHeight/2), 
+          cellWidth + 1, 
+          cellHeight + 1
+        );
         ctx.restore();
       }
 
