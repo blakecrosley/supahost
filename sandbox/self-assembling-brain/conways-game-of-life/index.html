@@ -1159,15 +1159,26 @@
     // Track animation state
     let hoverAnimationFrame = null;
     let hoverOpacity = 0;
-    const HOVER_FADE_SPEED = 0.15;
-
+    const HOVER_FADE_SPEED = 0.08;  // Even smoother fade
+ 
     // Track hover position for smooth transitions
     let currentHoverPos = { x: 0, y: 0 };
     let targetHoverPos = { x: 0, y: 0 };
-    const HOVER_EASE = 0.3; // Adjust this to control movement speed (0-1)
+    let hoverVelocity = { x: 0, y: 0 };  // Add velocity for momentum
+    const HOVER_EASE = 0.12;     // Slower easing for smoother movement
+    const VELOCITY_DECAY = 0.92; // Slower velocity decay
+    const MIN_MOVEMENT = 0.01;   // Lower threshold for smoother finish
+    const PREDICTION_WEIGHT = 0.3; // How much to predict future position
+    
+    // Track mouse movement for prediction
+    let lastMousePos = { x: 0, y: 0 };
+    let mouseVelocity = { x: 0, y: 0 };
+    let lastMoveTime = 0;
     
     // Lerp helper for smooth transitions
     function lerp(start, end, t) {
+      // Cubic easing for smoother acceleration/deceleration
+      t = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       return start + (end - start) * t;
     }
 
@@ -1178,9 +1189,23 @@
       // Smoothly animate both opacity and position
       hoverOpacity = Math.min(hoverOpacity + HOVER_FADE_SPEED, 1.0);
       
-      // Calculate actual render position with easing
-      currentHoverPos.x = lerp(currentHoverPos.x, targetHoverPos.x, HOVER_EASE);
-      currentHoverPos.y = lerp(currentHoverPos.y, targetHoverPos.y, HOVER_EASE);
+      // Update position with velocity and easing
+      const dx = targetHoverPos.x - currentHoverPos.x;
+      const dy = targetHoverPos.y - currentHoverPos.y;
+      
+      // Predict future position based on mouse velocity
+      const predictedX = targetHoverPos.x + mouseVelocity.x * PREDICTION_WEIGHT;
+      const predictedY = targetHoverPos.y + mouseVelocity.y * PREDICTION_WEIGHT;
+      
+      // Apply easing to velocity
+      hoverVelocity.x = lerp(hoverVelocity.x, dx + (predictedX - targetHoverPos.x), HOVER_EASE);
+      hoverVelocity.y = lerp(hoverVelocity.y, dy + (predictedY - targetHoverPos.y), HOVER_EASE);
+      
+      // Apply velocity with decay
+      currentHoverPos.x += hoverVelocity.x;
+      currentHoverPos.y += hoverVelocity.y;
+      hoverVelocity.x *= VELOCITY_DECAY;
+      hoverVelocity.y *= VELOCITY_DECAY;
       
       // Convert smooth position back to grid coordinates
       const smoothR = Math.floor(currentHoverPos.y / cellHeight);
@@ -1233,8 +1258,10 @@
 
       // Continue animation if either opacity or position is still transitioning
       const stillMoving = 
-        Math.abs(currentHoverPos.x - targetHoverPos.x) > 0.01 ||
-        Math.abs(currentHoverPos.y - targetHoverPos.y) > 0.01;
+        Math.abs(hoverVelocity.x) > MIN_MOVEMENT ||
+        Math.abs(hoverVelocity.y) > MIN_MOVEMENT ||
+        Math.abs(dx) > MIN_MOVEMENT ||
+        Math.abs(dy) > MIN_MOVEMENT;
       
       if (hoverOpacity < 1.0 || stillMoving) {
         hoverAnimationFrame = requestAnimationFrame(() => renderGrid());
@@ -1264,9 +1291,11 @@
         }
         lastHoverCell = null;
         hoverOpacity = 0;
-        // Reset positions
         currentHoverPos = { x: 0, y: 0 };
         targetHoverPos = { x: 0, y: 0 };
+        mouseVelocity = { x: 0, y: 0 };
+        hoverVelocity = { x: 0, y: 0 };
+        lastMoveTime = 0;
         renderGrid();
       });
 
@@ -1297,9 +1326,11 @@
         }
         lastHoverCell = null;
         hoverOpacity = 0;
-        // Reset positions
         currentHoverPos = { x: 0, y: 0 };
         targetHoverPos = { x: 0, y: 0 };
+        mouseVelocity = { x: 0, y: 0 };
+        hoverVelocity = { x: 0, y: 0 };
+        lastMoveTime = 0;
         renderGrid();
       });
 
@@ -1333,6 +1364,8 @@
         if (!lastHoverCell) {
           currentHoverPos.x = targetHoverPos.x;
           currentHoverPos.y = targetHoverPos.y;
+          hoverVelocity.x = 0;
+          hoverVelocity.y = 0;
         }
         
         hoverOpacity = 0;
