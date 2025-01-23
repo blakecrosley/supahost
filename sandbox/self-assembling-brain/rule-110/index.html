@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4JE9G63Y9Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4JE9G63Y9Z');
+  </script>
+  <meta charset="UTF-8" />
+  <title>Rule 110 - Elementary Cellular Automaton - Blake Crosley Sandbox</title>
+  
+  <!-- Viewport for mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@BlakeC">
+  <meta name="twitter:creator" content="@BlakeC">
+  <meta name="twitter:title" content="Rule 110 - A Turing Complete Cellular Automaton">
+  <meta name="twitter:description" content="Explore emergence and computational universality through one of the simplest yet most profound cellular automata. Watch how local rules create complex global patterns.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/blakecrosley/supahost/main/sandbox/self-assembling-brain/rule-110/preview.png">
+  <meta name="twitter:image:alt" content="Rule 110 cellular automaton showing emergent patterns">
+  <meta name="twitter:domain" content="github.blakecrosley.com">
+  
+  <!-- Open Graph data -->
+  <meta property="og:title" content="Rule 110 - A Turing Complete Cellular Automaton">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule-110/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/blakecrosley/supahost/main/sandbox/self-assembling-brain/rule-110/preview.png">
+  <meta property="og:description" content="Discover how simple rules can generate complex computation in this interactive Rule 110 simulation. A perfect example of emergent behavior in cellular automata.">
+  <meta property="og:site_name" content="Blake Crosley's Sandbox">
+
+  <!-- Bootstrap 5.3.3 CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" 
+    rel="stylesheet"
+  />
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    /* Tokyo Night colors */
+    :root {
+      --tn-bg: #1a1b26;
+      --tn-panel: #24283b;
+      --tn-foreground: #c0caf5;
+      --tn-btn-bg: #414868;
+      --tn-btn-bg-hover: #565f89;
+      --tn-btn-text: #c0caf5;
+      --tn-border: #565f89;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--tn-bg) !important;
+      color: var(--tn-foreground) !important;
+      font-size: 20px;
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-top: 120px;
+      padding-bottom: 0px;
+    }
+
+    .navbar {
+      background-color: rgba(36, 40, 59, 0.8) !important;
+      border-bottom: 1px solid var(--tn-border);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-secondary {
+      background-color: var(--tn-btn-bg) !important;
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
+    }
+    .btn-secondary:hover {
+      background-color: var(--tn-btn-bg-hover) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 0em;
+      margin-bottom: .5em;
+      color: rgb(245, 133, 237);
+      font-weight: bold;
+    }
+
+    .instructions-link {
+      color: rgb(245, 133, 237);
+      text-decoration: underline;
+      transition: all 0.2s ease;
+    }
+    
+    .instructions-link:hover {
+      color: rgb(250, 164, 244);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    /* Placeholder for the automaton container */
+    #automaton-container {
+      margin: 0 auto;
+      border: 1px solid var(--tn-border);
+      border-radius: .5rem;
+      background: var(--tn-panel);
+      box-sizing: border-box;
+      width: 100%;
+      position: relative;
+      padding-bottom: 60%;
+      overflow: hidden;
+    }
+
+    .footer {
+      background-color: var(--tn-panel);
+      border-top: 1px solid var(--tn-border);
+      position: relative;
+      bottom: 0;
+      width: 100%;
+      padding: 1rem 0;
+      margin-top: auto;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .footer-links a {
+      color: var(--tn-foreground);
+      opacity: 0.7;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+    }
+
+    @media (max-width: 991.98px) {
+      .navbar .navbar-collapse {
+        padding: 1rem 0;
+      }
+      
+      .navbar .navbar-nav {
+        gap: 0.5rem;
+      }
+      
+      .navbar .btn {
+        width: 100%;
+        margin: 0 !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .footer .container {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      
+      .footer-links {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Bootstrap 5 Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid">
+      <a href="https://x.com/BlakeC" class="navbar-brand text-decoration-none" target="_blank">
+        <img src="../../../assets/profile.jpg" 
+             alt="@blakec" 
+             class="rounded-circle me-2" 
+             style="width: 32px; height: 32px;">
+        @blakec
+      </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarContent" aria-controls="navbarContent" 
+              aria-expanded="false" aria-label="Toggle navigation">
+        <i class="bi bi-list text-light"></i>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <div class="navbar-nav ms-auto">
+          <a href="https://blakecrosley.com" class="btn btn-outline-secondary me-2" target="_blank">
+            blakecrosley.com
+          </a>
+          <a href="https://941apps.com" class="btn btn-outline-secondary" target="_blank">
+            941apps.com
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main container -->
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12 col-lg-8 offset-lg-2">
+        <h1>Rule 110: Elementary Cellular Automaton</h1>
+        
+        <div id="description">
+          <p>
+            Rule 110 stands as one of the simplest known Turing complete systems—capable of universal 
+            computation through remarkably basic rules. Each cell looks at itself and its two neighbors, 
+            then decides its next state based on just 8 possible patterns. Yet from this minimal ruleset 
+            emerges complex behavior that can theoretically compute anything that's computable.
+          </p>
+          <p>
+            This cellular automaton perfectly illustrates how complex behaviors can emerge from simple 
+            rules—a key principle in understanding both neural development and artificial intelligence. 
+            Like neurons following local chemical signals to form elaborate networks, Rule 110's cells 
+            create intricate patterns through purely local interactions.
+          </p>
+          <p class="mb-large">
+            <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+              How it works
+            </a>
+          </p>
+        </div>
+
+        <!-- Control buttons -->
+        <div class="btn-group btn-group-lg mb-3" role="group" aria-label="Automaton controls">
+          <button id="toggleBtn" type="button" class="btn btn-secondary">
+            <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
+          </button>
+          <button id="stepBtn" type="button" class="btn btn-secondary">
+            <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step</span>
+          </button>
+          <button id="randomBtn" type="button" class="btn btn-secondary">
+            <i class="bi bi-dice-6"></i> <span class="d-none d-sm-inline">Randomize</span>
+          </button>
+          <button id="clearBtn" type="button" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
+          </button>
+        </div>
+
+        <!-- Placeholder for the automaton -->
+        <div id="automaton-container">
+          <!-- Game board will go here -->
+        </div>
+
+        <!-- Code showcase section -->
+        <h3 class="mt-5">The Algorithm</h3>
+        <p>At its core, Rule 110 operates on a beautifully simple principle of pattern matching:</p>
+
+        <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
+          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
+<span style="color: #565f89;">// The 8 possible patterns and their outcomes</span>
+<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">RULE_110</span> = [
+  <span style="color: #565f89;">// Pattern: [left, center, right] => new state</span>
+  0, <span style="color: #565f89;">// 000 -> 0</span>
+  1, <span style="color: #565f89;">// 001 -> 1</span>
+  1, <span style="color: #565f89;">// 010 -> 1</span>
+  1, <span style="color: #565f89;">// 011 -> 1</span>
+  0, <span style="color: #565f89;">// 100 -> 0</span>
+  1, <span style="color: #565f89;">// 101 -> 1</span>
+  1, <span style="color: #565f89;">// 110 -> 1</span>
+  0  <span style="color: #565f89;">// 111 -> 0</span>
+];</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer mt-auto">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span class="text-muted">© 2025</span>
+      <div class="footer-links">
+        <div>
+          <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
+            <i class="bi bi-twitter-x"></i>
+          </a>
+          <a href="https://github.com/blakecrosley" target="_blank" title="GitHub">
+            <i class="bi bi-github"></i>
+          </a>
+        </div>
+        <a href="https://blakecrosley.com" target="_blank">blakecrosley.com</a>
+        <a href="https://941apps.com" target="_blank">941apps.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous">
+  </script>
+</body>
+</html>
