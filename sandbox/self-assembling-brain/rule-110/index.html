@@ -222,25 +222,26 @@
         <h1>Rule 110: Elementary Cellular Automaton</h1>
         
         <div id="description">
-          <p>
-            Rule 110 stands as one of the simplest known Turing complete systems—capable of universal 
-            computation through remarkably basic rules. Each cell looks at itself and its two neighbors, 
-            then decides its next state based on just 8 possible patterns. Yet from this minimal ruleset 
-            emerges complex behavior that can theoretically compute anything that's computable.
-          </p>
-          <p>
-            This cellular automaton perfectly illustrates how complex behaviors can emerge from simple 
-            rules—a key principle in understanding both neural development and artificial intelligence. 
-            Like neurons following local chemical signals to form elaborate networks, Rule 110's cells 
-            create intricate patterns through purely local interactions.
-          </p>
-          <p class="mb-large">
-            <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
-              How it works
-            </a>
-          </p>
-        </div>
-
+            <p>
+              Rule 110 represents a profound intersection of simplicity and complexity in computational systems. 
+              Unlike Conway's Game of Life, which operates on a 2D grid with multiple neighbors, Rule 110 works 
+              on just a 1D line where each cell considers only itself and its two adjacent neighbors. Yet this 
+              deceptively simple system achieves something remarkable: it's proven to be Turing complete, 
+              meaning it can simulate any computer program given enough time and space.
+            </p>
+            <p>
+              This cellular automaton perfectly illustrates how complex behaviors can emerge from simple 
+              rules—a key principle in understanding both neural development and artificial intelligence. 
+              Like neurons following local chemical signals to form elaborate networks, Rule 110's cells 
+              create intricate patterns through purely local interactions. This bottom-up emergence mirrors 
+              how our brains develop: from simple cellular rules to complex cognitive architectures.
+            </p>
+            <p class="mb-large">
+              <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+                How it works
+              </a>
+            </p>
+          </div>
         <!-- Control buttons -->
         <div class="btn-group btn-group-lg mb-3" role="group" aria-label="Automaton controls">
           <button id="toggleBtn" type="button" class="btn btn-secondary">
@@ -262,28 +263,121 @@
           <!-- Game board will go here -->
         </div>
 
-        <!-- Code showcase section -->
-        <h3 class="mt-5">The Algorithm</h3>
-        <p>At its core, Rule 110 operates on a beautifully simple principle of pattern matching:</p>
-
-        <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
-          <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
-<span style="color: #565f89;">// The 8 possible patterns and their outcomes</span>
-<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">RULE_110</span> = [
-  <span style="color: #565f89;">// Pattern: [left, center, right] => new state</span>
-  0, <span style="color: #565f89;">// 000 -> 0</span>
-  1, <span style="color: #565f89;">// 001 -> 1</span>
-  1, <span style="color: #565f89;">// 010 -> 1</span>
-  1, <span style="color: #565f89;">// 011 -> 1</span>
-  0, <span style="color: #565f89;">// 100 -> 0</span>
-  1, <span style="color: #565f89;">// 101 -> 1</span>
-  1, <span style="color: #565f89;">// 110 -> 1</span>
-  0  <span style="color: #565f89;">// 111 -> 0</span>
-];</code></pre>
+        <!-- Add pattern examples section -->
+        <h3>Pattern Examples</h3>
+        <div id="instructions">
+        <p>
+            Rule 110 generates several distinctive patterns that showcase different aspects of emergent 
+            computation. The "Ether" pattern forms a stable background, while "Gliders" transport 
+            information across the grid. These patterns can combine to perform logical operations, 
+            forming the basis of its computational universality.
+        </p>
         </div>
+
+<!-- Add the algorithm section -->
+<h3>The Algorithm</h3>
+<p>
+  At its core, Rule 110 operates on a beautifully simple principle: each cell's fate is determined 
+  by just three bits of information—its own state and its two neighbors'. This creates eight possible 
+  patterns, each mapping to a single output bit:
+</p>
+
+<div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
+  <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
+<span style="color: #565f89;">// The core algorithm that determines the next state</span>
+<span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextGeneration</span>(<span style="color: #e0af68;">currentRow</span>) {
+  <span style="color: #c0caf5;">const nextRow = new Array(currentRow.length).fill(0);</span>
+  
+  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < currentRow.length; i++) {
+    <span style="color: #565f89;">// Get the three-cell neighborhood</span>
+    <span style="color: #c0caf5;">const left = i === 0 ? 0 : currentRow[i - 1];</span>
+    <span style="color: #c0caf5;">const center = currentRow[i];</span>
+    <span style="color: #c0caf5;">const right = i === currentRow.length - 1 ? 0 : currentRow[i + 1];</span>
+    
+    <span style="color: #565f89;">// Convert neighborhood to pattern index</span>
+    <span style="color: #c0caf5;">const pattern = (left << 2) | (center << 1) | right;</span>
+    
+    <span style="color: #565f89;">// Apply Rule 110 lookup</span>
+    nextRow[i] = RULE_110[pattern];
+  }
+  <span style="color: #bb9af7;">return</span> nextRow;
+}</code></pre>
+
+  <p style="color: #c0caf5; margin: 1em 0;">
+    The name "Rule 110" comes from the binary number 01101110 (decimal 110) formed by reading the 
+    output bits in reverse. This simple lookup table, combined with the sequential application 
+    across a row of cells, creates complex patterns that can encode arbitrary computations.
+  </p>
+
+  <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+<span style="color: #565f89;">// The pattern definitions that create Rule 110</span>
+<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">RULE_110</span> = [
+  0, <span style="color: #565f89;">// 000 -> 0  (No neighbors alive)</span>
+  1, <span style="color: #565f89;">// 001 -> 1  (Right neighbor only)</span>
+  1, <span style="color: #565f89;">// 010 -> 1  (Center only)</span>
+  1, <span style="color: #565f89;">// 011 -> 1  (Center and right)</span>
+  0, <span style="color: #565f89;">// 100 -> 0  (Left only)</span>
+  1, <span style="color: #565f89;">// 101 -> 1  (Left and right)</span>
+  1, <span style="color: #565f89;">// 110 -> 1  (Left and center)</span>
+  0  <span style="color: #565f89;">// 111 -> 0  (All alive)</span>
+];</code></pre>
+
+  <p style="color: #c0caf5; margin: 1em 0;">
+    These eight rules create a delicate balance between growth and decay. Unlike simpler cellular 
+    automata that quickly stabilize or dissolve into chaos, Rule 110 maintains a complex edge 
+    between order and randomness—much like the neural networks in our brains.
+  </p>
+</div>
+
+<!-- Add instructions modal -->
+<div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-game">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="instructionsModalLabel">How it works</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          <strong>Click</strong> cells in the top row to set their initial states. Press <strong>Play</strong> 
+          to watch the pattern evolve downward, or use <strong>Step</strong> to advance one generation at a time. 
+          Use <strong>Randomize</strong> to create a random starting pattern, or <strong>Clear</strong> to start fresh.
+        </p>
+        
+        <h6>The Rules</h6>
+        <p>
+          Each cell follows Rule 110's pattern matching:
+          <ul>
+            <li><strong>Three-Cell Window:</strong> Each cell considers itself and its two neighbors</li>
+            <li><strong>Eight Patterns:</strong> The three cells create 8 possible binary patterns</li>
+            <li><strong>Binary Output:</strong> Each pattern maps to either 0 (dead) or 1 (alive)</li>
+            <li><strong>Sequential Update:</strong> All cells update simultaneously based on the current row</li>
+          </ul>
+        </p>
+        
+        <h6>Controls</h6>
+        <p>
+          <ul>
+            <li><strong>Play/Pause:</strong> Start or stop the evolution</li>
+            <li><strong>Step Forward:</strong> Advance one row at a time</li>
+            <li><strong>Randomize:</strong> Create a random initial pattern</li>
+            <li><strong>Clear:</strong> Reset to an empty state</li>
+          </ul>
+        </p>
+        
+        <h6>Notable Patterns</h6>
+        <p class="mb-0">
+          Watch for these emergent structures:
+          <ul class="mb-0">
+            <li><strong>Ether:</strong> The background pattern that repeats every 7 steps</li>
+            <li><strong>Gliders:</strong> Small patterns that move diagonally across the grid</li>
+            <li><strong>Collisions:</strong> Interactions between gliders that can perform computation</li>
+          </ul>
+        </p>
       </div>
     </div>
   </div>
+</div>
 
   <!-- Footer -->
   <footer class="footer mt-auto">
