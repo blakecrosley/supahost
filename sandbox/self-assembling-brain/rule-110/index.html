@@ -11,8 +11,7 @@
     gtag('config', 'G-4JE9G63Y9Z');
   </script>
   <meta charset="UTF-8" />
-  <title>Rule 110 - Elementary Cellular Automaton - Blake Crosley Sandbox</title>
-  
+  <title>Wolfram's Rule 110 - Blake Crosley Sandbox</title>
   <!-- Viewport for mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -20,19 +19,32 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@BlakeC">
   <meta name="twitter:creator" content="@BlakeC">
-  <meta name="twitter:title" content="Rule 110 - A Turing Complete Cellular Automaton">
-  <meta name="twitter:description" content="Explore emergence and computational universality through one of the simplest yet most profound cellular automata. Watch how local rules create complex global patterns.">
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/blakecrosley/supahost/main/sandbox/self-assembling-brain/rule-110/preview.png">
-  <meta name="twitter:image:alt" content="Rule 110 cellular automaton showing emergent patterns">
+  <meta name="twitter:title" content="Wolfram's Rule 110 - Interactive Simulation">
+  <meta name="twitter:description" content="Explore complex behavior arising from a simple set of 1D rules. Toggle cells and watch as Rule 110 patterns evolve.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/blakecrosley/supahost/main/sandbox/self-assembling-brain/rule110/preview.png">
+  <meta name="twitter:image:alt" content="Wolfram's Rule 110 1D automaton simulation showing evolving patterns">
   <meta name="twitter:domain" content="github.blakecrosley.com">
   
-  <!-- Open Graph data -->
-  <meta property="og:title" content="Rule 110 - A Turing Complete Cellular Automaton">
+  <!-- Open Graph data (also used by other platforms) -->
+  <meta property="og:title" content="Wolfram's Rule 110 - Interactive Simulation">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule-110/">
-  <meta property="og:image" content="https://raw.githubusercontent.com/blakecrosley/supahost/main/sandbox/self-assembling-brain/rule-110/preview.png">
-  <meta property="og:description" content="Discover how simple rules can generate complex computation in this interactive Rule 110 simulation. A perfect example of emergent behavior in cellular automata.">
+  <meta property="og:url" content="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule110/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/blakecrosley/supahost/main/sandbox/self-assembling-brain/rule110/preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:description" content="Dive into the fascinating world of elementary cellular automata. Toggle cells and see Rule 110's emergent patterns unfold.">
   <meta property="og:site_name" content="Blake Crosley's Sandbox">
+
+  <!-- Apple Messages Preview -->
+  <meta name="apple-mobile-web-app-title" content="Rule 110 Automaton">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule110/preview-icon.png">
+  <!-- Apple Messages Link Preview -->
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <!-- Apple Messages Fallback -->
+  <link rel="mask-icon" href="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule110/preview-icon.png" color="#24283b">
 
   <!-- Bootstrap 5.3.3 CSS -->
   <link
@@ -50,21 +62,22 @@
     rel="stylesheet"
   />
 
-  <!-- Bootstrap Icons -->
+  <!-- Add this after Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
-    /* Tokyo Night colors */
+    /* Tokyo Night colors from https://github.com/tokyo-night/tokyo-night-vscode-theme */
     :root {
-      --tn-bg: #1a1b26;
-      --tn-panel: #24283b;
-      --tn-foreground: #c0caf5;
-      --tn-btn-bg: #414868;
+      --tn-bg: #1a1b26;         /* Primary background */
+      --tn-panel: #24283b;      /* Panel/secondary backgrounds */
+      --tn-foreground: #c0caf5; /* Main text color */
+      --tn-btn-bg: #414868;     /* Button background */
       --tn-btn-bg-hover: #565f89;
       --tn-btn-text: #c0caf5;
       --tn-border: #565f89;
     }
 
+    /* Overall page styling */
     body {
       font-family: 'Poppins', sans-serif;
       background-color: var(--tn-bg) !important;
@@ -78,6 +91,7 @@
       padding-bottom: 0px;
     }
 
+    /* Navbar inherits panel color */
     .navbar {
       background-color: rgba(36, 40, 59, 0.8) !important;
       border-bottom: 1px solid var(--tn-border);
@@ -86,6 +100,7 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
+    /* Buttons */
     .btn-secondary {
       background-color: var(--tn-btn-bg) !important;
       color: var(--tn-btn-text) !important;
@@ -93,29 +108,32 @@
     }
     .btn-secondary:hover {
       background-color: var(--tn-btn-bg-hover) !important;
+      border-color: var(--tn-border) !important;
     }
 
-    h1, h2, h3, h4, h5, h6 {
-      margin-top: 0em;
-      margin-bottom: .5em;
-      color: rgb(245, 133, 237);
-      font-weight: bold;
+    .btn-outline-secondary {
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
+    }
+    .btn-outline-secondary:hover {
+      background-color: var(--tn-btn-bg-hover) !important;
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
     }
 
-    .instructions-link {
-      color: rgb(245, 133, 237);
-      text-decoration: underline;
-      transition: all 0.2s ease;
+    /* Form Controls (like .form-select) */
+    .form-select {
+      background-color: var(--tn-panel) !important;
+      color: var(--tn-foreground) !important;
+      border-color: var(--tn-border) !important;
     }
-    
-    .instructions-link:hover {
-      color: rgb(250, 164, 244);
-      text-decoration: underline;
-      text-underline-offset: 4px;
+    .form-select:focus {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(108,117,125,.5); /* or customize further */
     }
 
-    /* Placeholder for the automaton container */
-    #automaton-container {
+    /* Grid container placeholder for Rule 110 */
+    #grid-container {
       margin: 0 auto;
       border: 1px solid var(--tn-border);
       border-radius: .5rem;
@@ -125,6 +143,92 @@
       position: relative;
       padding-bottom: 60%;
       overflow: hidden;
+      cursor: pointer;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* We'll eventually render the Rule 110 automaton rows here */
+    #gridWrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #grid {
+      width: 100%;
+      height: 100%;
+      background: var(--tn-border);
+    }
+
+    /* The row of 1D cells could be drawn as divs or a canvas; for now, placeholder */
+    .cell {
+      background-color: #24283b; /* match main background or #24283b if preferred */
+      box-sizing: border-box;
+    }
+    .alive {
+      background-color: #88f9d7; /* Vibrant green from Tokyo Night theme */
+    }
+
+    /* Some spacing styles similar to the Conway page */
+    #rule110Controls {
+      margin-bottom: 16px;
+    }
+    #zoomControls {
+      margin: 16px 0;
+    }
+
+    h1, h2, h3, h4, h5, h6  {
+      margin-top: 0em;
+      margin-bottom: .5em;
+      color: rgb(245, 133, 237);
+      font-weight: bold;
+    }
+
+    a.instructions-link {
+      color: rgb(245, 133, 237);
+      text-decoration: underline;
+      transition: all 0.2s ease;
+    }
+    
+    a.instructions-link:hover {
+      color: rgb(250, 164, 244);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    
+    a.instructions-link:active {
+      color: rgb(219, 119, 212);
+    }
+
+    p {
+      margin-bottom: 1em;
+    }
+    p.mb-large {
+      margin-bottom: 3em;
+    }
+
+    /* Code showcase styling (background etc.) */
+    .code-showcase {
+      background: #1a1b26;
+      border-radius: .5rem;
+      margin: 1rem 0 3rem 0;
+      border: 1px solid var(--tn-border);
+    }
+    .code-showcase pre {
+      background: #24283b;
+      padding: 1.5rem;
+      border-radius: .5rem;
+      overflow-x: auto;
+      margin: 0;
+    }
+    .code-showcase p {
+      color: #c0caf5;
+      margin: 1em 0;
     }
 
     .footer {
@@ -134,7 +238,77 @@
       bottom: 0;
       width: 100%;
       padding: 1rem 0;
-      margin-top: auto;
+    }
+    
+    .text-muted {
+      color: var(--tn-foreground) !important;
+      opacity: 0.7;
+    }
+
+    .footer-links a {
+      color: var(--tn-foreground);
+      opacity: 0.7;
+      text-decoration: none;
+      margin: 0.5rem;
+      transition: opacity 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+    }
+    .mw-100 {
+      max-width: 100%;
+    }
+
+    /* Modal styling */
+    .modal-content {
+      background: var(--tn-panel);
+      border: 1px solid var(--tn-border);
+    }
+    
+    .modal-header {
+      border-bottom-color: var(--tn-border);
+    }
+    
+    .modal-dialog-game {
+      max-width: 66.666667%;
+    }
+
+    /* Responsiveness / Mobile footers, etc. */
+    @media (max-width: 768px) {
+      .footer {
+        margin: 0;
+        padding: 1rem 0;
+      }
+
+      .footer .container {
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .footer-social {
+        justify-content: center;
+        margin: 0.5rem 0;
+      }
+      
+      .footer-links a {
+        margin: 0.5rem;
+      }
+    }
+
+    .footer-container {
+      padding: 0;
+      margin: 0;
     }
 
     .footer-links {
@@ -142,16 +316,9 @@
       align-items: center;
       gap: 1rem;
     }
-
-    .footer-links a {
-      color: var(--tn-foreground);
-      opacity: 0.7;
-      text-decoration: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .footer-links a:hover {
-      opacity: 1;
+    .footer-social {
+      display: flex;
+      gap: 1.5rem;
     }
 
     @media (max-width: 991.98px) {
@@ -169,19 +336,53 @@
       }
     }
 
-    @media (max-width: 768px) {
-      .footer .container {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-      }
-      
-      .footer-links {
-        flex-direction: column;
-        align-items: center;
-      }
+    .navbar-toggler {
+      border-color: var(--tn-border);
+      padding: 0.25rem 0.5rem;
+    }
+    .navbar-toggler:focus {
+      box-shadow: none;
+      border-color: var(--tn-foreground);
+    }
+    .navbar-toggler .bi-list {
+      font-size: 1.5rem;
+    }
+
+    /* Loading state (placeholder if needed) */
+    #loadingState {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--tn-panel);
+      border-radius: .5rem;
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 0.25rem solid var(--tn-border);
+      border-top-color: var(--tn-foreground);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
+
+  <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="../../../favicon/favicon.svg" />
+  <link rel="shortcut icon" href="../../../favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../../favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="../../../favicon/site.webmanifest" />
+
 </head>
 
 <body>
@@ -196,12 +397,14 @@
         @blakec
       </a>
       
+      <!-- Hamburger button for mobile -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
               data-bs-target="#navbarContent" aria-controls="navbarContent" 
               aria-expanded="false" aria-label="Toggle navigation">
         <i class="bi bi-list text-light"></i>
       </button>
       
+      <!-- Collapsible content -->
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="navbar-nav ms-auto">
           <a href="https://blakecrosley.com" class="btn btn-outline-secondary me-2" target="_blank">
@@ -215,194 +418,286 @@
     </div>
   </nav>
 
-  <!-- Main container -->
+  <!-- Main container: Use a Bootstrap container and row -->
   <div class="container-fluid">
     <div class="row">
+      <!-- 8 columns wide on large screens, 12 on smaller, with offset for center -->
       <div class="col-12 col-lg-8 offset-lg-2">
-        <h1>Rule 110: Elementary Cellular Automaton</h1>
         
-        <div id="description">
-            <p>
-              Rule 110 represents a profound intersection of simplicity and complexity in computational systems. 
-              Unlike Conway's Game of Life, which operates on a 2D grid with multiple neighbors, Rule 110 works 
-              on just a 1D line where each cell considers only itself and its two adjacent neighbors. Yet this 
-              deceptively simple system achieves something remarkable: it's proven to be Turing complete, 
-              meaning it can simulate any computer program given enough time and space.
-            </p>
-            <p>
-              This cellular automaton perfectly illustrates how complex behaviors can emerge from simple 
-              rules—a key principle in understanding both neural development and artificial intelligence. 
-              Like neurons following local chemical signals to form elaborate networks, Rule 110's cells 
-              create intricate patterns through purely local interactions. This bottom-up emergence mirrors 
-              how our brains develop: from simple cellular rules to complex cognitive architectures.
-            </p>
-            <p class="mb-large">
-              <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
-                How it works
-              </a>
-            </p>
+        <!-- BEGIN Rule 110 functionality section -->
+        <div class="row" id="rule110Controls">
+          <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
+            <h1>Wolfram's Rule 110</h1>
+
+            <!-- Editorial description -->
+            <div id="description">
+              <p>
+                Wolfram's Rule 110 is a remarkable one-dimensional cellular automaton from Stephen Wolfram's 
+                classification of "elementary" rules. Each cell in this linear grid can be in one of two 
+                states: 0 (off) or 1 (on). With every step, the next row of cells is determined by looking at 
+                triples in the current row—each cell plus its two neighbors. Rule 110 references the specific 
+                pattern of which triples produce a 1 vs. a 0 in the next generation.
+              </p>
+              <p>
+                Despite its simple definition—just a few bits describing which arrangements yield an "on" 
+                cell—Rule 110 exhibits incredibly complex behavior. It's even been proven capable of 
+                universal computation under the right initial conditions, which places it on par with 
+                systems like Turing machines. This page provides an interactive playground to explore 
+                how these stripes evolve row by row, painting beautiful emergent patterns from minimal 
+                rules.
+              </p>
+              <p class="mb-large">
+                <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+                  How it works
+                </a>
+              </p>
+            </div>
+
+            <!-- Button group (Play, Step, Randomize, Clear) -->
+            <div class="btn-group btn-group-lg" role="group" aria-label="Rule 110 controls">
+              <button id="toggleBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
+              </button>
+              <button id="stepBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step Forward</span>
+              </button>
+              <button id="randomBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-dice-6"></i> <span class="d-none d-sm-inline">Randomize</span>
+              </button>
+              <button id="clearBtn" type="button" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
+              </button>
+            </div>
+            <!-- Speed select -->
+            <div class="ms-3 d-inline-flex align-items-center">
+              <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
+              <select id="speedSelect" class="form-select form-select-lg" style="width:auto;" aria-label="Speed">
+                <option value="0.5">0.5×</option>
+                <option value="1.0" selected>1.0×</option>
+                <option value="1.5">1.5×</option>
+                <option value="2.0">2.0×</option>
+              </select>
+            </div>
           </div>
-        <!-- Control buttons -->
-        <div class="btn-group btn-group-lg mb-3" role="group" aria-label="Automaton controls">
-          <button id="toggleBtn" type="button" class="btn btn-secondary">
-            <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
-          </button>
-          <button id="stepBtn" type="button" class="btn btn-secondary">
-            <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step</span>
-          </button>
-          <button id="randomBtn" type="button" class="btn btn-secondary">
-            <i class="bi bi-dice-6"></i> <span class="d-none d-sm-inline">Randomize</span>
-          </button>
-          <button id="clearBtn" type="button" class="btn btn-secondary">
-            <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
-          </button>
         </div>
 
-        <!-- Placeholder for the automaton -->
-        <div id="automaton-container">
-          <!-- Game board will go here -->
+        <!-- The grid container for Rule 110 rendering -->
+        <div id="grid-container">
+          <div id="loadingState">
+            <div class="spinner"></div>
+            <div>Loading Rule 110 board...</div>
+          </div>
+          <div id="gridWrapper">
+            <!-- For now, a placeholder: We'll eventually replace with <canvas> or dynamic elements -->
+            <div id="grid"></div>
+          </div>
         </div>
 
-        <!-- Add pattern examples section -->
-        <h3>Pattern Examples</h3>
-        <div id="instructions">
+        <!-- Zoom controls -->
+        <div class="d-flex justify-content-end align-items-center" id="zoomControls">
+          <label for="zoomSelect" class="form-label me-2 mb-0">Zoom</label>
+          <select id="zoomSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="3">3×</option>
+          </select>
+        </div>
+
+        <!-- Explanation of the algorithm, etc. -->
+        <h3>The Rule</h3>
         <p>
-            Rule 110 generates several distinctive patterns that showcase different aspects of emergent 
-            computation. The "Ether" pattern forms a stable background, while "Gliders" transport 
-            information across the grid. These patterns can combine to perform logical operations, 
-            forming the basis of its computational universality.
+          In Rule 110, we take each group of three adjacent cells (left, center, right) from the current row 
+          and look up what the center cell should become in the next row. Since each cell is either 0 or 1, 
+          there are only eight possible neighborhoods:
         </p>
+        
+        <div class="code-showcase">
+          <pre><code>
+/*
+   Rule 110's mapping can be represented as:
+
+   Current Triplet | Next Cell
+   ---------------
+       111         |    0
+       110         |    1
+       101         |    1
+       100         |    0
+       011         |    1
+       010         |    1
+       001         |    1
+       000         |    0
+
+   If we read the next cell column top to bottom as a binary number:
+      01101110 (in binary) = 110 (decimal)
+   Hence the name: Rule 110.
+*/
+          </code></pre>
+          <p>
+            Each time step, the automaton processes every cell by looking at it and its two neighbors, then 
+            applying these outcomes. It's an elementary rule, yet the complexity it produces can rival 
+            far larger systems. Patterns often show repeating structures, chaotic expansions, and even 
+            ephemeral "particles" that drift through the stripes.
+          </p>
         </div>
 
-<!-- Add the algorithm section -->
-<h3>The Algorithm</h3>
-<p>
-  At its core, Rule 110 operates on a beautifully simple principle: each cell's fate is determined 
-  by just three bits of information—its own state and its two neighbors'. This creates eight possible 
-  patterns, each mapping to a single output bit:
-</p>
-
-<div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
-  <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
-<span style="color: #565f89;">// The core algorithm that determines the next state</span>
-<span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextGeneration</span>(<span style="color: #e0af68;">currentRow</span>) {
-  <span style="color: #c0caf5;">const nextRow = new Array(currentRow.length).fill(0);</span>
+        <h3>The Algorithm</h3>
+        <p>
+          Below is a simplified illustration of how we'd compute a new row from an existing row. We'll 
+          handle boundary cells by assuming their neighbors outside the row are 0, or by wrapping around, 
+          depending on your preference. For demonstration, here's the direct approach:
+        </p>
+        
+        <div class="code-showcase">
+          <pre><code>
+function computeNextRow(currentRow) {
+  const newRow = new Array(currentRow.length).fill(0);
   
-  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < currentRow.length; i++) {
-    <span style="color: #565f89;">// Get the three-cell neighborhood</span>
-    <span style="color: #c0caf5;">const left = i === 0 ? 0 : currentRow[i - 1];</span>
-    <span style="color: #c0caf5;">const center = currentRow[i];</span>
-    <span style="color: #c0caf5;">const right = i === currentRow.length - 1 ? 0 : currentRow[i + 1];</span>
-    
-    <span style="color: #565f89;">// Convert neighborhood to pattern index</span>
-    <span style="color: #c0caf5;">const pattern = (left << 2) | (center << 1) | right;</span>
-    
-    <span style="color: #565f89;">// Apply Rule 110 lookup</span>
-    nextRow[i] = RULE_110[pattern];
+  for (let i = 0; i < currentRow.length; i++) {
+    // Neighborhood indices (with wrap or boundary handling):
+    const left = currentRow[i - 1] || 0;
+    const center = currentRow[i];
+    const right = currentRow[i + 1] || 0;
+
+    // Combine bits into a 3-bit number:
+    const triplet = (left << 2) | (center << 1) | right;
+
+    // Decide next cell according to Rule 110 mapping:
+    // 111 -> 0, 110 -> 1, 101 -> 1, 100 -> 0,
+    // 011 -> 1, 010 -> 1, 001 -> 1, 000 -> 0
+    // Pre-coded for speed or via condition checks:
+    newRow[i] = rule110Map(triplet);
   }
-  <span style="color: #bb9af7;">return</span> nextRow;
-}</code></pre>
+  
+  return newRow;
+}
 
-  <p style="color: #c0caf5; margin: 1em 0;">
-    The name "Rule 110" comes from the binary number 01101110 (decimal 110) formed by reading the 
-    output bits in reverse. This simple lookup table, combined with the sequential application 
-    across a row of cells, creates complex patterns that can encode arbitrary computations.
-  </p>
-
-  <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
-<span style="color: #565f89;">// The pattern definitions that create Rule 110</span>
-<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">RULE_110</span> = [
-  0, <span style="color: #565f89;">// 000 -> 0  (No neighbors alive)</span>
-  1, <span style="color: #565f89;">// 001 -> 1  (Right neighbor only)</span>
-  1, <span style="color: #565f89;">// 010 -> 1  (Center only)</span>
-  1, <span style="color: #565f89;">// 011 -> 1  (Center and right)</span>
-  0, <span style="color: #565f89;">// 100 -> 0  (Left only)</span>
-  1, <span style="color: #565f89;">// 101 -> 1  (Left and right)</span>
-  1, <span style="color: #565f89;">// 110 -> 1  (Left and center)</span>
-  0  <span style="color: #565f89;">// 111 -> 0  (All alive)</span>
-];</code></pre>
-
-  <p style="color: #c0caf5; margin: 1em 0;">
-    These eight rules create a delicate balance between growth and decay. Unlike simpler cellular 
-    automata that quickly stabilize or dissolve into chaos, Rule 110 maintains a complex edge 
-    between order and randomness—much like the neural networks in our brains.
-  </p>
-</div>
-
-<!-- Add instructions modal -->
-<div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-game">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="instructionsModalLabel">How it works</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>
-          <strong>Click</strong> cells in the top row to set their initial states. Press <strong>Play</strong> 
-          to watch the pattern evolve downward, or use <strong>Step</strong> to advance one generation at a time. 
-          Use <strong>Randomize</strong> to create a random starting pattern, or <strong>Clear</strong> to start fresh.
-        </p>
-        
-        <h6>The Rules</h6>
-        <p>
-          Each cell follows Rule 110's pattern matching:
-          <ul>
-            <li><strong>Three-Cell Window:</strong> Each cell considers itself and its two neighbors</li>
-            <li><strong>Eight Patterns:</strong> The three cells create 8 possible binary patterns</li>
-            <li><strong>Binary Output:</strong> Each pattern maps to either 0 (dead) or 1 (alive)</li>
-            <li><strong>Sequential Update:</strong> All cells update simultaneously based on the current row</li>
-          </ul>
-        </p>
-        
-        <h6>Controls</h6>
-        <p>
-          <ul>
-            <li><strong>Play/Pause:</strong> Start or stop the evolution</li>
-            <li><strong>Step Forward:</strong> Advance one row at a time</li>
-            <li><strong>Randomize:</strong> Create a random initial pattern</li>
-            <li><strong>Clear:</strong> Reset to an empty state</li>
-          </ul>
-        </p>
-        
-        <h6>Notable Patterns</h6>
-        <p class="mb-0">
-          Watch for these emergent structures:
-          <ul class="mb-0">
-            <li><strong>Ether:</strong> The background pattern that repeats every 7 steps</li>
-            <li><strong>Gliders:</strong> Small patterns that move diagonally across the grid</li>
-            <li><strong>Collisions:</strong> Interactions between gliders that can perform computation</li>
-          </ul>
-        </p>
+function rule110Map(triplet) {
+  // Hardcode or use a small lookup table:
+  // Indices from 0..7 => '000'..'111'
+  // Mapping: 6,5,3,1 => nextCell=1
+  // Could be an array like [0,1,1,1,0,1,1,0]
+  // or simply a series of if statements.
+  
+  switch(triplet) {
+    case 6: // 110 in binary
+    case 5: // 101
+    case 3: // 011
+    case 1: // 001
+      return 1;
+    default:
+      return 0;
+  }
+}
+          </code></pre>
+          <p>
+            With these basic ingredients, you can generate row after row, each new pattern streaming out 
+            below the last. The intriguing part is how quickly simple stripes can evolve into visually 
+            dense or repetitive motifs, underscoring the deep complexity lurking in “tiny” rules like 110.
+          </p>
+        </div>
+        <!-- END Rule 110 functionality section -->
+  
       </div>
     </div>
   </div>
-</div>
-
+  
   <!-- Footer -->
-  <footer class="footer mt-auto">
-    <div class="container d-flex justify-content-between align-items-center">
-      <span class="text-muted">© 2025</span>
-      <div class="footer-links">
-        <div>
-          <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
-            <i class="bi bi-twitter-x"></i>
-          </a>
-          <a href="https://github.com/blakecrosley" target="_blank" title="GitHub">
-            <i class="bi bi-github"></i>
-          </a>
+  <div class="container-fluid footer-container">
+    <div class="row">
+      <footer class="footer mt-auto">
+        <div class="container d-flex justify-content-between align-items-center mw-100">
+          <span class="text-muted">© 2025</span>
+          <div class="footer-links">
+            <div class="">
+              <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
+                <i class="bi bi-twitter-x"></i>
+              </a>
+              <a href="https://github.com/blakecrosley" target="_blank" title="GitHub">
+                <i class="bi bi-github"></i>
+              </a>
+            </div>
+            <a href="https://blakecrosley.com" target="_blank" title="Personal Website">
+              blakecrosley.com
+            </a>
+            <a href="https://941apps.com" target="_blank" title="941 Apps">
+              941apps.com
+            </a>
+          </div>
         </div>
-        <a href="https://blakecrosley.com" target="_blank">blakecrosley.com</a>
-        <a href="https://941apps.com" target="_blank">941apps.com</a>
-      </div>
+      </footer>
     </div>
-  </footer>
+  </div>
 
-  <!-- Bootstrap JS -->
+  <!-- Bootstrap 5.3.3 JS (includes Popper) -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous">
   </script>
+
+  <!-- Placeholder for eventual Rule 110 Script (Vanilla JS) -->
+  <script>
+    // We'll fill out the logic here later, similar to how we did for the Conway's example.
+    // For now, let's keep it minimal.
+
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("Rule 110 page loaded. Placeholder for now.");
+      // Just stubs for the button elements:
+      document.getElementById("toggleBtn").onclick = () => alert("Play/Pause not yet implemented");
+      document.getElementById("stepBtn").onclick = () => alert("Step not yet implemented");
+      document.getElementById("randomBtn").onclick = () => alert("Randomize not yet implemented");
+      document.getElementById("clearBtn").onclick = () => alert("Clear not yet implemented");
+      document.getElementById("speedSelect").onchange = (e) => console.log("Speed changed to:", e.target.value);
+      document.getElementById("zoomSelect").onchange = (e) => console.log("Zoom changed to:", e.target.value);
+    });
+  </script>
+
+  <!-- cite original Tokyo Night reference in markdown, as requested -->
+  <p style="display:none;">
+    Referenced from [Tokyo Night VSCode Theme](https://github.com/tokyo-night/tokyo-night-vscode-theme)
+  </p>
+
+  <!-- Instructions Modal -->
+  <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-game">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="instructionsModalLabel">How it works</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <strong>Toggle</strong> cells in the initial row to determine your starting pattern. Press <strong>Play</strong> 
+            to watch Rule 110 evolve row by row. Each step applies the simple “110” rule, 
+            but the resulting patterns can get surprisingly complex. You can also 
+            <strong>Step Forward</strong> manually, <strong>Randomize</strong> for a fresh random row, 
+            or <strong>Clear</strong> to reset.
+          </p>
+          
+          <h6>The Rules</h6>
+          <p>
+            We focus on one row of cells at a time. Every cell (and its two neighbors) forms a “triplet” that 
+            decides the next state. The rule’s name comes from reading the new states in binary form, which 
+            comes out to 110 (decimal). Despite these small constraints, Rule 110 can exhibit an incredible 
+            range of patterns—some repetitively orderly, others nearly chaotic.
+          </p>
+          
+          <h6>Controls</h6>
+          <p>
+            <ul>
+              <li><strong>Play/Pause:</strong> Start or stop the simulation of new rows</li>
+              <li><strong>Step Forward:</strong> Generate one new row at a time</li>
+              <li><strong>Speed:</strong> Adjust how quickly new rows appear</li>
+              <li><strong>Zoom:</strong> Change how many cells or how large each cell appears (only while paused)</li>
+            </ul>
+          </p>
+          
+          <p class="mb-0">
+            Experiment with different initial configurations or random seeds to see what emerges!
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
