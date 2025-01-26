@@ -483,6 +483,10 @@
           decides the center cell's state in the next generation. Here are the triplets for reference:
         </p>
         
+        <p>
+          The rule can be expressed as a lookup table, where each three-cell pattern maps to the next state:
+        </p>
+        
         <div class="code-showcase">
           <pre><code>
 /*
@@ -501,12 +505,13 @@
    That's why it's called Rule 110.
 */
           </code></pre>
-          <p>
-            Each new generation is drawn below the previous one, building a tapestry of patterns that can 
-            be surprisingly rich and varied. Some configurations form repetitive structures; others produce 
-            complex interactions that look almost random.
-          </p>
         </div>
+
+        <p>
+          Each new generation is drawn below the previous one, building a tapestry of patterns that can 
+          be surprisingly rich and varied. Some configurations form repetitive structures; others produce 
+          complex interactions that look almost random.
+        </p>
 
         <h3>The Algorithm</h3>
         <p>
@@ -535,26 +540,13 @@ function computeNextRow(currentRow) {
   }
   return newRow;
 }
-
-function rule110Map(triplet) {
-  // Let's define a static lookup: (from top 111..000 => next cell)
-  // Index: 7..0 => [111,110,101,100,011,010,001,000]
-  // Value: [0,1,1,0,1,1,1,0]
-  const lookup = [0,1,1,1,0,1,1,0]; 
-  // But we need to reverse because our index 7 => 111, 0 => 000
-  // or we can do 7 - triplet to index. Let's do a direct approach:
-  // "triplet" is already 0..7. The array above is in descending order (7->0).
-  // Let's invert the index:
-  // 7 => 0 in array, 6 => 1, 5 => 2, 4 => 3, 3 => 4, 2 => 5, 1 => 6, 0 => 7
-  // so index = 7 - triplet
-  return lookup[7 - triplet];
-}
           </code></pre>
-          <p>
-            By stitching these rows together vertically on our canvas, we get a live visual of how patterns 
-            emerge from the tiniest of rules.
-          </p>
         </div>
+
+        <p>
+          By stitching these rows together vertically on our canvas, we get a live visual of how patterns 
+          emerge from the tiniest of rules.
+        </p>
         <!-- END Rule 110 functionality section -->
   
       </div>
