@@ -662,24 +662,24 @@
       <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// The core algorithm that determines life and death</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextGeneration</span>(<span style="color: #e0af68;">currentGrid</span>) {
-  <span style="color: #c0caf5;">const newGrid = createEmptyGrid(rows, cols);</span>
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newGrid</span> = <span style="color: #7aa2f7;">createEmptyGrid</span>(<span style="color: #7dcfff;">rows</span>, <span style="color: #7dcfff;">cols</span>);
   
-  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> r = <span style="color: #ff9e64;">0</span>; r &lt; rows; r++) {
-    <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> c = <span style="color: #ff9e64;">0</span>; c &lt; cols; c++) {
-      <span style="color: #c0caf5;">const neighbors = countNeighbors(currentGrid, r, c);</span>
-      <span style="color: #c0caf5;">const cellState = currentGrid[r][c];</span>
+  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> r = <span style="color: #ff9e64;">0</span>; r < <span style="color: #7dcfff;">rows</span>; r++) {
+    <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> c = <span style="color: #ff9e64;">0</span>; c < <span style="color: #7dcfff;">cols</span>; c++) {
+      <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">neighbors</span> = <span style="color: #7aa2f7;">countNeighbors</span>(<span style="color: #e0af68;">currentGrid</span>, r, c);
+      <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">cellState</span> = <span style="color: #e0af68;">currentGrid</span>[r][c];
 
       <span style="color: #565f89;">// Apply Conway's rules of life</span>
-      <span style="color: #bb9af7;">if</span> (cellState === <span style="color: #ff9e64;">1</span>) {
+      <span style="color: #bb9af7;">if</span> (<span style="color: #7dcfff;">cellState</span> === <span style="color: #ff9e64;">1</span>) {
         <span style="color: #565f89;">// Live cell survives if it has 2 or 3 neighbors</span>
-        newGrid[r][c] = (neighbors === <span style="color: #ff9e64;">2</span> || neighbors === <span style="color: #ff9e64;">3</span>) ? <span style="color: #ff9e64;">1</span> : <span style="color: #ff9e64;">0</span>;
+        <span style="color: #7dcfff;">newGrid</span>[r][c] = (<span style="color: #7dcfff;">neighbors</span> === <span style="color: #ff9e64;">2</span> || <span style="color: #7dcfff;">neighbors</span> === <span style="color: #ff9e64;">3</span>) ? <span style="color: #ff9e64;">1</span> : <span style="color: #ff9e64;">0</span>;
       } <span style="color: #bb9af7;">else</span> {
         <span style="color: #565f89;">// Dead cell springs to life if it has exactly 3 neighbors</span>
-        newGrid[r][c] = (neighbors === <span style="color: #ff9e64;">3</span>) ? <span style="color: #ff9e64;">1</span> : <span style="color: #ff9e64;">0</span>;
+        <span style="color: #7dcfff;">newGrid</span>[r][c] = (<span style="color: #7dcfff;">neighbors</span> === <span style="color: #ff9e64;">3</span>) ? <span style="color: #ff9e64;">1</span> : <span style="color: #ff9e64;">0</span>;
       }
     }
   }
-  <span style="color: #bb9af7;">return</span> newGrid;
+  <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newGrid</span>;
 }</code></pre>
 
       <p style="color: #c0caf5; margin: 1em 0;">
@@ -692,15 +692,15 @@
       <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 0; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Count live neighbors for each cell</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">countNeighbors</span>(<span style="color: #e0af68;">g</span>, <span style="color: #e0af68;">row</span>, <span style="color: #e0af68;">col</span>) {
-  <span style="color: #c0caf5;">let count = 0;</span>
-  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i &lt; <span style="color: #ff9e64;">8</span>; i++) {
-    <span style="color: #c0caf5;">const nr = row + NEIGHBOR_OFFSETS[i * 2];</span>
-    <span style="color: #c0caf5;">const nc = col + NEIGHBOR_OFFSETS[i * 2 + 1];</span>
-    <span style="color: #bb9af7;">if</span> (nr &gt;= <span style="color: #ff9e64;">0</span> &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= <span style="color: #ff9e64;">0</span> &amp;&amp; nc &lt; cols) {
-      count += g[nr][nc];
+  <span style="color: #bb9af7;">let</span> <span style="color: #7dcfff;">count</span> = <span style="color: #ff9e64;">0</span>;
+  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < <span style="color: #ff9e64;">8</span>; i++) {
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">nr</span> = <span style="color: #e0af68;">row</span> + <span style="color: #7aa2f7;">NEIGHBOR_OFFSETS</span>[i * <span style="color: #ff9e64;">2</span>];
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">nc</span> = <span style="color: #e0af68;">col</span> + <span style="color: #7aa2f7;">NEIGHBOR_OFFSETS</span>[i * <span style="color: #ff9e64;">2</span> + <span style="color: #ff9e64;">1</span>];
+    <span style="color: #bb9af7;">if</span> (<span style="color: #7dcfff;">nr</span> >= <span style="color: #ff9e64;">0</span> && <span style="color: #7dcfff;">nr</span> < <span style="color: #7dcfff;">rows</span> && <span style="color: #7dcfff;">nc</span> >= <span style="color: #ff9e64;">0</span> && <span style="color: #7dcfff;">nc</span> < <span style="color: #7dcfff;">cols</span>) {
+      <span style="color: #7dcfff;">count</span> += <span style="color: #e0af68;">g</span>[<span style="color: #7dcfff;">nr</span>][<span style="color: #7dcfff;">nc</span>];
     }
   }
-  <span style="color: #bb9af7;">return</span> count;
+  <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">count</span>;
 }</code></pre>
 
       <p style="color: #c0caf5; margin: 1em 0;">
@@ -713,22 +713,22 @@
       <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Load and center a predefined pattern on the grid</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">loadPattern</span>(<span style="color: #e0af68;">patternName</span>) {
-  <span style="color: #bb9af7;">if</span> (!patterns[patternName]) <span style="color: #bb9af7;">return</span>;
+  <span style="color: #bb9af7;">if</span> (!<span style="color: #7aa2f7;">patterns</span>[<span style="color: #e0af68;">patternName</span>]) <span style="color: #bb9af7;">return</span>;
   
   <span style="color: #565f89;">// Calculate pattern dimensions</span>
-  <span style="color: #c0caf5;">const pattern = patterns[patternName];</span>
-  <span style="color: #c0caf5;">const bounds = calculatePatternBounds(pattern);</span>
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">pattern</span> = <span style="color: #7aa2f7;">patterns</span>[<span style="color: #e0af68;">patternName</span>];
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">bounds</span> = calculatePatternBounds(pattern);
   
   <span style="color: #565f89;">// Center the pattern</span>
-  <span style="color: #c0caf5;">const rowOffset = Math.floor(rows / 2 - bounds.height / 2);</span>
-  <span style="color: #c0caf5;">const colOffset = Math.floor(cols / 2 - bounds.width / 2);</span>
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">rowOffset</span> = <span style="color: #7aa2f7;">Math</span>.floor(<span style="color: #7dcfff;">rows</span> / <span style="color: #ff9e64;">2</span> - <span style="color: #7dcfff;">bounds</span>.height / <span style="color: #ff9e64;">2</span>);
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">colOffset</span> = <span style="color: #7aa2f7;">Math</span>.floor(<span style="color: #7dcfff;">cols</span> / <span style="color: #ff9e64;">2</span> - <span style="color: #7dcfff;">bounds</span>.width / <span style="color: #ff9e64;">2</span>);
   
   <span style="color: #565f89;">// Place the pattern on the grid</span>
-  pattern.forEach(([r, c]) =&gt; {
-    <span style="color: #c0caf5;">const newR = r + rowOffset;</span>
-    <span style="color: #c0caf5;">const newC = c + colOffset;</span>
-    <span style="color: #bb9af7;">if</span> (isValidCell(newR, newC)) {
-      grid[newR][newC] = <span style="color: #ff9e64;">1</span>;
+  <span style="color: #7dcfff;">pattern</span>.<span style="color: #7aa2f7;">forEach</span>(<span style="color: #bb9af7;">([</span><span style="color: #7dcfff;">r</span>, <span style="color: #7dcfff;">c</span><span style="color: #bb9af7;">])</span> => {
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newR</span> = r + rowOffset;
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newC</span> = c + colOffset;
+    <span style="color: #bb9af7;">if</span> (<span style="color: #7aa2f7;">isValidCell</span>(<span style="color: #7dcfff;">newR</span>, <span style="color: #7dcfff;">newC</span>)) {
+      <span style="color: #7dcfff;">grid</span>[<span style="color: #7dcfff;">newR</span>][<span style="color: #7dcfff;">newC</span>] = <span style="color: #ff9e64;">1</span>;
     }
   });
 }</code></pre>
@@ -757,9 +757,7 @@
     [<span style="color: #ff9e64;">4</span>, -<span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">4</span>, -<span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">4</span>, <span style="color: #ff9e64;">0</span>], [<span style="color: #ff9e64;">4</span>, <span style="color: #ff9e64;">1</span>], [<span style="color: #ff9e64;">4</span>, <span style="color: #ff9e64;">2</span>],
     <span style="color: #565f89;">// Inner structure</span>
     [-<span style="color: #ff9e64;">2</span>, -<span style="color: #ff9e64;">4</span>], [-<span style="color: #ff9e64;">1</span>, -<span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">0</span>, -<span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">1</span>, -<span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">2</span>, -<span style="color: #ff9e64;">4</span>],
-    [-<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">4</span>], [-<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">0</span>, <span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">4</span>],
-    [-<span style="color: #ff9e64;">2</span>, -<span style="color: #ff9e64;">2</span>], [-<span style="color: #ff9e64;">1</span>, -<span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">0</span>, -<span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">1</span>, -<span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">2</span>, -<span style="color: #ff9e64;">2</span>],
-    [-<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">2</span>], [-<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">0</span>, <span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">2</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">2</span>]
+    [-<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">4</span>], [-<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">0</span>, <span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">1</span>, <span style="color: #ff9e64;">4</span>], [<span style="color: #ff9e64;">2</span>, <span style="color: #ff9e64;">4</span>]
   ],
 
   <span style="color: #565f89;">// Small Exploder - Rapidly expands into chaotic patterns</span>
