@@ -443,11 +443,13 @@
             <!-- Speed select -->
             <div class="ms-3 d-inline-flex align-items-center">
               <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
-              <select id="speedSelect" class="form-select form-select-lg" style="width:auto;" aria-label="Speed">
+              <select id="speedSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
                 <option value="0.5">0.5×</option>
-                <option value="1.0" selected>1.0×</option>
-                <option value="1.5">1.5×</option>
-                <option value="2.0">2.0×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+                <option value="8">8×</option>
+                <option value="16">16×</option>
               </select>
             </div>
           </div>
@@ -604,7 +606,7 @@ function rule110Map(triplet) {
         this.baseCols = 60;         // Base number of columns at zoom level 1
         this.maxRows = 300;         // Max history rows
         this.currentSpeedMultiplier = 1.0;
-        this.baseInterval = 200;    
+        this.baseInterval = 50;     // Changed from 200 to 50ms (4x faster base speed)
         this.playing = false;
         this.timer = null;
         this.zoom = 1;
