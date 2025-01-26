@@ -141,7 +141,7 @@
       box-sizing: border-box;
       width: 100%;
       position: relative;
-      padding-bottom: 60%; /* Match Game of Life's aspect ratio */
+      padding-bottom: 60%; /* Match aspect ratio from similar examples */
       overflow: hidden;
       cursor: pointer;
       touch-action: none;
@@ -412,13 +412,14 @@
                 classification of "elementary" rules. Each cell in this linear grid can be in one of two 
                 states: 0 (off) or 1 (on). With every step, the next row of cells is determined by looking at 
                 triples in the current row—each cell plus its two neighbors. The pattern of which triples 
-                produce a 1 in the next generation is encoded by the binary number 110.
+                produce a 1 in the next generation is encoded by the binary number <strong>110</strong>.
               </p>
               <p>
                 Despite its simple definition—just a handful of bits describing which local arrangements 
-                become "on"—Rule 110 exhibits incredibly complex behavior. It's even been proven to be 
+                become "on"—Rule 110 exhibits incredibly rich and complex behavior. It's even been proven to be 
                 Turing-complete under certain initial conditions, placing it on par with systems that can, 
-                in theory, perform universal computation.
+                in theory, perform universal computation. In other words, something as minimal as a row of 
+                zeroes and ones can support the full scope of computable operations if seeded correctly.
               </p>
               <p class="mb-large">
                 <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
@@ -482,7 +483,9 @@
         <h3>The Rule</h3>
         <p>
           In Rule 110, we look at each group of three adjacent cells: left, center, and right. This triplet 
-          decides the center cell's state in the next generation. Here are the triplets for reference:
+          decides the center cell's state in the next generation. Because each cell is either 0 or 1, 
+          there are only eight possible triplets (from 000 to 111). The "110" in the name refers to the 
+          binary digits that define which of those triplets produce a 1 in the next row.
         </p>
         
         <p>
@@ -493,27 +496,70 @@
 <span style="color: #565f89;">// Rule 110 transition table - maps each 3-bit pattern to its next state</span>
 <span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">transitions</span> = {
   <span style="color: #565f89;">// pattern => next state</span>
-  <span style="color: #9aa5ce;">'111'</span>: <span style="color: #ff9e64;">0</span>,    <span style="color: #565f89;">// 7 -> 0</span>
-  <span style="color: #9aa5ce;">'110'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 6 -> 1</span>
-  <span style="color: #9aa5ce;">'101'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 5 -> 1</span>
-  <span style="color: #9aa5ce;">'100'</span>: <span style="color: #ff9e64;">0</span>,    <span style="color: #565f89;">// 4 -> 0</span>
-  <span style="color: #9aa5ce;">'011'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 3 -> 1</span>
-  <span style="color: #9aa5ce;">'010'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 2 -> 1</span>
-  <span style="color: #9aa5ce;">'001'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 1 -> 1</span>
-  <span style="color: #9aa5ce;">'000'</span>: <span style="color: #ff9e64;">0</span>     <span style="color: #565f89;">// 0 -> 0</span>
-};</code></pre>
+  <span style="color: #9aa5ce;">'111'</span>: <span style="color: #ff9e64;">0</span>,
+  <span style="color: #9aa5ce;">'110'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'101'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'100'</span>: <span style="color: #ff9e64;">0</span>,
+  <span style="color: #9aa5ce;">'011'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'010'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'001'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'000'</span>: <span style="color: #ff9e64;">0</span>
+};
+</code></pre>
 
         <p>
-          Each new generation is drawn below the previous one, building a tapestry of patterns that can 
-          be surprisingly rich and varied. Some configurations form repetitive structures; others produce 
-          complex interactions that look almost random.
+          Each new generation is drawn below the previous one, creating a cascading visual of patterns. 
+          Some configurations settle into repetitive structures, while others spawn chaotic or 
+          <em>almost</em> orderly ripples that hint at deeper complexity.
+        </p>
+
+        <h3>Emergence &amp; Complexity</h3>
+        <p>
+          One of the most intriguing aspects of Rule 110 is how a single row of bits can give rise 
+          to structures that look like moving particles or collisions. Tiny changes in the initial row 
+          can completely alter the unfolding tapestry. This emergent complexity arises purely from the 
+          local rule applied over and over—no central coordination is needed.
+        </p>
+        <p>
+          Researchers have studied this automaton extensively to understand how 
+          simple deterministic systems might exhibit patterns that appear random, or at least 
+          computationally irreducible. In many initial conditions, you'll see wavefronts, stable 
+          regions, and "gliders" that mimic the concept of moving entities within the grid of bits.
+        </p>
+
+        <h3>Turing Completeness &amp; Universal Computation</h3>
+        <p>
+          Rule 110's claim to fame is that it can be configured to compute anything a universal Turing 
+          machine can, making it <strong>Turing-complete</strong>. In simpler terms, if you can set up 
+          the initial row just right, the evolving rows can emulate logical operations, memory, and 
+          other fundamental computing elements. 
+        </p>
+        <p>
+          This is a profound reminder that complexity doesn't require complexity in the rules 
+          themselves—it's the repeated interactions over time that yield remarkable computational 
+          power. It also underscores the deep ties between cellular automata and the foundations of 
+          theoretical computer science.
+        </p>
+
+        <h3>Why Should We Care?</h3>
+        <p>
+          Beyond its theoretical significance, Rule 110 demonstrates that profound behavior can emerge 
+          from tiny building blocks governed by straightforward laws. This resonates with many fields 
+          of science and engineering where complex phenomena unfold from local interactions: from 
+          traffic flow and biological growth to parallel computing and cryptography.
+        </p>
+        <p>
+          In practical terms, studying such elementary cellular automata helps sharpen our intuition 
+          about how complexity arises, how patterns self-organize, and how minimal systems can encode 
+          far more than meets the eye at first glance. It's a playground for discovering how the seeds 
+          of computation can be hidden in the humblest of setups.
         </p>
 
         <h3>The Algorithm</h3>
         <p>
           Below is a simplified version of how we compute one new row from another. We can handle boundary 
           cells by assuming they're 0 outside the edges, or by wrapping around. For simplicity, let's assume 
-          edges have 0 neighbors.
+          edges have 0 neighbors:
         </p>
         
         <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
@@ -535,11 +581,12 @@
   }
   <span style="color: #bb9af7;">return</span> newRow;
 }
-          </code></pre>
+</code></pre>
 
-        <p>
+        <p style="color: #c0caf5; margin: 1rem 0 3rem 0;">
           By stitching these rows together vertically on our canvas, we get a live visual of how patterns 
-          emerge from the tiniest of rules.
+          emerge from a minimal set of rules. Tiny differences in the first row can lead to drastically 
+          different evolutions, showcasing how large-scale complexity can surface from local interactions.
         </p>
         <!-- END Rule 110 functionality section -->
   
@@ -591,7 +638,7 @@
         this.baseCols = 60;         // Base number of columns at zoom level 1
         this.maxRows = 300;         // Max history rows
         this.currentSpeedMultiplier = 1.0;
-        this.baseInterval = 50;     // Changed from 200 to 50ms (4x faster base speed)
+        this.baseInterval = 50;     // 50ms => 20 steps/s at speed=1
         this.playing = false;
         this.timer = null;
         this.zoom = 1;
@@ -603,7 +650,6 @@
         this.rowsDrawn = 0;
       }
 
-      // Add back the critical methods
       calculateInterval() {
         return this.baseInterval / this.currentSpeedMultiplier;
       }
@@ -633,11 +679,7 @@
       document.getElementById("stepBtn").addEventListener("click", stepGeneration);
       document.getElementById("randomBtn").addEventListener("click", randomizeFirstRow);
       document.getElementById("clearBtn").addEventListener("click", clearAll);
-      document.getElementById("speedSelect").addEventListener("change", (e) => {
-        const val = parseFloat(e.target.value);
-        R110.currentSpeedMultiplier = val;
-        R110.updateInterval(); // This will update the interval without stopping
-      });
+
       document.getElementById("zoomSelect").addEventListener("change", (e) => {
         if (!R110.playing) {
           setZoom(parseFloat(e.target.value));
@@ -661,13 +703,11 @@
       R110.canvas.width = containerWidth;
       R110.canvas.height = containerHeight;
       
-      // Calculate cells based on zoom level (more cells at higher zoom)
-      R110.cols = R110.baseCols * R110.zoom;  // More columns when zoomed out
-      
-      // Calculate cell size to fit all columns
+      // Calculate cells based on zoom level
+      R110.cols = R110.baseCols * R110.zoom;
       R110.cellSize = containerWidth / R110.cols;
       
-      // Calculate visible rows based on cell size
+      // Safely limit total rows
       R110.maxRows = Math.min(Math.floor(containerHeight / R110.cellSize), 300);
     }
 
@@ -683,12 +723,11 @@
         R110.rowsDrawn = 0;
         clearCanvas();
         
-        // Recalc canvas size (width in px stays the same, but # cols changes)
+        // Recalc canvas size
         calculateCanvasSize();
 
         // Rebuild first row
         if (oldFirstRow) {
-          // If old row doesn't fit new # of cols exactly, we can center it
           const newRow = new Array(R110.cols).fill(0);
           const offset = Math.floor((R110.cols - oldFirstRow.length) / 2);
           for (let i = 0; i < oldFirstRow.length; i++) {
@@ -712,26 +751,21 @@
 
     function clearCanvas() {
       R110.ctx.clearRect(0, 0, R110.canvas.width, R110.canvas.height);
-      // Use the panel color for background
-      R110.ctx.fillStyle = "#24283b";  // This is our grid background color
+      R110.ctx.fillStyle = "#24283b";
       R110.ctx.fillRect(0, 0, R110.canvas.width, R110.canvas.height);
     }
 
     // ------------- STATE & GENERATION LOGIC -------------
     function createInitialGeneration() {
-      // Create row with width matching current zoom level
       const row = new Array(R110.cols).fill(0);
-      
-      // For zoom level 1, place a single 1 near the left edge
+      // Provide a small starting pattern or random partial fill
       if (R110.zoom === 1) {
         row[Math.floor(R110.cols * 0.1)] = 1;
       } else {
-        // For higher zoom levels, randomly populate about 10% of cells
         for (let i = 0; i < R110.cols; i++) {
           if (Math.random() < 0.1) row[i] = 1;
         }
       }
-      
       R110.generations.push(row);
       R110.rowsDrawn = 0;
     }
@@ -740,7 +774,6 @@
       if (R110.generations.length === 0) {
         createInitialGeneration();
       }
-      // compute next row from the last row
       const lastRow = R110.generations[R110.generations.length - 1];
       const newRow = computeNextRow(lastRow);
       R110.generations.push(newRow);
@@ -752,15 +785,10 @@
       const newRow = new Array(length).fill(0);
       
       for (let i = 0; i < length; i++) {
-        // Use 0 for cells outside boundaries
         const left = (i === 0) ? 0 : currentRow[i - 1];
         const center = currentRow[i];
         const right = (i === length - 1) ? 0 : currentRow[i + 1];
-        
-        // Create 3-bit pattern (0-7)
         const pattern = (left << 2) | (center << 1) | right;
-        
-        // Apply Rule 110 transition function
         newRow[i] = (110 >> pattern) & 1;
       }
       return newRow;
@@ -770,14 +798,10 @@
       stopGame();
       R110.generations = [];
       const row = new Array(R110.cols).fill(0);
-      
-      // Fill more cells at higher zoom levels
-      const density = 0.1 * R110.zoom;  // Higher density at higher zoom
-      
+      const density = 0.1 * R110.zoom;  // Slightly more at higher zoom
       for (let i = 0; i < R110.cols; i++) {
         if (Math.random() < density) row[i] = 1;
       }
-      
       R110.generations.push(row);
       R110.rowsDrawn = 0;
       clearCanvas();
@@ -808,28 +832,20 @@
 
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      
-      // Only draw the "on" cells
       ctx.fillStyle = "#7aa2f7";  // Active cell color
       
       for (let c = 0; c < rowData.length; c++) {
-        if (rowData[c] === 1) {  // Only draw if cell is "on"
+        if (rowData[c] === 1) {
           const x = c * cellSize;
           const y = rowIndex * cellSize;
-          // Draw cell scaled by zoom
           ctx.fillRect(x, y, cellSize, cellSize);
         }
       }
-      
       ctx.restore();
     }
 
     // ------------- POINTER: Toggle first row -------------
     function setupCanvasPointer(canvas) {
-      // Only toggles if user clicks in the top row area (rowIndex=0)
-      // We'll interpret the Y coordinate to see if it's within the first row's region.
-      // Then we flip that cell from 0->1 or 1->0 and re-render the first row.
-      
       canvas.addEventListener("mousedown", (e) => {
         R110.isDrawing = true;
         toggleCellAtPointer(e);
@@ -844,7 +860,6 @@
         R110.isDrawing = false;
       });
 
-      // Touch
       canvas.addEventListener("touchstart", (e) => {
         R110.isDrawing = true;
         toggleCellAtPointer(e.touches[0]);
@@ -867,23 +882,17 @@
       const x = evt.clientX - rect.left;
       const y = evt.clientY - rect.top;
 
-      // figure out if y is in the first row region:
-      // Each row height is roughly canvas.height / R110.maxRows
-      const rowHeight = Math.floor(R110.canvas.height / R110.maxRows);
-      if (y > rowHeight) {
-        return; // only toggle if we're in the top row
+      // Only toggle if pointer is within the first row's vertical span
+      // which is from y=0 to y=cellSize
+      if (y > R110.cellSize) {
+        return;
       }
 
-      // find the cell col by x
-      const cellWidth = R110.canvas.width / R110.cols;
-      const col = Math.floor(x / cellWidth);
+      const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
 
-      // flip it
       const firstRow = R110.generations[0];
       firstRow[col] = firstRow[col] ? 0 : 1;
-
-      // re-draw top row
       renderNewRow(firstRow, 0);
     }
 
@@ -930,14 +939,12 @@
       loadingState.style.display = "none";
     }
 
-    // Update the speed change handler
+    // ------------- Setup Additional Controls -------------
     function setupControls() {
-      // ... existing control setup code ...
-      
       document.getElementById("speedSelect").addEventListener("change", (e) => {
         const val = parseFloat(e.target.value);
         R110.currentSpeedMultiplier = val;
-        R110.updateInterval(); // This will update the interval without stopping
+        R110.updateInterval();
       });
     }
   </script>
