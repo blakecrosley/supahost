@@ -221,10 +221,20 @@
       border-radius: .5rem;
       overflow-x: auto;
       margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .code-showcase code {
+      color: #88f9d7;
+      text-shadow: none;
+      background: none;
+      font-family: 'Poppins', sans-serif;
     }
     .code-showcase p {
-      color: #c0caf5;
+      color: #88f9d7;
       margin: 1em 0;
+      padding: 0 1.5rem;
     }
 
     .footer {
@@ -479,25 +489,19 @@
           The rule can be expressed as a lookup table, where each three-cell pattern maps to the next state:
         </p>
         
-        <div class="code-showcase">
-          <pre><code>
-/*
-   Current Triplet | Next Cell
-   ---------------
-       111         |    0
-       110         |    1
-       101         |    1
-       100         |    0
-       011         |    1
-       010         |    1
-       001         |    1
-       000         |    0
-
-   Reading top-to-bottom as binary => 01101110 => 110 (decimal).
-   That's why it's called Rule 110.
-*/
-          </code></pre>
-        </div>
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+<span style="color: #565f89;">// Rule 110 transition table - maps each 3-bit pattern to its next state</span>
+<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">transitions</span> = {
+  <span style="color: #565f89;">// pattern => next state</span>
+  <span style="color: #9aa5ce;">'111'</span>: <span style="color: #ff9e64;">0</span>,    <span style="color: #565f89;">// 7 -> 0</span>
+  <span style="color: #9aa5ce;">'110'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 6 -> 1</span>
+  <span style="color: #9aa5ce;">'101'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 5 -> 1</span>
+  <span style="color: #9aa5ce;">'100'</span>: <span style="color: #ff9e64;">0</span>,    <span style="color: #565f89;">// 4 -> 0</span>
+  <span style="color: #9aa5ce;">'011'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 3 -> 1</span>
+  <span style="color: #9aa5ce;">'010'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 2 -> 1</span>
+  <span style="color: #9aa5ce;">'001'</span>: <span style="color: #ff9e64;">1</span>,    <span style="color: #565f89;">// 1 -> 1</span>
+  <span style="color: #9aa5ce;">'000'</span>: <span style="color: #ff9e64;">0</span>     <span style="color: #565f89;">// 0 -> 0</span>
+};</code></pre>
 
         <p>
           Each new generation is drawn below the previous one, building a tapestry of patterns that can 
@@ -512,28 +516,26 @@
           edges have 0 neighbors.
         </p>
         
-        <div class="code-showcase">
-          <pre><code>
-function computeNextRow(currentRow) {
-  const length = currentRow.length;
-  const newRow = new Array(length).fill(0);
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+<span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextRow</span>(<span style="color: #e0af68;">currentRow</span>) {
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">length</span> = <span style="color: #e0af68;">currentRow</span>.length;
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newRow</span> = <span style="color: #c0caf5;">new</span> <span style="color: #73daca;">Array</span>(length).fill(<span style="color: #ff9e64;">0</span>);
   
-  for (let i = 0; i < length; i++) {
-    // Use 0 for cells outside boundaries
-    const left = (i === 0) ? 0 : currentRow[i - 1];
-    const center = currentRow[i];
-    const right = (i === length - 1) ? 0 : currentRow[i + 1];
+  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < length; i++) {
+    <span style="color: #565f89;">// Use 0 for cells outside boundaries</span>
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">left</span> = (i === <span style="color: #ff9e64;">0</span>) ? <span style="color: #ff9e64;">0</span> : currentRow[i - <span style="color: #ff9e64;">1</span>];
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">center</span> = currentRow[i];
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">right</span> = (i === length - <span style="color: #ff9e64;">1</span>) ? <span style="color: #ff9e64;">0</span> : currentRow[i + <span style="color: #ff9e64;">1</span>];
     
-    // Create 3-bit pattern (0-7)
-    const pattern = (left << 2) | (center << 1) | right;
+    <span style="color: #565f89;">// Create 3-bit pattern (0-7)</span>
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">pattern</span> = (left << <span style="color: #ff9e64;">2</span>) | (center << <span style="color: #ff9e64;">1</span>) | right;
     
-    // Apply Rule 110 transition function
-    newRow[i] = (110 >> pattern) & 1;
+    <span style="color: #565f89;">// Apply Rule 110 transition function</span>
+    <span style="color: #7dcfff;">newRow</span>[i] = (<span style="color: #ff9e64;">110</span> >> pattern) & <span style="color: #ff9e64;">1</span>;
   }
-  return newRow;
+  <span style="color: #bb9af7;">return</span> newRow;
 }
           </code></pre>
-        </div>
 
         <p>
           By stitching these rows together vertically on our canvas, we get a live visual of how patterns 
