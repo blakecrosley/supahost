@@ -519,18 +519,16 @@ function computeNextRow(currentRow) {
   const length = currentRow.length;
   const newRow = new Array(length).fill(0);
   
-  // Use periodic boundary conditions (wrap around)
   for (let i = 0; i < length; i++) {
-    // Wrap around for left and right cells
-    const left = currentRow[(i - 1 + length) % length];
+    // Use 0 for cells outside boundaries
+    const left = (i === 0) ? 0 : currentRow[i - 1];
     const center = currentRow[i];
-    const right = currentRow[(i + 1) % length];
+    const right = (i === length - 1) ? 0 : currentRow[i + 1];
     
     // Create 3-bit pattern (0-7)
     const pattern = (left << 2) | (center << 1) | right;
     
-    // Apply Rule 110 transition function directly using bitwise operations
-    // Rule 110: 01101110 in binary
+    // Apply Rule 110 transition function
     newRow[i] = (110 >> pattern) & 1;
   }
   return newRow;
@@ -603,9 +601,8 @@ function rule110Map(triplet) {
 
     class Rule110State {
       constructor() {
-        // Match Game of Life's grid size
-        this.baseCols = 60;         // Default width
-        this.maxRows = 60;         // Match width for square aspect
+        this.baseCols = 60;         // Base number of columns at zoom level 1
+        this.maxRows = 300;         // Max history rows
         this.currentSpeedMultiplier = 1.0;
         this.baseInterval = 200;    
         this.playing = false;
@@ -615,7 +612,7 @@ function rule110Map(triplet) {
         this.canvas = document.getElementById("grid");
         this.ctx = this.canvas.getContext("2d");
         this.isDrawing = false;
-        this.cols = this.baseCols;
+        this.cols = this.baseCols;  // Will be updated based on zoom
         this.rowsDrawn = 0;
       }
 
@@ -673,16 +670,18 @@ function rule110Map(triplet) {
       const containerWidth = containerElem.clientWidth;
       const containerHeight = containerElem.clientHeight;
       
-      // Calculate cell size to fit container width
-      const cellSize = Math.floor(containerWidth / (R110.baseCols * R110.zoom));
+      // Set canvas to container size
+      R110.canvas.width = containerWidth;
+      R110.canvas.height = containerHeight;
       
-      // Set canvas dimensions to maintain square cells
-      R110.canvas.width = cellSize * (R110.baseCols * R110.zoom);
-      R110.canvas.height = cellSize * R110.maxRows;
+      // Calculate cells based on zoom level (more cells at higher zoom)
+      R110.cols = R110.baseCols * R110.zoom;  // More columns when zoomed out
       
-      // Store cell size for consistent rendering
-      R110.cellSize = cellSize;
-      R110.cols = R110.baseCols * R110.zoom;
+      // Calculate cell size to fit all columns
+      R110.cellSize = containerWidth / R110.cols;
+      
+      // Calculate visible rows based on cell size
+      R110.maxRows = Math.min(Math.floor(containerHeight / R110.cellSize), 300);
     }
 
     async function setZoom(zoomValue) {
@@ -733,10 +732,19 @@ function rule110Map(triplet) {
 
     // ------------- STATE & GENERATION LOGIC -------------
     function createInitialGeneration() {
-      // Rule 110 typically starts with a single 1 cell
+      // Create row with width matching current zoom level
       const row = new Array(R110.cols).fill(0);
-      // Place a single 1 near the left edge
-      row[Math.floor(R110.cols * 0.1)] = 1;
+      
+      // For zoom level 1, place a single 1 near the left edge
+      if (R110.zoom === 1) {
+        row[Math.floor(R110.cols * 0.1)] = 1;
+      } else {
+        // For higher zoom levels, randomly populate about 10% of cells
+        for (let i = 0; i < R110.cols; i++) {
+          if (Math.random() < 0.1) row[i] = 1;
+        }
+      }
+      
       R110.generations.push(row);
       R110.rowsDrawn = 0;
     }
@@ -756,18 +764,16 @@ function rule110Map(triplet) {
       const length = currentRow.length;
       const newRow = new Array(length).fill(0);
       
-      // Use periodic boundary conditions (wrap around)
       for (let i = 0; i < length; i++) {
-        // Wrap around for left and right cells
-        const left = currentRow[(i - 1 + length) % length];
+        // Use 0 for cells outside boundaries
+        const left = (i === 0) ? 0 : currentRow[i - 1];
         const center = currentRow[i];
-        const right = currentRow[(i + 1) % length];
+        const right = (i === length - 1) ? 0 : currentRow[i + 1];
         
         // Create 3-bit pattern (0-7)
         const pattern = (left << 2) | (center << 1) | right;
         
-        // Apply Rule 110 transition function directly using bitwise operations
-        // Rule 110: 01101110 in binary
+        // Apply Rule 110 transition function
         newRow[i] = (110 >> pattern) & 1;
       }
       return newRow;
@@ -777,10 +783,14 @@ function rule110Map(triplet) {
       stopGame();
       R110.generations = [];
       const row = new Array(R110.cols).fill(0);
-      // Create sparse random initialization (about 10% ones)
+      
+      // Fill more cells at higher zoom levels
+      const density = 0.1 * R110.zoom;  // Higher density at higher zoom
+      
       for (let i = 0; i < R110.cols; i++) {
-        if (Math.random() < 0.1) row[i] = 1;
+        if (Math.random() < density) row[i] = 1;
       }
+      
       R110.generations.push(row);
       R110.rowsDrawn = 0;
       clearCanvas();
@@ -819,6 +829,7 @@ function rule110Map(triplet) {
         if (rowData[c] === 1) {  // Only draw if cell is "on"
           const x = c * cellSize;
           const y = rowIndex * cellSize;
+          // Draw cell scaled by zoom
           ctx.fillRect(x, y, cellSize, cellSize);
         }
       }
