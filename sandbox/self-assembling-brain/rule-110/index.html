@@ -620,6 +620,10 @@
         this.useWrap = true;        // Initialize wrap edges state to match checkbox
         this.playing = false;
         this.timer = null;
+        // Initialize speed from the select element's value
+        const speedSelect = document.getElementById("speedSelect");
+        this.currentSpeedMultiplier = speedSelect ? parseFloat(speedSelect.value) : 1.0;
+        this.baseInterval = 500;    // Base interval (500ms at 1x speed)
         this.zoom = 1;
         this.generations = [];
         this.canvas = document.getElementById("grid");
@@ -627,6 +631,19 @@
         this.isDrawing = false;
         this.cols = this.baseCols;
         this.rowsDrawn = 0;
+      }
+
+      calculateInterval() {
+        return this.baseInterval / Math.pow(this.currentSpeedMultiplier, 2);
+      }
+
+      updateInterval() {
+        if (this.playing && this.timer) {
+          clearInterval(this.timer);
+          this.timer = setInterval(() => {
+            stepGeneration();
+          }, this.calculateInterval());
+        }
       }
     }
 
@@ -881,7 +898,7 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
-      R110.timer = setInterval(stepGeneration, R110.interval);
+      R110.timer = setInterval(stepGeneration, R110.calculateInterval());
     }
 
     function stopGame() {
@@ -905,14 +922,10 @@
     }
 
     function setupControls() {
-      const speedSelect = document.getElementById("speedSelect");
-      speedSelect.addEventListener("change", e => {
-        const val = e.target.value;
-        R110.interval = speedMap[val];
-        if (R110.playing) {
-          clearInterval(R110.timer);
-          R110.timer = setInterval(stepGeneration, R110.interval);
-        }
+      document.getElementById("speedSelect").addEventListener("change", (e) => {
+        const val = parseFloat(e.target.value);
+        R110.currentSpeedMultiplier = val;
+        R110.updateInterval();
       });
     }
   </script>
