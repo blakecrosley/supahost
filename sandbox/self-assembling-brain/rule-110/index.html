@@ -356,19 +356,19 @@
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
       <a href="https://x.com/BlakeC" class="navbar-brand text-decoration-none" target="_blank">
-        <img src="../../../assets/profile.jpg"
-             alt="@blakec"
-             class="rounded-circle me-2"
+        <img src="../../../assets/profile.jpg" 
+             alt="@blakec" 
+             class="rounded-circle me-2" 
              style="width: 32px; height: 32px;">
         @blakec
       </a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#navbarContent" aria-controls="navbarContent"
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarContent" aria-controls="navbarContent" 
               aria-expanded="false" aria-label="Toggle navigation">
         <i class="bi bi-list text-light"></i>
       </button>
-
+      
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="navbar-nav ms-auto">
           <a href="https://blakecrosley.com" class="btn btn-outline-secondary me-2" target="_blank">
@@ -556,7 +556,7 @@
   }
   <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newRow</span>;
 }
-</code></pre>
+          </code></pre>
 
         <p class="mb-large">
           Using <code>transitions</code>, we treat each triplet (e.g. "110") as a string key in that 
@@ -567,7 +567,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Footer -->
   <div class="container-fluid footer-container">
     <div class="row">
@@ -679,7 +679,7 @@
         R110.generations = [];
         R110.rowsDrawn = 0;
         clearCanvas();
-
+        
         calculateCanvasSize();
 
         if (oldRow) {
@@ -778,20 +778,39 @@
       const ctx = R110.ctx;
       const size = R110.cellSize;
       ctx.save();
-      ctx.imageSmoothingEnabled = false;
-      ctx.translate(0, 0);  // Ensure pixel-perfect alignment
+      ctx.translate(0, 0);
       ctx.fillStyle = "#7aa2f7";
+      
+      // Special handling for high zoom levels
+      if (R110.zoom >= 8) {
+        // Disable smoothing but use subpixel positioning
+        ctx.imageSmoothingEnabled = false;
       for (let c = 0; c < rowData.length; c++) {
         if (rowData[c] === 1) {
-          // Add a tiny bit of overlap to prevent gaps
-          ctx.fillRect(
-            Math.floor(c * size),
-            Math.floor(rowIndex * size),
-            Math.ceil(size + 1),
-            Math.ceil(size + 1)
-          );
+            // Use precise subpixel positioning but ensure whole pixel sizes
+            const x = c * size;
+            const y = rowIndex * size;
+            const w = Math.ceil(size);
+            const h = Math.ceil(size);
+            // Offset by 0.5 for crisp edges
+            ctx.fillRect(Math.round(x) + 0.5, Math.round(y) + 0.5, w - 1, h - 1);
+          }
+        }
+        } else {
+        ctx.imageSmoothingEnabled = false;
+        // Original handling for lower zooms with crisp pixels
+        for (let c = 0; c < rowData.length; c++) {
+          if (rowData[c] === 1) {
+            ctx.fillRect(
+              Math.floor(c * size),
+              Math.floor(rowIndex * size),
+              Math.ceil(size + 1),
+              Math.ceil(size + 1)
+            );
+          }
         }
       }
+      
       ctx.restore();
     }
 
