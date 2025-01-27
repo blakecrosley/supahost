@@ -426,8 +426,8 @@
 
             <!-- Speed -->
             <div class="d-flex align-items-center gap-2">
-              <label for="speedSelect" class="form-label mb-0">Speed:</label>
-              <select class="form-select" id="speedSelect">
+              <label for="speedSelect" class="form-label  mb-0">Speed</label>
+              <select class="form-select form-select-lg" id="speedSelect">
                 <option value="0.5">0.5×</option>
                 <option value="1" selected>1×</option>
                 <option value="2">2×</option>
@@ -458,8 +458,8 @@
               Wrap Edges
             </label>
           </div>
-          <label for="zoomSelect" class="form-label mb-0">Zoom:</label>
-          <select class="form-select" id="zoomSelect" style="width: auto;">
+          <label for="zoomSelect" class="form-label mb-0">Zoom</label>
+          <select class="form-select form-select-lg" id="zoomSelect" style="width: auto;">
             <option value="1">1×</option>
             <option value="2">2×</option>
             <option value="4">4×</option>
@@ -468,7 +468,6 @@
           </select>
         </div>
 
-        <!-- Explanation -->
         <h3>The Rule</h3>
         <p>
           In Rule 110, we look at each group of three adjacent cells: left, center, and right. This triplet 
@@ -476,7 +475,7 @@
           are only eight possible triplets (000 through 111). The name "110" comes from the binary digits 
           that define which triplets produce a 1.
         </p>
-        <p>
+        <p class="mb-large">
           In decimal, 110 is 01101110 in binary (when read top-to-bottom in the usual chart). This means 
           certain triplets (like 110, 101, 011, 001) yield a live cell in the next generation, while others 
           result in a dead cell.
@@ -489,7 +488,7 @@
           row can completely alter the unfolding tapestry. This emergent complexity arises purely from 
           local interactions—no central coordination is needed.
         </p>
-        <p>
+        <p class="mb-large">
           Researchers have studied this automaton extensively to understand how simple deterministic 
           systems might exhibit patterns that appear random or are at least computationally irreducible. 
           In certain configurations, you'll witness stable regions, "gliders," and repeating or chaotic 
@@ -497,7 +496,7 @@
         </p>
 
         <h3>Turing Completeness</h3>
-        <p>
+        <p class="mb-large">
           Rule 110 can be configured to compute anything a universal Turing machine can, making it 
           Turing-complete. That means if you set up the initial row in just the right way, you can 
           theoretically emulate logical operations, memory, and any fundamental computing element within 
@@ -506,35 +505,59 @@
         </p>
 
         <h3>Algorithmic Overview</h3>
-        <p>
+        <p class="mb-large">
           Below is a straightforward approach to computing each new row. We optionally wrap edges so cells 
           on one side can see neighbors on the opposite side. If disabled, edges assume "dead" neighbors 
           outside the grid:
         </p>
+
+        <!-- The code snippet you wanted to reinsert -->
         <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
-<span style="color: #bb9af7;">function</span> computeNextRow(currentRow, wrapEdges) {
-  <span style="color: #bb9af7;">const</span> length = currentRow.length;
-  <span style="color: #bb9af7;">const</span> newRow = new Array(length).fill(0);
+<span style="color: #565f89;">// Rule 110 transition table - maps each 3-bit pattern to its next state</span>
+<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">transitions</span> = {
+  <span style="color: #565f89;">// pattern => next state</span>
+  <span style="color: #9aa5ce;">'111'</span>: <span style="color: #ff9e64;">0</span>,
+  <span style="color: #9aa5ce;">'110'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'101'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'100'</span>: <span style="color: #ff9e64;">0</span>,
+  <span style="color: #9aa5ce;">'011'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'010'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'001'</span>: <span style="color: #ff9e64;">1</span>,
+  <span style="color: #9aa5ce;">'000'</span>: <span style="color: #ff9e64;">0</span>
+};
+</code></pre>
 
-  <span style="color: #bb9af7;">for</span> (let i = 0; i < length; i++) {
-    const l = wrapEdges ? (i - 1 + length) % length : i - 1;
-    const r = wrapEdges ? (i + 1) % length : i + 1;
-    const left = (l < 0 || l >= length) ? 0 : currentRow[l];
-    const center = currentRow[i];
-    const right = (r < 0 || r >= length) ? 0 : currentRow[r];
+        <p class="mb-large">
+          And here's how we apply it during each update (though our final implementation uses the shift 
+          approach, this table is an alternate expression of which triplets yield a live cell):
+        </p>
+        
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+<span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextRow</span>(<span style="color: #e0af68;">currentRow</span>, <span style="color: #e0af68;">wrapEdges</span>) {
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">length</span> = <span style="color: #e0af68;">currentRow</span>.length;
+  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newRow</span> = <span style="color: #c0caf5;">new</span> <span style="color: #73daca;">Array</span>(length).fill(<span style="color: #ff9e64;">0</span>);
 
-    // Merge bits into 3-bit pattern
-    const pattern = (left << 2) | (center << 1) | right;
-    // 110 decimal => shift-based check
-    newRow[i] = (110 >> pattern) & 1;
+  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < length; i++) {
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">leftIndex</span>  = <span style="color: #e0af68;">wrapEdges</span> ? (i - <span style="color: #ff9e64;">1</span> + length) % length : i - <span style="color: #ff9e64;">1</span>;
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">rightIndex</span> = <span style="color: #e0af68;">wrapEdges</span> ? (i + <span style="color: #ff9e64;">1</span>) % length : i + <span style="color: #ff9e64;">1</span>;
+
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">left</span>   = (leftIndex < <span style="color: #ff9e64;">0</span> || leftIndex >= length) ? <span style="color: #ff9e64;">0</span> : <span style="color: #e0af68;">currentRow</span>[leftIndex];
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">center</span> = <span style="color: #e0af68;">currentRow</span>[i];
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">right</span>  = (rightIndex < <span style="color: #ff9e64;">0</span> || rightIndex >= length) ? <span style="color: #ff9e64;">0</span> : <span style="color: #e0af68;">currentRow</span>[rightIndex];
+
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">triplet</span> = `${left}${center}${right}`;
+
+    <span style="color: #565f89;">// Use the transitions table above</span>
+    newRow[i] = <span style="color: #7dcfff;">transitions</span>[triplet];
   }
-  return newRow;
+  <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newRow</span>;
 }
 </code></pre>
-        <p>
-          Each newly computed row is drawn below the previous one, building up the mesmerizing tapestry 
-          of Rule 110 in real time. Experiment with toggling wrap-around edges or randomizing the initial 
-          row to see how drastically the outcomes can vary.
+
+        <p class="mb-large">
+          Using <code>transitions</code>, we treat each triplet (e.g. "110") as a string key in that 
+          table. The table then dictates whether the new cell is <code>1</code> or <code>0</code>. 
+          Our final version uses a shift-based approach to achieve the same effect more compactly.
         </p>
   
       </div>
@@ -575,7 +598,7 @@
     crossorigin="anonymous">
   </script>
 
-  <!-- Rule 110 Script -->
+  <!-- Main Rule 110 Script -->
   <script>
     const speedMap = {
       '0.5': 1000,
@@ -594,7 +617,7 @@
         this.timer = null;
 
         // We'll store the actual interval in ms, determined by speedMap
-        this.interval = speedMap['1']; // default (500ms)
+        this.interval = speedMap['1']; // default speed: 250ms
         this.zoom = 1;
         this.generations = [];
         this.canvas = document.getElementById("grid");
@@ -703,6 +726,7 @@
       renderNewRow(next, R110.generations.length - 1);
     }
 
+    // Using the shift-based approach from your final code
     function computeNextRow(arr, wrap) {
       const length = arr.length;
       const newArr = new Array(length).fill(0);
@@ -714,7 +738,6 @@
         const right = (rightIndex < 0 || rightIndex >= length) ? 0 : arr[rightIndex];
         
         const pattern = (left << 2) | (center << 1) | right;
-        // Shift-based approach for "110" => 0b01101110
         newArr[i] = (110 >> pattern) & 1;
       }
       return newArr;
@@ -755,11 +778,10 @@
       const size = R110.cellSize;
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      ctx.translate(0.5, 0.5);  // Offset for crisp 1px lines
       ctx.fillStyle = "#7aa2f7";
       for (let c = 0; c < rowData.length; c++) {
         if (rowData[c] === 1) {
-          ctx.fillRect(c * size, rowIndex * size, size + 1, size + 1);
+          ctx.fillRect(c * size, rowIndex * size, size, size);
         }
       }
       ctx.restore();
@@ -803,7 +825,7 @@
     }
 
     function toggleCellAtPointer(evt) {
-      if (R110.generations.length === 0) return;
+      if (!R110.generations.length) return;
       const rect = R110.canvas.getBoundingClientRect();
       const x = evt.clientX - rect.left;
       const y = evt.clientY - rect.top;
@@ -858,9 +880,7 @@
     function setupControls() {
       const speedSelect = document.getElementById("speedSelect");
       speedSelect.addEventListener("change", e => {
-        // Use the custom speedMap
         const val = e.target.value;
-        // Update R110.interval to the mapped milliseconds
         R110.interval = speedMap[val];
         if (R110.playing) {
           clearInterval(R110.timer);
@@ -915,7 +935,7 @@
               <li><strong>Step Forward:</strong> Generate exactly one new row</li>
               <li><strong>Randomize:</strong> Fill the initial row with random 0/1 cells</li>
               <li><strong>Clear:</strong> Reset the canvas to a blank row of all zeros</li>
-              <li><strong>Speed:</strong> Adjust how quickly new rows appear (0.5× => 2s/step, 16× => ~2ms/step)</li>
+              <li><strong>Speed:</strong> Adjust how quickly new rows appear (0.5× => 1s/step, 16× => ~1ms/step)</li>
               <li><strong>Zoom:</strong> Change how many cells (and row height) appear (only while paused)</li>
               <li><strong>Wrap Edges:</strong> Toggle wrap-around boundary conditions</li>
             </ul>
