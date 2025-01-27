@@ -77,7 +77,6 @@
       --tn-border: #565f89;
     }
 
-    /* Overall page styling */
     body {
       font-family: 'Poppins', sans-serif;
       background-color: var(--tn-bg) !important;
@@ -91,7 +90,6 @@
       padding-bottom: 0px;
     }
 
-    /* Navbar inherits panel color */
     .navbar {
       background-color: rgba(36, 40, 59, 0.8) !important;
       border-bottom: 1px solid var(--tn-border);
@@ -100,7 +98,6 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
-    /* Buttons */
     .btn-secondary {
       background-color: var(--tn-btn-bg) !important;
       color: var(--tn-btn-text) !important;
@@ -121,7 +118,6 @@
       border-color: var(--tn-border) !important;
     }
 
-    /* Form Controls (like .form-select) */
     .form-select {
       background-color: var(--tn-panel) !important;
       color: var(--tn-foreground) !important;
@@ -132,7 +128,6 @@
       box-shadow: 0 0 0 0.2rem rgba(108,117,125,.5);
     }
 
-    /* Grid container for Rule 110 canvas */
     #grid-container {
       margin: 0 auto;
       border: 1px solid var(--tn-border);
@@ -141,7 +136,7 @@
       box-sizing: border-box;
       width: 100%;
       position: relative;
-      padding-bottom: 60%; /* Match aspect ratio from similar examples */
+      padding-bottom: 60%;
       overflow: hidden;
       cursor: pointer;
       touch-action: none;
@@ -158,7 +153,6 @@
       height: 100%;
     }
 
-    /* We'll render our 1D automaton rows on this canvas */
     #grid {
       position: absolute;
       top: 0;
@@ -167,10 +161,9 @@
       height: 100%;
       background: var(--tn-border);
       display: block;
-      image-rendering: pixelated; /* Crisp cell rendering */
+      image-rendering: pixelated;
     }
 
-    /* Control sections */
     #rule110Controls {
       margin-bottom: 16px;
     }
@@ -178,7 +171,6 @@
       margin: 16px 0;
     }
 
-    /* Headings */
     h1, h2, h3, h4, h5, h6  {
       margin-top: 0em;
       margin-bottom: .5em;
@@ -186,7 +178,6 @@
       font-weight: bold;
     }
 
-    /* Link styling */
     a.instructions-link {
       color: rgb(245, 133, 237);
       text-decoration: underline;
@@ -208,7 +199,6 @@
       margin-bottom: 3em;
     }
 
-    /* Code showcase styling (background, etc.) */
     .code-showcase {
       background: #1a1b26;
       border-radius: .5rem;
@@ -245,7 +235,6 @@
       width: 100%;
       padding: 1rem 0;
     }
-    
     .text-muted {
       color: var(--tn-foreground) !important;
       opacity: 0.7;
@@ -261,7 +250,6 @@
     .footer-links a:hover {
       opacity: 1;
     }
-
     .footer-links {
       display: flex;
       align-items: center;
@@ -299,7 +287,6 @@
       }
     }
 
-    /* Navbar toggler */
     @media (max-width: 991.98px) {
       .navbar .navbar-collapse {
         padding: 1rem 0;
@@ -324,7 +311,6 @@
       font-size: 1.5rem;
     }
 
-    /* Loading overlay */
     #loadingState {
       display: none;
       position: absolute;
@@ -362,25 +348,23 @@
 </head>
 
 <body>
-  <!-- Bootstrap 5 Navbar -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
       <a href="https://x.com/BlakeC" class="navbar-brand text-decoration-none" target="_blank">
-        <img src="../../../assets/profile.jpg" 
-             alt="@blakec" 
-             class="rounded-circle me-2" 
+        <img src="../../../assets/profile.jpg"
+             alt="@blakec"
+             class="rounded-circle me-2"
              style="width: 32px; height: 32px;">
         @blakec
       </a>
-      
-      <!-- Hamburger button for mobile -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-              data-bs-target="#navbarContent" aria-controls="navbarContent" 
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarContent" aria-controls="navbarContent"
               aria-expanded="false" aria-label="Toggle navigation">
         <i class="bi bi-list text-light"></i>
       </button>
-      
-      <!-- Collapsible content -->
+
       <div class="collapse navbar-collapse" id="navbarContent">
         <div class="navbar-nav ms-auto">
           <a href="https://blakecrosley.com" class="btn btn-outline-secondary me-2" target="_blank">
@@ -394,18 +378,15 @@
     </div>
   </nav>
 
-  <!-- Main container: Use a Bootstrap container and row -->
+  <!-- Main container -->
   <div class="container-fluid">
     <div class="row">
-      <!-- 8 columns wide on large screens, 12 on smaller, with offset for center -->
       <div class="col-12 col-lg-8 offset-lg-2">
         
-        <!-- BEGIN Rule 110 functionality section -->
+        <!-- Title & Controls Row -->
         <div class="row" id="rule110Controls">
           <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
             <h1>Wolfram's Rule 110</h1>
-
-            <!-- Editorial description -->
             <div id="description">
               <p>
                 Wolfram's Rule 110 is a remarkable one-dimensional cellular automaton from Stephen Wolfram's 
@@ -416,10 +397,9 @@
               </p>
               <p>
                 Despite its simple definition—just a handful of bits describing which local arrangements 
-                become "on"—Rule 110 exhibits incredibly rich and complex behavior. It's even been proven to be 
-                Turing-complete under certain initial conditions, placing it on par with systems that can, 
-                in theory, perform universal computation. In other words, something as minimal as a row of 
-                zeroes and ones can support the full scope of computable operations if seeded correctly.
+                become "on"—Rule 110 exhibits incredibly rich and complex behavior. It's even been proven 
+                to be Turing-complete under certain initial conditions, placing it on par with systems that 
+                can, in theory, perform universal computation.
               </p>
               <p class="mb-large">
                 <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
@@ -443,10 +423,11 @@
                 <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
               </button>
             </div>
-            <!-- Speed select -->
-            <div class="ms-3 d-inline-flex align-items-center">
-              <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
-              <select id="speedSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
+
+            <!-- Speed -->
+            <div class="d-flex align-items-center gap-2">
+              <label for="speedSelect" class="form-label mb-0">Speed:</label>
+              <select class="form-select" id="speedSelect">
                 <option value="0.5">0.5×</option>
                 <option value="1" selected>1×</option>
                 <option value="2">2×</option>
@@ -458,142 +439,108 @@
           </div>
         </div>
 
-        <!-- The grid container for Rule 110 rendering -->
+        <!-- Grid container -->
         <div id="grid-container">
           <div id="loadingState">
             <div class="spinner"></div>
             <div>Loading Rule 110 board...</div>
           </div>
           <div id="gridWrapper">
-            <!-- We'll use a <canvas> for 1D rows, each new generation appended below -->
             <canvas id="grid"></canvas>
           </div>
         </div>
 
-        <!-- Zoom controls -->
-        <div class="d-flex justify-content-end align-items-center" id="zoomControls">
-          <label for="zoomSelect" class="form-label me-2 mb-0">Zoom</label>
-          <select id="zoomSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
-            <option value="1" selected>1×</option>
+        <!-- Wrap Edges + Zoom Controls -->
+        <div id="zoomControls" class="d-flex justify-content-end align-items-center gap-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="wrapEdgesToggle" checked>
+            <label class="form-check-label" for="wrapEdgesToggle">
+              Wrap Edges
+            </label>
+          </div>
+          <label for="zoomSelect" class="form-label mb-0">Zoom:</label>
+          <select class="form-select" id="zoomSelect" style="width: auto;">
+            <option value="1">1×</option>
             <option value="2">2×</option>
-            <option value="3">3×</option>
+            <option value="4">4×</option>
+            <option value="8">8×</option>
+            <option value="16">16×</option>
           </select>
         </div>
 
+        <!-- Explanation -->
         <h3>The Rule</h3>
         <p>
           In Rule 110, we look at each group of three adjacent cells: left, center, and right. This triplet 
-          decides the center cell's state in the next generation. Because each cell is either 0 or 1, 
-          there are only eight possible triplets (from 000 to 111). The "110" in the name refers to the 
-          binary digits that define which of those triplets produce a 1 in the next row.
+          decides the center cell's state in the next generation. Because each cell is either 0 or 1, there 
+          are only eight possible triplets (000 through 111). The name "110" comes from the binary digits 
+          that define which triplets produce a 1.
         </p>
-        
         <p>
-          The rule can be expressed as a lookup table, where each three-cell pattern maps to the next state:
-        </p>
-        
-        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
-<span style="color: #565f89;">// Rule 110 transition table - maps each 3-bit pattern to its next state</span>
-<span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">transitions</span> = {
-  <span style="color: #565f89;">// pattern => next state</span>
-  <span style="color: #9aa5ce;">'111'</span>: <span style="color: #ff9e64;">0</span>,
-  <span style="color: #9aa5ce;">'110'</span>: <span style="color: #ff9e64;">1</span>,
-  <span style="color: #9aa5ce;">'101'</span>: <span style="color: #ff9e64;">1</span>,
-  <span style="color: #9aa5ce;">'100'</span>: <span style="color: #ff9e64;">0</span>,
-  <span style="color: #9aa5ce;">'011'</span>: <span style="color: #ff9e64;">1</span>,
-  <span style="color: #9aa5ce;">'010'</span>: <span style="color: #ff9e64;">1</span>,
-  <span style="color: #9aa5ce;">'001'</span>: <span style="color: #ff9e64;">1</span>,
-  <span style="color: #9aa5ce;">'000'</span>: <span style="color: #ff9e64;">0</span>
-};
-</code></pre>
-
-        <p>
-          Each new generation is drawn below the previous one, creating a cascading visual of patterns. 
-          Some configurations settle into repetitive structures, while others spawn chaotic or 
-          <em>almost</em> orderly ripples that hint at deeper complexity.
+          In decimal, 110 is 01101110 in binary (when read top-to-bottom in the usual chart). This means 
+          certain triplets (like 110, 101, 011, 001) yield a live cell in the next generation, while others 
+          result in a dead cell.
         </p>
 
         <h3>Emergence &amp; Complexity</h3>
         <p>
-          One of the most intriguing aspects of Rule 110 is how a single row of bits can give rise 
-          to structures that look like moving particles or collisions. Tiny changes in the initial row 
-          can completely alter the unfolding tapestry. This emergent complexity arises purely from the 
-          local rule applied over and over—no central coordination is needed.
+          One of the most intriguing aspects of Rule 110 is how a single row of bits can evolve into 
+          structures that look like moving particles, collisions, or wavefronts. Tiny changes in the initial 
+          row can completely alter the unfolding tapestry. This emergent complexity arises purely from 
+          local interactions—no central coordination is needed.
         </p>
         <p>
-          Researchers have studied this automaton extensively to understand how 
-          simple deterministic systems might exhibit patterns that appear random, or at least 
-          computationally irreducible. In many initial conditions, you'll see wavefronts, stable 
-          regions, and "gliders" that mimic the concept of moving entities within the grid of bits.
+          Researchers have studied this automaton extensively to understand how simple deterministic 
+          systems might exhibit patterns that appear random or are at least computationally irreducible. 
+          In certain configurations, you'll witness stable regions, "gliders," and repeating or chaotic 
+          expansions that highlight the system's depth.
         </p>
 
-        <h3>Turing Completeness &amp; Universal Computation</h3>
+        <h3>Turing Completeness</h3>
         <p>
-          Rule 110's claim to fame is that it can be configured to compute anything a universal Turing 
-          machine can, making it <strong>Turing-complete</strong>. In simpler terms, if you can set up 
-          the initial row just right, the evolving rows can emulate logical operations, memory, and 
-          other fundamental computing elements. 
-        </p>
-        <p>
-          This is a profound reminder that complexity doesn't require complexity in the rules 
-          themselves—it's the repeated interactions over time that yield remarkable computational 
-          power. It also underscores the deep ties between cellular automata and the foundations of 
-          theoretical computer science.
+          Rule 110 can be configured to compute anything a universal Turing machine can, making it 
+          Turing-complete. That means if you set up the initial row in just the right way, you can 
+          theoretically emulate logical operations, memory, and any fundamental computing element within 
+          this small automaton. It's a striking demonstration that complexity doesn't require an elaborate 
+          set of rules—it's the repeated interactions over time that yield powerful behavior.
         </p>
 
-        <h3>Why Should We Care?</h3>
+        <h3>Algorithmic Overview</h3>
         <p>
-          Beyond its theoretical significance, Rule 110 demonstrates that profound behavior can emerge 
-          from tiny building blocks governed by straightforward laws. This resonates with many fields 
-          of science and engineering where complex phenomena unfold from local interactions: from 
-          traffic flow and biological growth to parallel computing and cryptography.
+          Below is a straightforward approach to computing each new row. We optionally wrap edges so cells 
+          on one side can see neighbors on the opposite side. If disabled, edges assume "dead" neighbors 
+          outside the grid:
         </p>
-        <p>
-          In practical terms, studying such elementary cellular automata helps sharpen our intuition 
-          about how complexity arises, how patterns self-organize, and how minimal systems can encode 
-          far more than meets the eye at first glance. It's a playground for discovering how the seeds 
-          of computation can be hidden in the humblest of setups.
-        </p>
-
-        <h3>The Algorithm</h3>
-        <p>
-          Below is a simplified version of how we compute one new row from another. We can handle boundary 
-          cells by assuming they're 0 outside the edges, or by wrapping around. For simplicity, let's assume 
-          edges have 0 neighbors:
-        </p>
-        
         <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
-<span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextRow</span>(<span style="color: #e0af68;">currentRow</span>) {
-  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">length</span> = <span style="color: #e0af68;">currentRow</span>.length;
-  <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newRow</span> = <span style="color: #c0caf5;">new</span> <span style="color: #73daca;">Array</span>(length).fill(<span style="color: #ff9e64;">0</span>);
-  
-  <span style="color: #bb9af7;">for</span> (<span style="color: #bb9af7;">let</span> i = <span style="color: #ff9e64;">0</span>; i < length; i++) {
-    <span style="color: #565f89;">// Use 0 for cells outside boundaries</span>
-    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">left</span> = (i === <span style="color: #ff9e64;">0</span>) ? <span style="color: #ff9e64;">0</span> : currentRow[i - <span style="color: #ff9e64;">1</span>];
-    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">center</span> = currentRow[i];
-    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">right</span> = (i === length - <span style="color: #ff9e64;">1</span>) ? <span style="color: #ff9e64;">0</span> : currentRow[i + <span style="color: #ff9e64;">1</span>];
-    
-    <span style="color: #565f89;">// Create 3-bit pattern (0-7)</span>
-    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">pattern</span> = (left << <span style="color: #ff9e64;">2</span>) | (center << <span style="color: #ff9e64;">1</span>) | right;
-    
-    <span style="color: #565f89;">// Apply Rule 110 transition function</span>
-    <span style="color: #7dcfff;">newRow</span>[i] = (<span style="color: #ff9e64;">110</span> >> pattern) & <span style="color: #ff9e64;">1</span>;
+<span style="color: #bb9af7;">function</span> computeNextRow(currentRow, wrapEdges) {
+  <span style="color: #bb9af7;">const</span> length = currentRow.length;
+  <span style="color: #bb9af7;">const</span> newRow = new Array(length).fill(0);
+
+  <span style="color: #bb9af7;">for</span> (let i = 0; i < length; i++) {
+    const l = wrapEdges ? (i - 1 + length) % length : i - 1;
+    const r = wrapEdges ? (i + 1) % length : i + 1;
+    const left = (l < 0 || l >= length) ? 0 : currentRow[l];
+    const center = currentRow[i];
+    const right = (r < 0 || r >= length) ? 0 : currentRow[r];
+
+    // Merge bits into 3-bit pattern
+    const pattern = (left << 2) | (center << 1) | right;
+    // 110 decimal => shift-based check
+    newRow[i] = (110 >> pattern) & 1;
   }
-  <span style="color: #bb9af7;">return</span> newRow;
+  return newRow;
 }
 </code></pre>
-
-        <p style="color: #c0caf5; margin: 1rem 0 3rem 0;">
-          By stitching these rows together vertically on our canvas, we get a live visual of how patterns 
-          emerge from a minimal set of rules. Tiny differences in the first row can lead to drastically 
-          different evolutions, showcasing how large-scale complexity can surface from local interactions.
+        <p>
+          Each newly computed row is drawn below the previous one, building up the mesmerizing tapestry 
+          of Rule 110 in real time. Experiment with toggling wrap-around edges or randomizing the initial 
+          row to see how drastically the outcomes can vary.
         </p>
-        <!-- END Rule 110 functionality section -->
   
       </div>
     </div>
   </div>
-  
+
   <!-- Footer -->
   <div class="container-fluid footer-container">
     <div class="row">
@@ -601,7 +548,7 @@
         <div class="container d-flex justify-content-between align-items-center mw-100">
           <span class="text-muted">© 2025</span>
           <div class="footer-links">
-            <div class="">
+            <div>
               <a href="https://x.com/BlakeC" target="_blank" title="X (Twitter)">
                 <i class="bi bi-twitter-x"></i>
               </a>
@@ -620,120 +567,104 @@
       </footer>
     </div>
   </div>
-  <!-- Bootstrap 5.3.3 JS (includes Popper) -->
+
+  <!-- Bootstrap JS -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous">
   </script>
 
-  <!-- Main Rule 110 Script (Vanilla JS) -->
+  <!-- Rule 110 Script -->
   <script>
-    // We'll structure this similarly to the Conway example, but adapted for Rule 110's 1D nature.
-    // We'll draw multiple generations on a single canvas, each generation is a row of cells.
-    // The user can toggle the first row by clicking, then watch the pattern unfold.
+    const speedMap = {
+      '0.5': 1000,
+      '1': 250,
+      '2': 100,
+      '4': 16,
+      '8': 4,
+      '16': 1
+    };
 
     class Rule110State {
       constructor() {
-        this.baseCols = 60;         // Base number of columns at zoom level 1
-        this.maxRows = 300;         // Max history rows
-        this.currentSpeedMultiplier = 1.0;
-        this.baseInterval = 50;     // 50ms => 20 steps/s at speed=1
+        this.baseCols = 60; 
+        this.maxRows = 300; 
         this.playing = false;
         this.timer = null;
+
+        // We'll store the actual interval in ms, determined by speedMap
+        this.interval = speedMap['1']; // default (500ms)
         this.zoom = 1;
         this.generations = [];
         this.canvas = document.getElementById("grid");
         this.ctx = this.canvas.getContext("2d");
         this.isDrawing = false;
-        this.cols = this.baseCols;  // Will be updated based on zoom
+        this.cols = this.baseCols;
         this.rowsDrawn = 0;
-      }
-
-      calculateInterval() {
-        return this.baseInterval / this.currentSpeedMultiplier;
-      }
-
-      updateInterval() {
-        if (this.playing && this.timer) {
-          clearInterval(this.timer);
-          this.timer = setInterval(() => {
-            stepGeneration();
-          }, this.calculateInterval());
-        }
+        this.useWrap = false;
       }
     }
 
-    // Our global state
     const R110 = new Rule110State();
 
-    // ------------- MAIN DOMContentLoaded SETUP -------------
     document.addEventListener("DOMContentLoaded", () => {
       calculateCanvasSize();
       createInitialGeneration();
       renderAllGenerations();
       setupControls();
 
-      // Hook up controls
       document.getElementById("toggleBtn").addEventListener("click", toggleGame);
       document.getElementById("stepBtn").addEventListener("click", stepGeneration);
       document.getElementById("randomBtn").addEventListener("click", randomizeFirstRow);
       document.getElementById("clearBtn").addEventListener("click", clearAll);
 
+      document.getElementById("wrapEdgesToggle").addEventListener("change", e => {
+        R110.useWrap = e.target.checked;
+      });
+
       document.getElementById("zoomSelect").addEventListener("change", (e) => {
         if (!R110.playing) {
           setZoom(parseFloat(e.target.value));
         } else {
-          alert("Pause the simulation before changing zoom.");
-          e.target.value = R110.zoom; // revert
+          alert("Pause before changing zoom.");
+          e.target.value = R110.zoom;
         }
       });
 
-      // Setup canvas pointer for toggling the first row
       setupCanvasPointer(R110.canvas);
     });
 
-    // ------------- CANVAS & DIMENSIONS -------------
     function calculateCanvasSize() {
       const containerElem = document.getElementById("grid-container");
-      const containerWidth = containerElem.clientWidth;
-      const containerHeight = containerElem.clientHeight;
-      
-      // Set canvas to container size
-      R110.canvas.width = containerWidth;
-      R110.canvas.height = containerHeight;
-      
-      // Calculate cells based on zoom level
+      const cw = containerElem.clientWidth;
+      const ch = containerElem.clientHeight;
+      R110.canvas.width = cw;
+      R110.canvas.height = ch;
+
       R110.cols = R110.baseCols * R110.zoom;
-      R110.cellSize = containerWidth / R110.cols;
-      
-      // Safely limit total rows
-      R110.maxRows = Math.min(Math.floor(containerHeight / R110.cellSize), 300);
+      R110.cellSize = cw / R110.cols;
+      R110.maxRows = Math.min(Math.floor(ch / R110.cellSize), 300);
     }
 
-    async function setZoom(zoomValue) {
+    async function setZoom(z) {
       showLoading();
       try {
-        // Save old first row
-        const oldFirstRow = R110.generations.length > 0 ? R110.generations[0].slice() : null;
-
-        // Reset everything
-        R110.zoom = zoomValue;
+        const oldRow = R110.generations.length > 0 ? [...R110.generations[0]] : null;
+        R110.zoom = z;
         R110.generations = [];
         R110.rowsDrawn = 0;
         clearCanvas();
-        
-        // Recalc canvas size
+
         calculateCanvasSize();
 
-        // Rebuild first row
-        if (oldFirstRow) {
+        if (oldRow) {
           const newRow = new Array(R110.cols).fill(0);
-          const offset = Math.floor((R110.cols - oldFirstRow.length) / 2);
-          for (let i = 0; i < oldFirstRow.length; i++) {
+          const offset = Math.floor((R110.cols - oldRow.length) / 2);
+          for (let i = 0; i < oldRow.length; i++) {
             const idx = i + offset;
             if (idx >= 0 && idx < R110.cols) {
-              newRow[idx] = oldFirstRow[i];
+              newRow[idx] = oldRow[i];
             }
           }
           R110.generations.push(newRow);
@@ -743,22 +674,14 @@
 
         renderAllGenerations();
         hideLoading();
-      } catch (err) {
+      } catch(err) {
         console.error("Zoom error:", err);
         hideLoading();
       }
     }
 
-    function clearCanvas() {
-      R110.ctx.clearRect(0, 0, R110.canvas.width, R110.canvas.height);
-      R110.ctx.fillStyle = "#24283b";
-      R110.ctx.fillRect(0, 0, R110.canvas.width, R110.canvas.height);
-    }
-
-    // ------------- STATE & GENERATION LOGIC -------------
     function createInitialGeneration() {
       const row = new Array(R110.cols).fill(0);
-      // Provide a small starting pattern or random partial fill
       if (R110.zoom === 1) {
         row[Math.floor(R110.cols * 0.1)] = 1;
       } else {
@@ -774,31 +697,34 @@
       if (R110.generations.length === 0) {
         createInitialGeneration();
       }
-      const lastRow = R110.generations[R110.generations.length - 1];
-      const newRow = computeNextRow(lastRow);
-      R110.generations.push(newRow);
-      renderNewRow(newRow, R110.generations.length - 1);
+      const last = R110.generations[R110.generations.length - 1];
+      const next = computeNextRow(last, R110.useWrap);
+      R110.generations.push(next);
+      renderNewRow(next, R110.generations.length - 1);
     }
 
-    function computeNextRow(currentRow) {
-      const length = currentRow.length;
-      const newRow = new Array(length).fill(0);
-      
+    function computeNextRow(arr, wrap) {
+      const length = arr.length;
+      const newArr = new Array(length).fill(0);
       for (let i = 0; i < length; i++) {
-        const left = (i === 0) ? 0 : currentRow[i - 1];
-        const center = currentRow[i];
-        const right = (i === length - 1) ? 0 : currentRow[i + 1];
+        const leftIndex = wrap ? (i - 1 + length) % length : i - 1;
+        const rightIndex = wrap ? (i + 1) % length : i + 1;
+        const left = (leftIndex < 0 || leftIndex >= length) ? 0 : arr[leftIndex];
+        const center = arr[i];
+        const right = (rightIndex < 0 || rightIndex >= length) ? 0 : arr[rightIndex];
+        
         const pattern = (left << 2) | (center << 1) | right;
-        newRow[i] = (110 >> pattern) & 1;
+        // Shift-based approach for "110" => 0b01101110
+        newArr[i] = (110 >> pattern) & 1;
       }
-      return newRow;
+      return newArr;
     }
 
     function randomizeFirstRow() {
       stopGame();
       R110.generations = [];
       const row = new Array(R110.cols).fill(0);
-      const density = 0.1 * R110.zoom;  // Slightly more at higher zoom
+      const density = 0.1 * R110.zoom;
       for (let i = 0; i < R110.cols; i++) {
         if (Math.random() < density) row[i] = 1;
       }
@@ -817,40 +743,39 @@
       renderAllGenerations();
     }
 
-    // ------------- RENDERING -------------
     function renderAllGenerations() {
       clearCanvas();
-      for (let rowIndex = 0; rowIndex < R110.generations.length; rowIndex++) {
-        const rowData = R110.generations[rowIndex];
-        renderNewRow(rowData, rowIndex);
+      for (let i = 0; i < R110.generations.length; i++) {
+        renderNewRow(R110.generations[i], i);
       }
     }
 
     function renderNewRow(rowData, rowIndex) {
       const ctx = R110.ctx;
-      const cellSize = R110.cellSize;
-
+      const size = R110.cellSize;
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      ctx.fillStyle = "#7aa2f7";  // Active cell color
-      
+      ctx.fillStyle = "#7aa2f7";
       for (let c = 0; c < rowData.length; c++) {
         if (rowData[c] === 1) {
-          const x = c * cellSize;
-          const y = rowIndex * cellSize;
-          ctx.fillRect(x, y, cellSize, cellSize);
+          ctx.fillRect(c * size, rowIndex * size, size, size);
         }
       }
       ctx.restore();
     }
 
-    // ------------- POINTER: Toggle first row -------------
+    function clearCanvas() {
+      R110.ctx.clearRect(0, 0, R110.canvas.width, R110.canvas.height);
+      R110.ctx.fillStyle = "#24283b";
+      R110.ctx.fillRect(0, 0, R110.canvas.width, R110.canvas.height);
+    }
+
     function setupCanvasPointer(canvas) {
-      canvas.addEventListener("mousedown", (e) => {
+      canvas.addEventListener("mousedown", e => {
         R110.isDrawing = true;
         toggleCellAtPointer(e);
       });
-      canvas.addEventListener("mousemove", (e) => {
+      canvas.addEventListener("mousemove", e => {
         if (R110.isDrawing) toggleCellAtPointer(e);
       });
       canvas.addEventListener("mouseup", () => {
@@ -860,11 +785,11 @@
         R110.isDrawing = false;
       });
 
-      canvas.addEventListener("touchstart", (e) => {
+      canvas.addEventListener("touchstart", e => {
         R110.isDrawing = true;
         toggleCellAtPointer(e.touches[0]);
       }, { passive: false });
-      canvas.addEventListener("touchmove", (e) => {
+      canvas.addEventListener("touchmove", e => {
         e.preventDefault();
         if (R110.isDrawing) toggleCellAtPointer(e.touches[0]);
       }, { passive: false });
@@ -877,26 +802,18 @@
     }
 
     function toggleCellAtPointer(evt) {
-      if (!R110.generations.length) return;
+      if (R110.generations.length === 0) return;
       const rect = R110.canvas.getBoundingClientRect();
       const x = evt.clientX - rect.left;
       const y = evt.clientY - rect.top;
-
-      // Only toggle if pointer is within the first row's vertical span
-      // which is from y=0 to y=cellSize
-      if (y > R110.cellSize) {
-        return;
-      }
-
+      if (y > R110.cellSize) return;
       const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
-
       const firstRow = R110.generations[0];
       firstRow[col] = firstRow[col] ? 0 : 1;
       renderNewRow(firstRow, 0);
     }
 
-    // ------------- PLAY / STOP / TIMER -------------
     function toggleGame() {
       if (R110.playing) {
         stopGame();
@@ -908,15 +825,13 @@
     function startGame() {
       if (R110.timer) {
         clearInterval(R110.timer);
-        R110.timer = null;
       }
       R110.playing = true;
       document.getElementById("zoomSelect").disabled = true;
-      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
+      document.getElementById("toggleBtn").innerHTML =
+        '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
-      R110.timer = setInterval(() => {
-        stepGeneration();
-      }, R110.calculateInterval());
+      R110.timer = setInterval(stepGeneration, R110.interval);
     }
 
     function stopGame() {
@@ -926,10 +841,10 @@
         R110.timer = null;
       }
       document.getElementById("zoomSelect").disabled = false;
-      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
+      document.getElementById("toggleBtn").innerHTML =
+        '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
     }
 
-    // ------------- LOADING OVERLAY -------------
     function showLoading() {
       const loadingState = document.getElementById("loadingState");
       loadingState.style.display = "flex";
@@ -939,12 +854,17 @@
       loadingState.style.display = "none";
     }
 
-    // ------------- Setup Additional Controls -------------
     function setupControls() {
-      document.getElementById("speedSelect").addEventListener("change", (e) => {
-        const val = parseFloat(e.target.value);
-        R110.currentSpeedMultiplier = val;
-        R110.updateInterval();
+      const speedSelect = document.getElementById("speedSelect");
+      speedSelect.addEventListener("change", e => {
+        // Use the custom speedMap
+        const val = e.target.value;
+        // Update R110.interval to the mapped milliseconds
+        R110.interval = speedMap[val];
+        if (R110.playing) {
+          clearInterval(R110.timer);
+          R110.timer = setInterval(stepGeneration, R110.interval);
+        }
       });
     }
   </script>
@@ -964,16 +884,17 @@
         </div>
         <div class="modal-body">
           <p>
-            <strong>Toggle</strong> cells in the initial row by clicking (or tapping) near the top. Press <strong>Play</strong> 
-            to watch Rule 110 generate new rows at the bottom of the canvas. Each step applies the "110" 
-            rule to every cell, determining if it remains off or lights up based on its neighbors.
+            <strong>Toggle</strong> cells in the initial row by clicking (or tapping) near the top. Press 
+            <strong>Play</strong> to watch Rule 110 generate new rows at the bottom of the canvas. 
+            Each step applies the "110" rule to every cell, determining if it remains off or lights up 
+            based on its neighbors.
           </p>
           
           <h6>The Rules</h6>
           <p>
-            If you look at the three adjacent cells in the current row—left, center, right—the next state of 
-            the center cell is found by checking whether those three bits match a pattern that yields a 1 
-            (on) or 0 (off) under the "110" mapping:
+            If you look at the three adjacent cells in the current row—left, center, right—the next 
+            state of the center cell is found by checking whether those three bits match a pattern 
+            that yields a 1 (on) or 0 (off) under the "110" mapping:
             <ul>
               <li><strong>111 → 0</strong></li>
               <li><strong>110 → 1</strong></li>
@@ -993,8 +914,9 @@
               <li><strong>Step Forward:</strong> Generate exactly one new row</li>
               <li><strong>Randomize:</strong> Fill the initial row with random 0/1 cells</li>
               <li><strong>Clear:</strong> Reset the canvas to a blank row of all zeros</li>
-              <li><strong>Speed:</strong> Adjust how quickly new rows appear in auto-play mode</li>
+              <li><strong>Speed:</strong> Adjust how quickly new rows appear (0.5× => 2s/step, 16× => ~2ms/step)</li>
               <li><strong>Zoom:</strong> Change how many cells (and row height) appear (only while paused)</li>
+              <li><strong>Wrap Edges:</strong> Toggle wrap-around boundary conditions</li>
             </ul>
           </p>
           
