@@ -615,13 +615,11 @@
 
     class Rule110State {
       constructor() {
-        this.baseCols = 60; 
-        this.maxRows = 300; 
+        this.baseCols = 60;         // Base number of columns at zoom level 1
+        this.maxRows = 300;         // Max history rows
+        this.useWrap = true;        // Initialize wrap edges state to match checkbox
         this.playing = false;
         this.timer = null;
-
-        // We'll store the actual interval in ms, determined by speedMap
-        this.interval = speedMap['1']; // default speed: 250ms
         this.zoom = 1;
         this.generations = [];
         this.canvas = document.getElementById("grid");
@@ -629,7 +627,6 @@
         this.isDrawing = false;
         this.cols = this.baseCols;
         this.rowsDrawn = 0;
-        this.useWrap = false;
       }
     }
 
@@ -725,21 +722,21 @@
         createInitialGeneration();
       }
       const last = R110.generations[R110.generations.length - 1];
-      const next = computeNextRow(last, R110.useWrap);
+      const next = computeNextRow(last, R110.useWrap === true);
       R110.generations.push(next);
       renderNewRow(next, R110.generations.length - 1);
     }
 
-    // Using the shift-based approach from your final code
     function computeNextRow(arr, wrap) {
       const length = arr.length;
       const newArr = new Array(length).fill(0);
       for (let i = 0; i < length; i++) {
-        const leftIndex = wrap ? (i - 1 + length) % length : i - 1;
-        const rightIndex = wrap ? (i + 1) % length : i + 1;
-        const left = (leftIndex < 0 || leftIndex >= length) ? 0 : arr[leftIndex];
+        const leftIndex = wrap ? ((i - 1 + length) % length) : i - 1;
+        const rightIndex = wrap ? ((i + 1) % length) : i + 1;
+        
+        const left = wrap ? arr[leftIndex] : (leftIndex < 0 ? 0 : arr[leftIndex]);
         const center = arr[i];
-        const right = (rightIndex < 0 || rightIndex >= length) ? 0 : arr[rightIndex];
+        const right = wrap ? arr[rightIndex] : (rightIndex >= length ? 0 : arr[rightIndex]);
         
         const pattern = (left << 2) | (center << 1) | right;
         newArr[i] = (110 >> pattern) & 1;
@@ -782,10 +779,17 @@
       const size = R110.cellSize;
       ctx.save();
       ctx.imageSmoothingEnabled = false;
+      ctx.translate(0, 0);  // Ensure pixel-perfect alignment
       ctx.fillStyle = "#7aa2f7";
       for (let c = 0; c < rowData.length; c++) {
         if (rowData[c] === 1) {
-          ctx.fillRect(c * size, rowIndex * size, size, size);
+          // Add a tiny bit of overlap to prevent gaps
+          ctx.fillRect(
+            Math.floor(c * size),
+            Math.floor(rowIndex * size),
+            Math.ceil(size + 1),
+            Math.ceil(size + 1)
+          );
         }
       }
       ctx.restore();
