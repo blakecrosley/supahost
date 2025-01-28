@@ -800,20 +800,27 @@
       
       // Special handling for high zoom levels
       if (R110.zoom >= 8) {
-        // Disable smoothing but use subpixel positioning
-        ctx.imageSmoothingEnabled = false;
-      for (let c = 0; c < rowData.length; c++) {
-        if (rowData[c] === 1) {
-            // Use precise subpixel positioning but ensure whole pixel sizes
-            const x = c * size;
-            const y = rowIndex * size;
-            const w = Math.ceil(size);
-            const h = Math.ceil(size);
-            // Offset by 0.5 for crisp edges
-            ctx.fillRect(Math.round(x) + 0.5, Math.round(y) + 0.5, w - 1, h - 1);
+        // Enable smoothing for mobile devices at high zooms
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        ctx.imageSmoothingEnabled = isMobile;
+        if (isMobile) {
+          ctx.imageSmoothingQuality = 'high';
+        }
+        
+        for (let c = 0; c < rowData.length; c++) {
+          if (rowData[c] === 1) {
+            // Adjust rendering for mobile devices
+            const x = Math.round(c * size);
+            const y = Math.round(rowIndex * size);
+            if (isMobile) {
+              ctx.fillRect(x, y, size, size);
+            } else {
+              // Desktop rendering with crisp edges
+              ctx.fillRect(x + 0.5, y + 0.5, Math.ceil(size) - 1, Math.ceil(size) - 1);
+            }
           }
         }
-        } else {
+      } else {
         ctx.imageSmoothingEnabled = false;
         // Original handling for lower zooms with crisp pixels
         for (let c = 0; c < rowData.length; c++) {
