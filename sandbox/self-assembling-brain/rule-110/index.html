@@ -701,7 +701,7 @@
 
       R110.cols = R110.baseCols * R110.zoom;
       R110.cellSize = cw / R110.cols;
-      R110.maxRows = Math.min(Math.floor(ch / R110.cellSize), 300);
+      R110.maxRows = Math.floor(ch / R110.cellSize);
     }
 
     async function setZoom(z) {
@@ -739,13 +739,6 @@
 
     function createInitialGeneration() {
       const row = new Array(R110.cols).fill(0);
-      if (R110.zoom === 1) {
-        row[Math.floor(R110.cols * 0.1)] = 1;
-      } else {
-        for (let i = 0; i < R110.cols; i++) {
-          if (Math.random() < 0.1) row[i] = 1;
-        }
-      }
       R110.generations.push(row);
       R110.rowsDrawn = 0;
     }
@@ -753,23 +746,31 @@
     function stepGeneration() {
       if (R110.generations.length === 0) {
         createInitialGeneration();
+        return;
       }
       const last = R110.generations[R110.generations.length - 1];
-      const next = computeNextRow(last, R110.useWrap === true);
-      R110.generations.push(next);
-      renderNewRow(next, R110.generations.length - 1);
+      if (last.some(cell => cell === 1) && R110.generations.length < R110.maxRows) {
+        const next = computeNextRow(last, R110.useWrap === true);
+        R110.generations.push(next);
+        renderNewRow(next, R110.generations.length - 1);
+      }
     }
 
     function computeNextRow(arr, wrap) {
       const length = arr.length;
       const newArr = new Array(length).fill(0);
       for (let i = 0; i < length; i++) {
-        const leftIndex = wrap ? ((i - 1 + length) % length) : i - 1;
-        const rightIndex = wrap ? ((i + 1) % length) : i + 1;
-        
-        const left = wrap ? arr[leftIndex] : (leftIndex < 0 ? 0 : arr[leftIndex]);
+        const leftIndex = i - 1;
+        const left = leftIndex < 0 
+          ? (wrap ? arr[length - 1] : 0) 
+          : arr[leftIndex];
+
         const center = arr[i];
-        const right = wrap ? arr[rightIndex] : (rightIndex >= length ? 0 : arr[rightIndex]);
+
+        const rightIndex = i + 1;
+        const right = rightIndex >= length 
+          ? (wrap ? arr[0] : 0) 
+          : arr[rightIndex];
         
         const pattern = (left << 2) | (center << 1) | right;
         newArr[i] = (110 >> pattern) & 1;
@@ -896,11 +897,14 @@
       const rect = R110.canvas.getBoundingClientRect();
       const x = evt.clientX - rect.left;
       const y = evt.clientY - rect.top;
-      if (y > R110.cellSize) return;
+      if (y > R110.cellSize * 1.5) return;
       const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
       const firstRow = R110.generations[0];
       firstRow[col] = firstRow[col] ? 0 : 1;
+      R110.generations = [firstRow];
+      R110.rowsDrawn = 0;
+      clearCanvas();
       renderNewRow(firstRow, 0);
     }
 
@@ -920,6 +924,17 @@
       document.getElementById("zoomSelect").disabled = true;
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
+
+      if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
+        const row = new Array(R110.cols).fill(0);
+        const density = 0.1 * R110.zoom;
+        for (let i = 0; i < R110.cols; i++) {
+          if (Math.random() < density) row[i] = 1;
+        }
+        R110.generations = [row];
+        R110.rowsDrawn = 0;
+        renderAllGenerations();
+      }
 
       R110.timer = setInterval(stepGeneration, R110.calculateInterval());
     }
