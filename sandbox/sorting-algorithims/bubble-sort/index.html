@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4JE9G63Y9Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4JE9G63Y9Z');
+  </script>
+  <meta charset="UTF-8" />
+  <title>Bubble Sort - Blake Crosley Sandbox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@BlakeC">
+  <meta name="twitter:creator" content="@BlakeC">
+  <meta name="twitter:title" content="Bubble Sort - Interactive Visualization">
+  <meta name="twitter:description" content="Watch Bubble Sort in action. See how this simple sorting algorithm compares adjacent elements to sort an array.">
+  <meta name="twitter:domain" content="github.blakecrosley.com">
+  
+  <!-- Bootstrap 5.3.3 CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    /* Tokyo Night colors */
+    :root {
+      --tn-bg: #1a1b26;
+      --tn-panel: #24283b;
+      --tn-foreground: #c0caf5;
+      --tn-btn-bg: #414868;
+      --tn-btn-bg-hover: #565f89;
+      --tn-btn-text: #c0caf5;
+      --tn-border: #565f89;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--tn-bg) !important;
+      color: var(--tn-foreground) !important;
+      font-size: 20px;
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-top: 120px;
+      padding-bottom: 0px;
+    }
+
+    /* Navbar styling */
+    .navbar {
+      background-color: rgba(36, 40, 59, 0.8) !important;
+      border-bottom: 1px solid var(--tn-border);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Canvas container */
+    #visualization-container {
+      margin: 0 auto;
+      border: 1px solid var(--tn-border);
+      border-radius: .5rem;
+      background: var(--tn-panel);
+      width: 100%;
+      position: relative;
+      padding-bottom: 60%;
+      overflow: hidden;
+    }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Controls styling */
+    #controls {
+      margin-bottom: 16px;
+    }
+
+    .btn-secondary {
+      background-color: var(--tn-btn-bg) !important;
+      color: var(--tn-btn-text) !important;
+      border-color: var(--tn-border) !important;
+    }
+
+    .form-select {
+      background-color: var(--tn-panel) !important;
+      color: var(--tn-foreground) !important;
+      border-color: var(--tn-border) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: rgb(245, 133, 237);
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid">
+      <a href="https://x.com/BlakeC" class="navbar-brand text-decoration-none" target="_blank">
+        <img src="../../../assets/profile.jpg" alt="@blakec" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+        @blakec
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12 col-lg-8 offset-lg-2">
+        <h1>Bubble Sort</h1>
+        
+        <!-- Controls -->
+        <div id="controls" class="d-flex flex-wrap align-items-center gap-3 mb-3">
+          <div class="btn-group" role="group">
+            <button id="playBtn" class="btn btn-secondary">
+              <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
+            </button>
+            <button id="stepBtn" class="btn btn-secondary">
+              <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step</span>
+            </button>
+            <button id="resetBtn" class="btn btn-secondary">
+              <i class="bi bi-arrow-counterclockwise"></i> <span class="d-none d-sm-inline">Reset</span>
+            </button>
+          </div>
+          
+          <div class="d-flex align-items-center gap-2">
+            <label for="speedSelect" class="form-label mb-0">Speed</label>
+            <select id="speedSelect" class="form-select form-select-lg">
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="2">2×</option>
+              <option value="4">4×</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Visualization canvas -->
+        <div id="visualization-container">
+          <canvas id="canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Sorting visualization script -->
+  <script>
+    // Basic setup - we'll implement the actual sorting later
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Placeholder for our sorting implementation
+    class BubbleSort {
+      constructor() {
+        this.array = [];
+        this.playing = false;
+        this.speed = 1;
+      }
+    }
+    
+    // Initialize
+    const sorter = new BubbleSort();
+  </script>
+</body>
+</html>
