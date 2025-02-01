@@ -396,7 +396,7 @@
                 Wolfram's Rule 110 is a remarkable one-dimensional cellular automaton from Stephen Wolfram's 
                 classification of "elementary" rules. Each cell in this linear grid can be in one of two 
                 states: 0 (off) or 1 (on). With every step, the next row of cells is determined by looking at 
-                triples in the current row—each cell plus its two neighbors. The pattern of which triples 
+                triples in the current row—each cell plus its two neighbors. The pattern of which triplets 
                 produce a 1 in the next generation is encoded by the binary number <strong>110</strong>.
               </p>
               <p>
@@ -477,7 +477,7 @@
           In Rule 110, we look at each group of three adjacent cells: left, center, and right. This triplet 
           decides the center cell's state in the next generation. Because each cell is either 0 or 1, there 
           are only eight possible triplets (000 through 111). The name "110" comes from the binary digits 
-          that define which triplets produce a 1.
+          that define which triplets produce a live cell.
         </p>
         <p class="mb-large">
           In decimal, 110 is 01101110 in binary (when read top-to-bottom in the usual chart). This means 
@@ -515,7 +515,6 @@
           outside the grid:
         </p>
 
-        <!-- The code snippet you wanted to reinsert -->
         <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Rule 110 transition table - maps each 3-bit pattern to its next state</span>
 <span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">transitions</span> = {
@@ -548,15 +547,13 @@
     <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">left</span>   = (leftIndex < <span style="color: #ff9e64;">0</span> || leftIndex >= length) ? <span style="color: #ff9e64;">0</span> : <span style="color: #e0af68;">currentRow</span>[leftIndex];
     <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">center</span> = <span style="color: #e0af68;">currentRow</span>[i];
     <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">right</span>  = (rightIndex < <span style="color: #ff9e64;">0</span> || rightIndex >= length) ? <span style="color: #ff9e64;">0</span> : <span style="color: #e0af68;">currentRow</span>[rightIndex];
-
-    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">triplet</span> = `${left}${center}${right}`;
-
-    <span style="color: #565f89;">// Use the transitions table above</span>
-    newRow[i] = <span style="color: #7dcfff;">transitions</span>[triplet];
+    
+    <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">pattern</span> = (left << 2) | (center << 1) | right;
+    newRow[i] = (<span style="color: #ff9e64;">110</span> >> <span style="color: #7dcfff;">pattern</span>) & <span style="color: #ff9e64;">1</span>;
   }
   <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newRow</span>;
 }
-          </code></pre>
+</code></pre>
 
         <p class="mb-large">
           Using <code>transitions</code>, we treat each triplet (e.g. "110") as a string key in that 
@@ -614,7 +611,7 @@
   <!-- Bootstrap JS -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy2GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous">
   </script>
 
@@ -696,11 +693,26 @@
       const containerElem = document.getElementById("grid-container");
       const cw = containerElem.clientWidth;
       const ch = containerElem.clientHeight;
-      R110.canvas.width = cw;
+      
+      // Set canvas height from container
       R110.canvas.height = ch;
-
+      
+      // Determine the number of columns based on baseCols and zoom
       R110.cols = R110.baseCols * R110.zoom;
-      R110.cellSize = cw / R110.cols;
+      
+      if (R110.zoom === 16) {
+         // For zoom level 16, force an integer cell size with a minimum of 2 pixels
+         R110.cellSize = Math.max(2, Math.floor(cw / R110.cols));
+         // Adjust canvas width to exactly match the grid
+         R110.canvas.width = R110.cellSize * R110.cols;
+         R110.canvas.style.width = R110.canvas.width + "px";
+      } else {
+         // For zoom level 8 and others, use the original behavior
+         R110.cellSize = cw / R110.cols;
+         R110.canvas.width = cw;
+         R110.canvas.style.width = "100%";
+      }
+      
       R110.maxRows = Math.floor(ch / R110.cellSize);
     }
 
@@ -716,12 +728,20 @@
         calculateCanvasSize();
 
         if (oldRow) {
-          const newRow = new Array(R110.cols).fill(0);
-          const offset = Math.floor((R110.cols - oldRow.length) / 2);
-          for (let i = 0; i < oldRow.length; i++) {
-            const idx = i + offset;
-            if (idx >= 0 && idx < R110.cols) {
-              newRow[idx] = oldRow[i];
+          let newRow = new Array(R110.cols);
+          if (R110.useWrap) {
+            // If wrap is enabled, fill newRow by wrapping the old row
+            for (let i = 0; i < R110.cols; i++) {
+              newRow[i] = oldRow[i % oldRow.length];
+            }
+          } else {
+            newRow.fill(0);
+            const offset = Math.floor((R110.cols - oldRow.length) / 2);
+            for (let i = 0; i < oldRow.length; i++) {
+              const idx = i + offset;
+              if (idx >= 0 && idx < R110.cols) {
+                newRow[idx] = oldRow[i];
+              }
             }
           }
           R110.generations.push(newRow);
@@ -826,38 +846,27 @@
       }
     }
 
+    // --- Modified renderNewRow ---
     function renderNewRow(rowData, rowIndex) {
       const ctx = R110.ctx;
       const size = R110.cellSize;
       ctx.save();
-      ctx.translate(0, 0);
       ctx.fillStyle = "#7aa2f7";
       
-      // Special handling for high zoom levels
       if (R110.zoom >= 8) {
-        // Enable smoothing for mobile devices at high zooms
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        ctx.imageSmoothingEnabled = isMobile;
-        if (isMobile) {
-          ctx.imageSmoothingQuality = 'high';
-        }
-        
+        // Enable smoothing at higher zoom
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         for (let c = 0; c < rowData.length; c++) {
           if (rowData[c] === 1) {
-            // Adjust rendering for mobile devices
-            const x = Math.round(c * size);
-            const y = Math.round(rowIndex * size);
-            if (isMobile) {
-              ctx.fillRect(x, y, size, size);
-            } else {
-              // Desktop rendering with crisp edges
-              ctx.fillRect(x + 0.5, y + 0.5, Math.ceil(size) - 1, Math.ceil(size) - 1);
-            }
+            const x = c * size;
+            const y = rowIndex * size;
+            ctx.fillRect(x, y, size, size);
           }
         }
       } else {
+        // Crisp pixels at lower zoom levels
         ctx.imageSmoothingEnabled = false;
-        // Original handling for lower zooms with crisp pixels
         for (let c = 0; c < rowData.length; c++) {
           if (rowData[c] === 1) {
             ctx.fillRect(
@@ -872,6 +881,7 @@
       
       ctx.restore();
     }
+    // --- End modified renderNewRow ---
 
     function clearCanvas() {
       R110.ctx.clearRect(0, 0, R110.canvas.width, R110.canvas.height);
