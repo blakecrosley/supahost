@@ -352,6 +352,63 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    .form-check-input {
+      background-color: var(--tn-panel) !important;
+      border-color: var(--tn-border) !important;
+    }
+
+    .form-check-input:checked {
+      background-color: var(--tn-btn-bg) !important;
+      border-color: var(--tn-btn-bg) !important;
+    }
+
+    .form-check-input:focus {
+      border-color: var(--tn-border);
+      box-shadow: 0 0 0 0.2rem rgba(65, 72, 104, 0.25);
+    }
+
+    .form-switch .form-check-input {
+      height: 1.275em;
+      width: 2.5em;
+      cursor: pointer;
+      margin-top: 0.15em; /* Better vertical alignment with label */
+    }
+
+    /* Improve layout of the wrap edges control */
+    .form-check.form-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0;
+      flex-direction: row-reverse;
+      justify-content: flex-start;
+    }
+
+    .form-check-input {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    .form-check-label {
+      margin-right: 12px;
+    }
+
+    /* Update the form-check-label style */
+    #zoomControls .form-check-label {
+      margin-right: 0;
+    }
+
+    /* Add this to style the toggle circle */
+    .form-switch .form-check-input:checked::before {
+      background-color: #88f9d7 !important;
+    }
+
+    /* Update the toggle circle color to match our theme's light blue */
+    .form-switch .form-check-input:checked {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23c0caf5'/%3e%3c/svg%3e") !important;
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -468,21 +525,23 @@
         </div>
 
         <!-- Wrap Edges + Zoom Controls -->
-        <div id="zoomControls" class="d-flex justify-content-end align-items-center gap-3">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="wrapEdgesToggle" checked>
+        <div id="zoomControls" class="d-flex justify-content-between align-items-center">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="wrapEdgesToggle" checked>
             <label class="form-check-label" for="wrapEdgesToggle">
               Wrap Edges
             </label>
           </div>
-          <label for="zoomSelect" class="form-label mb-0">Zoom</label>
-          <select class="form-select form-select-lg" id="zoomSelect" style="width: auto;">
-            <option value="1">1×</option>
-            <option value="2">2×</option>
-            <option value="4">4×</option>
-            <option value="8">8×</option>
-            <option value="16">16×</option>
-          </select>
+          <div class="d-flex align-items-center gap-3">
+            <label for="zoomSelect" class="form-label mb-0">Zoom</label>
+            <select class="form-select form-select-lg" id="zoomSelect" style="width: auto;">
+              <option value="1">1×</option>
+              <option value="2">2×</option>
+              <option value="4">4×</option>
+              <option value="8">8×</option>
+              <option value="16">16×</option>
+            </select>
+          </div>
         </div>
 
         <h3>The Rule</h3>
