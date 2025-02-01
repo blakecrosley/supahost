@@ -24,7 +24,7 @@
   <meta name="twitter:image:alt" content="Wolfram's Rule 110 1D automaton simulation showing evolving patterns">
   <meta name="twitter:domain" content="github.blakecrosley.com">
   
-  <!-- Open Graph data (also used by other platforms) -->
+  <!-- Open Graph data -->
   <meta property="og:title" content="Wolfram's Rule 110 - Interactive Simulation">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule110/">
@@ -567,30 +567,6 @@
   <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newRow</span>;
 }
 </code></pre>
-
-        <p class="mb-large">
-          Using <code>transitions</code>, we treat each triplet (e.g. "110") as a string key in that 
-          table. The table then dictates whether the new cell is <code>1</code> or <code>0</code>. 
-          Our final version uses a shift-based approach to achieve the same effect more compactly.
-        </p>
-
-        <!-- Link to Conway's Game of Life -->
-        <div class="text-center mb-5">
-          <a href="../conways-game-of-life/" class="btn btn-lg" style="
-            background: transparent;
-            border: 2px solid rgb(245, 133, 237);
-            color: rgb(245, 133, 237);
-            transition: all 0.2s ease;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;"
-            onmouseover="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'" 
-            onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'" 
-            onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'" 
-            onmouseup="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'"
-          >
-            Read about Conway's Game of Life →
-          </a>
-        </div>
       </div>
     </div>
   </div>
@@ -647,21 +623,21 @@
         this.useWrap = true;
         this.playing = false;
         this.timer = null;
+
         const speedSelect = document.getElementById("speedSelect");
         this.currentSpeedMultiplier = speedSelect ? parseFloat(speedSelect.value) : 1.0;
-        this.baseInterval = 500;
+        this.baseInterval = 500;  
         this.zoom = 1;
         this.generations = [];
 
+        // Our canvases
         this.canvas = document.getElementById("grid");
         this.ctx = this.canvas.getContext("2d");
         this.hoverCanvas = document.getElementById("hoverCanvas");
         this.hoverCtx = this.hoverCanvas.getContext("2d");
 
-        // For toggling
         this.isDrawing = false;
         this.lastToggledCol = -1;
-        // Fade concurrency
         this.activeFades = {};
 
         this.cols = this.baseCols;
@@ -669,14 +645,13 @@
       }
 
       calculateInterval() {
-        // Speed adjustments
         return this.baseInterval / Math.pow(this.currentSpeedMultiplier, 2);
       }
 
       updateInterval() {
         if (this.playing && this.timer) {
           clearInterval(this.timer);
-          this.timer = setInterval(stepGeneration, this.calculateInterval());
+          this.timer = setInterval(() => stepGeneration(), this.calculateInterval());
         }
       }
     }
@@ -712,30 +687,37 @@
     });
 
     /**
-     * Calculate size of canvas based on container,
-     * set up the columns & zoom properly.
+     * If zoom=16, we:
+     *   - compute a float cellSize = containerWidth / totalCols
+     *   - set canvas width to container width
+     * Because you want it fully filling the container, 
+     * but each cell is drawn with "rounded coords" so no gap.
      */
     function calculateCanvasSize() {
-      const containerElem = document.getElementById("grid-container");
-      const cw = containerElem.clientWidth;
-      const ch = containerElem.clientHeight;
+      const container = document.getElementById("grid-container");
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
 
-      R110.canvas.height = ch;
       R110.cols = R110.baseCols * R110.zoom;
 
-      // For large zoom, we try to keep them integer-based
+      let cellSize;
       if (R110.zoom === 16) {
-        R110.cellSize = Math.max(2, Math.floor(cw / R110.cols));
-        R110.canvas.width = R110.cellSize * R110.cols;
-        R110.canvas.style.width = R110.canvas.width + "px";
+        // fill container width, but handle no gap by rounding in getCellRect
+        cellSize = cw / R110.cols;  
+        R110.canvas.width = cw;     // use full container width
+        R110.canvas.style.width = "100%";
       } else {
-        // Could still be fractional
-        R110.cellSize = cw / R110.cols;
+        // fractional approach for other zoom
+        cellSize = cw / R110.cols;
         R110.canvas.width = cw;
         R110.canvas.style.width = "100%";
       }
 
-      // Mirror for hover
+      R110.canvas.height = ch;
+      R110.canvas.style.height = "100%";
+      R110.cellSize = cellSize;
+
+      // Mirror to hover
       R110.hoverCanvas.width = R110.canvas.width;
       R110.hoverCanvas.height = R110.canvas.height;
       R110.hoverCanvas.style.width = R110.canvas.style.width;
@@ -747,12 +729,12 @@
     async function setZoom(z) {
       showLoading();
       try {
-        const oldRow = R110.generations.length > 0 ? [...R110.generations[0]] : null;
+        const oldRow = R110.generations.length ? [...R110.generations[0]] : null;
         R110.zoom = z;
         R110.generations = [];
         R110.rowsDrawn = 0;
         clearCanvas();
-        
+
         calculateCanvasSize();
 
         if (oldRow) {
@@ -791,13 +773,12 @@
     }
 
     function stepGeneration() {
-      if (R110.generations.length === 0) {
+      if (!R110.generations.length) {
         createInitialGeneration();
-        return;
       }
       const last = R110.generations[R110.generations.length - 1];
-      if (last.some(cell => cell === 1) && R110.generations.length < R110.maxRows) {
-        const next = computeNextRow(last, R110.useWrap === true);
+      if (last.some(c => c === 1) && R110.generations.length < R110.maxRows) {
+        const next = computeNextRow(last, R110.useWrap);
         R110.generations.push(next);
         renderNewRow(next, R110.generations.length - 1);
       }
@@ -808,7 +789,7 @@
       const newArr = new Array(length).fill(0);
       for (let i = 0; i < length; i++) {
         const leftIndex = i - 1;
-        const left = leftIndex < 0 ? (wrap ? arr[length-1] : 0) : arr[leftIndex];
+        const left = leftIndex < 0 ? (wrap ? arr[length - 1] : 0) : arr[leftIndex];
         const center = arr[i];
         const rightIndex = i + 1;
         const right = rightIndex >= length ? (wrap ? arr[0] : 0) : arr[rightIndex];
@@ -833,7 +814,6 @@
       const cellsToFill = Math.floor(R110.cols * density);
       const positions = [...Array(R110.cols).keys()];
 
-      // Shuffle
       for (let i = positions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [positions[i], positions[j]] = [positions[j], positions[i]];
@@ -856,35 +836,36 @@
     }
 
     /**
-     * Returns the integer rectangle for a given cell so we
-     * consistently fill it. Special-case: for zoom=8 or 16 we do
-     * rounding so no gap. For other zoom levels we do a "crisp pixel"
-     * approach that can add +1 so cells overlap by a fraction.
+     * getCellRect for 16 zoom:
+     *    - we do x1= round(col*cellSize)
+     *    - x2= round((col+1)*cellSize) 
+     *    - if col is last, x2= canvas.width to fill container
+     * That ensures no gap & full container fill.
      */
     function getCellRect(col, row) {
-      const x = col * R110.cellSize;
-      const y = row * R110.cellSize;
-
-      // Special case for 16× zoom - use rounded integer math
+      const x1 = col * R110.cellSize;
+      const y1 = row * R110.cellSize;
       if (R110.zoom === 16) {
-        const ix = Math.round(x);
-        const iy = Math.round(y);
-        const w = Math.round(R110.cellSize);
-        const h = Math.round(R110.cellSize);
-        return [ix, iy, w, h];
-      } 
-      // Special case for 8× zoom - use floor/ceil approach
-      else if (R110.zoom === 8) {
-        const ix = Math.floor(x);
-        const iy = Math.floor(y);
-        const w = Math.ceil(R110.cellSize);
-        const h = Math.ceil(R110.cellSize);
-        return [ix, iy, w, h];
-      }
-      // Original crisp approach for other zooms
-      else {
-        const ix = Math.floor(x);
-        const iy = Math.floor(y);
+        // top-left
+        let ix1 = Math.round(x1);
+        let iy1 = Math.round(y1);
+
+        // bottom-right
+        let ix2 = Math.round((col + 1) * R110.cellSize);
+        let iy2 = Math.round((row + 1) * R110.cellSize);
+
+        // if last col, fill entire container width
+        if (col === R110.cols - 1) {
+          ix2 = R110.canvas.width;
+        }
+        // if you want multiple rows to fill container fully, do something similar:
+        // but presumably we only do top row toggling, so it's enough.
+
+        return [ix1, iy1, ix2 - ix1, iy2 - iy1];
+      } else {
+        // Crisp approach for others
+        const ix = Math.floor(x1);
+        const iy = Math.floor(y1);
         const w = Math.ceil(R110.cellSize + 1);
         const h = Math.ceil(R110.cellSize + 1);
         return [ix, iy, w, h];
@@ -906,10 +887,9 @@
     }
 
     function renderNewRow(rowData, rowIndex) {
-      const ctx = R110.ctx;
       for (let c = 0; c < rowData.length; c++) {
         if (rowData[c] === 1) {
-          drawCell(c, rowIndex, "#7aa2f7", ctx);
+          drawCell(c, rowIndex, "#7aa2f7", R110.ctx);
         }
       }
     }
@@ -923,7 +903,6 @@
     }
 
     function setupCanvasPointer(canvas) {
-      // Mouse
       canvas.addEventListener("mousedown", e => {
         R110.isDrawing = true;
         R110.lastToggledCol = -1;
@@ -965,18 +944,13 @@
 
     function toggleCellAtPointer(evt) {
       if (!R110.generations.length) return;
-
       const rect = R110.canvas.getBoundingClientRect();
       const x = evt.clientX - rect.left;
       const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
+      if (col === R110.lastToggledCol) return;
 
-      // One toggle per column
-      if (col === R110.lastToggledCol) {
-        return;
-      }
       R110.lastToggledCol = col;
-
       const firstRow = R110.generations[0];
       const oldVal = firstRow[col];
       const newVal = oldVal ? 0 : 1;
@@ -991,7 +965,6 @@
     }
 
     function animateFadeCell(col, oldVal, newVal) {
-      // Cancel old fade on this column
       if (R110.activeFades[col]) {
         R110.activeFades[col].finalizeFn();
         cancelAnimationFrame(R110.activeFades[col].handle);
@@ -999,17 +972,16 @@
       }
 
       const startColor = oldVal ? "#7aa2f7" : "#24283b";
-      const endColor = newVal ? "#7aa2f7" : "#24283b";
-      const startTime = performance.now();
-      const duration = 200;
-      let done = false;
-      let animFrameId = null;
+      const endColor   = newVal ? "#7aa2f7" : "#24283b";
+      const startTime  = performance.now();
+      const duration   = 200;
+      let done         = false;
+      let animFrameId  = null;
 
       function finalize() {
         drawCell(col, 0, endColor, R110.ctx);
         done = true;
       }
-
       function frame(now) {
         if (done) return;
         const elapsed = now - startTime;
@@ -1017,10 +989,9 @@
 
         const [r1,g1,b1] = hexToRGB(startColor);
         const [r2,g2,b2] = hexToRGB(endColor);
-
-        const r = Math.round(r1 + (r2 - r1) * t);
-        const g = Math.round(g1 + (g2 - g1) * t);
-        const b = Math.round(b1 + (b2 - b1) * t);
+        const r = Math.round(r1 + (r2-r1)*t);
+        const g = Math.round(g1 + (g2-g1)*t);
+        const b = Math.round(b1 + (b2-b1)*t);
 
         drawCell(col, 0, `rgb(${r},${g},${b})`, R110.ctx);
 
@@ -1032,26 +1003,21 @@
         }
       }
 
-      R110.activeFades[col] = {
-        handle: 0,
-        finalizeFn: finalize
-      };
+      R110.activeFades[col] = { handle: 0, finalizeFn: finalize };
       animFrameId = requestAnimationFrame(frame);
       R110.activeFades[col].handle = animFrameId;
     }
 
     function hexToRGB(hexStr) {
-      const r = parseInt(hexStr.slice(1,3),16);
-      const g = parseInt(hexStr.slice(3,5),16);
-      const b = parseInt(hexStr.slice(5,7),16);
+      const r = parseInt(hexStr.slice(1,3), 16);
+      const g = parseInt(hexStr.slice(3,5), 16);
+      const b = parseInt(hexStr.slice(5,7), 16);
       return [r,g,b];
     }
 
     function setupHoverHighlight(canvas) {
       canvas.addEventListener("mousemove", e => {
-        // Skip hover effect if game is playing
-        if (R110.playing) return;
-
+        if (R110.playing) return; // skip hover if playing
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const col = Math.floor(x / R110.cellSize);
@@ -1100,14 +1066,14 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
-      // Clear hover effect and change cursor when starting game
+      // Hide hover while playing
       R110.hoveredCol = -1;
       R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
-      R110.hoverCanvas.style.display = 'none';  // Hide hover canvas
-      document.getElementById("grid-container").style.cursor = 'not-allowed';  // Show disabled cursor
+      R110.hoverCanvas.style.display = 'none';
+      document.getElementById("grid-container").style.cursor = 'not-allowed';
 
       // If empty or all zero, randomize
-      if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
+      if (!R110.generations.length || R110.generations[0].every(c => c === 0)) {
         const row = new Array(R110.cols).fill(0);
         const baseDensity = 0.06;
         const density = Math.min(
@@ -1141,9 +1107,9 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
       
-      // Re-enable hover effect and restore cursor
-      R110.hoverCanvas.style.display = 'block';  // Show hover canvas
-      document.getElementById("grid-container").style.cursor = 'pointer';  // Restore pointer cursor
+      // Show hover again
+      R110.hoverCanvas.style.display = 'block';
+      document.getElementById("grid-container").style.cursor = 'pointer';
     }
 
     function showLoading() {
@@ -1216,6 +1182,7 @@
           <p class="mb-0">
             Experiment with toggles or random seeds to see how quickly complexity emerges!
           </p>
+        
         </div>
       </div>
     </div>
