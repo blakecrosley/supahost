@@ -573,23 +573,24 @@
           table. The table then dictates whether the new cell is <code>1</code> or <code>0</code>. 
           Our final version uses a shift-based approach to achieve the same effect more compactly.
         </p>
-            <!-- Link to Conway's Game of Life -->
-          <div class="text-center mb-5">
-            <a href="../conways-game-of-life/" class="btn btn-lg" style="
-              background: transparent;
-              border: 2px solid rgb(245, 133, 237);
-              color: rgb(245, 133, 237);
-              transition: all 0.2s ease;
-              font-weight: 600;
-              padding: 0.75rem 1.5rem;
-              " onmouseover="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'" 
-              onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'" 
-              onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'" 
-              onmouseup="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'"
-            >
-              Read about Conway's Game of Life →
-            </a>
-          </div>
+
+        <!-- Link to Conway's Game of Life -->
+        <div class="text-center mb-5">
+          <a href="../conways-game-of-life/" class="btn btn-lg" style="
+            background: transparent;
+            border: 2px solid rgb(245, 133, 237);
+            color: rgb(245, 133, 237);
+            transition: all 0.2s ease;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;"
+            onmouseover="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'" 
+            onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'" 
+            onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'" 
+            onmouseup="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'"
+          >
+            Read about Conway's Game of Life →
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -641,33 +642,34 @@
 
     class Rule110State {
       constructor() {
-        this.baseCols = 60;         // Base number of columns at zoom level 1
-        this.maxRows = 300;         // Max history rows
-        this.useWrap = true;        
+        this.baseCols = 60;    
+        this.maxRows = 300;
+        this.useWrap = true;
         this.playing = false;
         this.timer = null;
         const speedSelect = document.getElementById("speedSelect");
         this.currentSpeedMultiplier = speedSelect ? parseFloat(speedSelect.value) : 1.0;
-        this.baseInterval = 500;    // 500ms at 1×
+        this.baseInterval = 500;
         this.zoom = 1;
         this.generations = [];
-        // Canvas
+
         this.canvas = document.getElementById("grid");
         this.ctx = this.canvas.getContext("2d");
-        // Hover overlay
         this.hoverCanvas = document.getElementById("hoverCanvas");
         this.hoverCtx = this.hoverCanvas.getContext("2d");
-        // Track dragging
+
+        // For toggling
         this.isDrawing = false;
         this.lastToggledCol = -1;
-        // Track fade concurrency
+        // Fade concurrency
         this.activeFades = {};
-        // Calculated
+
         this.cols = this.baseCols;
         this.rowsDrawn = 0;
       }
 
       calculateInterval() {
+        // Speed adjustments
         return this.baseInterval / Math.pow(this.currentSpeedMultiplier, 2);
       }
 
@@ -678,6 +680,7 @@
         }
       }
     }
+
     const R110 = new Rule110State();
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -708,27 +711,31 @@
       setupHoverHighlight(R110.canvas);
     });
 
+    /**
+     * Calculate size of canvas based on container,
+     * set up the columns & zoom properly.
+     */
     function calculateCanvasSize() {
       const containerElem = document.getElementById("grid-container");
       const cw = containerElem.clientWidth;
       const ch = containerElem.clientHeight;
 
-      // Set main canvas height
       R110.canvas.height = ch;
       R110.cols = R110.baseCols * R110.zoom;
 
+      // For large zoom, we try to keep them integer-based
       if (R110.zoom === 16) {
-        // force integer cell size
         R110.cellSize = Math.max(2, Math.floor(cw / R110.cols));
         R110.canvas.width = R110.cellSize * R110.cols;
         R110.canvas.style.width = R110.canvas.width + "px";
       } else {
+        // Could still be fractional
         R110.cellSize = cw / R110.cols;
         R110.canvas.width = cw;
         R110.canvas.style.width = "100%";
       }
 
-      // Hover canvas
+      // Mirror for hover
       R110.hoverCanvas.width = R110.canvas.width;
       R110.hoverCanvas.height = R110.canvas.height;
       R110.hoverCanvas.style.width = R110.canvas.style.width;
@@ -751,7 +758,6 @@
         if (oldRow) {
           const newRow = new Array(R110.cols);
           if (R110.useWrap) {
-            // fill by wrapping
             for (let i = 0; i < R110.cols; i++) {
               newRow[i] = oldRow[i % oldRow.length];
             }
@@ -771,9 +777,9 @@
         }
 
         renderAllGenerations();
-        hideLoading();
       } catch(err) {
         console.error("Zoom error:", err);
+      } finally {
         hideLoading();
       }
     }
@@ -802,14 +808,10 @@
       const newArr = new Array(length).fill(0);
       for (let i = 0; i < length; i++) {
         const leftIndex = i - 1;
-        const left = leftIndex < 0
-          ? (wrap ? arr[length - 1] : 0)
-          : arr[leftIndex];
+        const left = leftIndex < 0 ? (wrap ? arr[length-1] : 0) : arr[leftIndex];
         const center = arr[i];
         const rightIndex = i + 1;
-        const right = rightIndex >= length
-          ? (wrap ? arr[0] : 0)
-          : arr[rightIndex];
+        const right = rightIndex >= length ? (wrap ? arr[0] : 0) : arr[rightIndex];
 
         const pattern = (left << 2) | (center << 1) | right;
         newArr[i] = (110 >> pattern) & 1;
@@ -822,11 +824,11 @@
       R110.generations = [];
       R110.rowsDrawn = 0;
       const row = new Array(R110.cols).fill(0);
-      
+
       const baseDensity = 0.06;
       const density = Math.min(
         baseDensity * (1 + Math.log2(R110.zoom) * 0.1),
-        0.15 
+        0.15
       );
       const cellsToFill = Math.floor(R110.cols * density);
       const positions = [...Array(R110.cols).keys()];
@@ -853,21 +855,34 @@
       renderAllGenerations();
     }
 
-    // Helper to compute integer rectangle for a cell
+    /**
+     * Returns the integer rectangle for a given cell so we
+     * consistently fill it. Special-case: for zoom=8 or 16 we do
+     * rounding so no gap. For other zoom levels we do a "crisp pixel"
+     * approach that can add +1 so cells overlap by a fraction.
+     */
     function getCellRect(col, row) {
-      // top-left
       const x = col * R110.cellSize;
       const y = row * R110.cellSize;
 
-      if (R110.zoom >= 8) {
-        // use nearest integers
+      // Special case for 16× zoom - use rounded integer math
+      if (R110.zoom === 16) {
+        const ix = Math.round(x);
+        const iy = Math.round(y);
+        const w = Math.round(R110.cellSize);
+        const h = Math.round(R110.cellSize);
+        return [ix, iy, w, h];
+      } 
+      // Special case for 8× zoom - use floor/ceil approach
+      else if (R110.zoom === 8) {
         const ix = Math.floor(x);
         const iy = Math.floor(y);
-        const w = Math.floor(R110.cellSize);
-        const h = Math.floor(R110.cellSize);
+        const w = Math.ceil(R110.cellSize);
+        const h = Math.ceil(R110.cellSize);
         return [ix, iy, w, h];
-      } else {
-        // Crisp pixel approach
+      }
+      // Original crisp approach for other zooms
+      else {
         const ix = Math.floor(x);
         const iy = Math.floor(y);
         const w = Math.ceil(R110.cellSize + 1);
@@ -876,10 +891,8 @@
       }
     }
 
-    // Single function to fill a cell with a color using the same rounding logic
     function drawCell(col, row, color, context) {
       const [x, y, w, h] = getCellRect(col, row);
-      // Clear the region first
       context.clearRect(x, y, w, h);
       context.fillStyle = color;
       context.fillRect(x, y, w, h);
@@ -896,7 +909,6 @@
       const ctx = R110.ctx;
       for (let c = 0; c < rowData.length; c++) {
         if (rowData[c] === 1) {
-          // fill with #7aa2f7
           drawCell(c, rowIndex, "#7aa2f7", ctx);
         }
       }
@@ -911,6 +923,7 @@
     }
 
     function setupCanvasPointer(canvas) {
+      // Mouse
       canvas.addEventListener("mousedown", e => {
         R110.isDrawing = true;
         R110.lastToggledCol = -1;
@@ -928,6 +941,7 @@
         R110.lastToggledCol = -1;
       });
 
+      // Touch
       canvas.addEventListener("touchstart", e => {
         R110.isDrawing = true;
         R110.lastToggledCol = -1;
@@ -957,6 +971,7 @@
       const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
 
+      // One toggle per column
       if (col === R110.lastToggledCol) {
         return;
       }
@@ -972,12 +987,11 @@
       clearCanvas();
       renderNewRow(firstRow, 0);
 
-      // fade animation
       animateFadeCell(col, oldVal, newVal);
     }
 
     function animateFadeCell(col, oldVal, newVal) {
-      // Cancel any existing fade
+      // Cancel old fade on this column
       if (R110.activeFades[col]) {
         R110.activeFades[col].finalizeFn();
         cancelAnimationFrame(R110.activeFades[col].handle);
@@ -1000,7 +1014,7 @@
         if (done) return;
         const elapsed = now - startTime;
         const t = Math.min(1, elapsed / duration);
-        
+
         const [r1,g1,b1] = hexToRGB(startColor);
         const [r2,g2,b2] = hexToRGB(endColor);
 
@@ -1020,7 +1034,7 @@
 
       R110.activeFades[col] = {
         handle: 0,
-        finalizeFn: finalize,
+        finalizeFn: finalize
       };
       animFrameId = requestAnimationFrame(frame);
       R110.activeFades[col].handle = animFrameId;
@@ -1056,15 +1070,13 @@
         R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
         return;
       }
-      const hc = R110.hoverCtx;
-      hc.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
+      R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
 
-      hc.save();
-      hc.fillStyle = "rgba(122,162,247,0.15)";
+      R110.hoverCtx.save();
+      R110.hoverCtx.fillStyle = "rgba(122,162,247,0.15)";
       const xPos = col * R110.cellSize;
-      // fill full height
-      hc.fillRect(xPos, 0, R110.cellSize, R110.hoverCanvas.height);
-      hc.restore();
+      R110.hoverCtx.fillRect(xPos, 0, R110.cellSize, R110.hoverCanvas.height);
+      R110.hoverCtx.restore();
     }
 
     function toggleGame() {
@@ -1084,7 +1096,7 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
-      // If empty or all zeroes, randomize
+      // If empty or all zero, randomize
       if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
         const row = new Array(R110.cols).fill(0);
         const baseDensity = 0.06;
@@ -1094,7 +1106,6 @@
         );
         const cellsToFill = Math.floor(R110.cols * density);
         const positions = [...Array(R110.cols).keys()];
-
         for (let i = positions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [positions[i], positions[j]] = [positions[j], positions[i]];
@@ -1132,8 +1143,7 @@
 
     function setupControls() {
       document.getElementById("speedSelect").addEventListener("change", e => {
-        const val = parseFloat(e.target.value);
-        R110.currentSpeedMultiplier = val;
+        R110.currentSpeedMultiplier = parseFloat(e.target.value);
         R110.updateInterval();
       });
     }
@@ -1154,9 +1164,9 @@
         </div>
         <div class="modal-body">
           <p>
-            <strong>Toggle</strong> cells in the initial row by clicking or dragging on any column. Each column 
-            toggles exactly once per click/drag. Press <strong>Play</strong> to watch Rule 110 generate new rows at the 
-            bottom of the canvas. 
+            <strong>Toggle</strong> cells in the initial row by clicking (or dragging) on any column. Each column 
+            toggles exactly once per click/drag. Press <strong>Play</strong> to watch Rule 110 generate new rows 
+            at the bottom of the canvas.
           </p>
           
           <h6>The Rules</h6>
@@ -1192,7 +1202,6 @@
           <p class="mb-0">
             Experiment with toggles or random seeds to see how quickly complexity emerges!
           </p>
-        
         </div>
       </div>
     </div>
