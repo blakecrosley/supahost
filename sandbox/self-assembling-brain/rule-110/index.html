@@ -7,7 +7,6 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-4JE9G63Y9Z');
   </script>
   <meta charset="UTF-8" />
@@ -39,6 +38,7 @@
   <meta name="apple-mobile-web-app-title" content="Rule 110 Automaton">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="https://github.blakecrosley.com/sandbox/self-assembling-brain/rule110/preview-icon.png">
+
   <!-- Apple Messages Link Preview -->
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
@@ -62,7 +62,7 @@
     rel="stylesheet"
   />
 
-  <!-- Add this after Bootstrap CSS -->
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
@@ -157,6 +157,7 @@
       height: 100%;
     }
 
+    /* Main render canvas */
     #grid {
       position: absolute;
       top: 0;
@@ -166,6 +167,16 @@
       background: var(--tn-border);
       display: block;
       image-rendering: pixelated;
+    }
+
+    /* Hover highlight overlay canvas */
+    #hoverCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* allow clicks to pass through to #grid */
     }
 
     #rule110Controls {
@@ -348,7 +359,6 @@
   <link rel="shortcut icon" href="../../../favicon/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../../favicon/apple-touch-icon.png" />
   <link rel="manifest" href="../../../favicon/site.webmanifest" />
-
 </head>
 
 <body>
@@ -450,7 +460,10 @@
             <div>Loading Rule 110 board...</div>
           </div>
           <div id="gridWrapper">
+            <!-- Main rendering canvas -->
             <canvas id="grid"></canvas>
+            <!-- Hover highlight overlay canvas -->
+            <canvas id="hoverCanvas"></canvas>
           </div>
         </div>
 
@@ -570,8 +583,8 @@
               font-weight: 600;
               padding: 0.75rem 1.5rem;
               " onmouseover="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'" 
-              onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'"
-              onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'"
+              onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'" 
+              onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'" 
               onmouseup="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'"
             >
               Read about Conway's Game of Life →
@@ -630,18 +643,31 @@
       constructor() {
         this.baseCols = 60;         // Base number of columns at zoom level 1
         this.maxRows = 300;         // Max history rows
-        this.useWrap = true;        // Initialize wrap edges state to match checkbox
+        this.useWrap = true;        // Initialize wrap edges state
         this.playing = false;
         this.timer = null;
-        // Initialize speed from the select element's value
+        // Speed from the select element
         const speedSelect = document.getElementById("speedSelect");
         this.currentSpeedMultiplier = speedSelect ? parseFloat(speedSelect.value) : 1.0;
-        this.baseInterval = 500;    // Base interval (500ms at 1x speed)
+        this.baseInterval = 500;    // Base interval: 500ms at 1x
         this.zoom = 1;
         this.generations = [];
         this.canvas = document.getElementById("grid");
         this.ctx = this.canvas.getContext("2d");
+
+        // Hover overlay canvas
+        this.hoverCanvas = document.getElementById("hoverCanvas");
+        this.hoverCtx = this.hoverCanvas.getContext("2d");
+
+        // Track dragging/toggling
         this.isDrawing = false;
+        // We'll track the last column toggled during the current draw
+        this.lastToggledCol = -1;
+
+        // Active fade animations: col -> { handle, finalizeFn }
+        this.activeFades = {};
+
+        // Calculated columns
         this.cols = this.baseCols;
         this.rowsDrawn = 0;
       }
@@ -687,6 +713,7 @@
       });
 
       setupCanvasPointer(R110.canvas);
+      setupHoverHighlight(R110.canvas);
     });
 
     function calculateCanvasSize() {
@@ -694,25 +721,29 @@
       const cw = containerElem.clientWidth;
       const ch = containerElem.clientHeight;
       
-      // Set canvas height from container
+      // Set main canvas height
       R110.canvas.height = ch;
       
-      // Determine the number of columns based on baseCols and zoom
+      // Determine columns
       R110.cols = R110.baseCols * R110.zoom;
       
       if (R110.zoom === 16) {
-         // For zoom level 16, force an integer cell size with a minimum of 2 pixels
-         R110.cellSize = Math.max(2, Math.floor(cw / R110.cols));
-         // Adjust canvas width to exactly match the grid
-         R110.canvas.width = R110.cellSize * R110.cols;
-         R110.canvas.style.width = R110.canvas.width + "px";
+        // For zoom=16, force integer cell size
+        R110.cellSize = Math.max(2, Math.floor(cw / R110.cols));
+        R110.canvas.width = R110.cellSize * R110.cols;
+        R110.canvas.style.width = R110.canvas.width + "px";
       } else {
-         // For zoom level 8 and others, use the original behavior
-         R110.cellSize = cw / R110.cols;
-         R110.canvas.width = cw;
-         R110.canvas.style.width = "100%";
+        R110.cellSize = cw / R110.cols;
+        R110.canvas.width = cw;
+        R110.canvas.style.width = "100%";
       }
       
+      // Mirror for hoverCanvas
+      R110.hoverCanvas.width = R110.canvas.width;
+      R110.hoverCanvas.height = R110.canvas.height;
+      R110.hoverCanvas.style.width = R110.canvas.style.width;
+      R110.hoverCanvas.style.height = R110.canvas.style.height;
+
       R110.maxRows = Math.floor(ch / R110.cellSize);
     }
 
@@ -730,7 +761,7 @@
         if (oldRow) {
           let newRow = new Array(R110.cols);
           if (R110.useWrap) {
-            // If wrap is enabled, fill newRow by wrapping the old row
+            // Fill by wrapping old row
             for (let i = 0; i < R110.cols; i++) {
               newRow[i] = oldRow[i % oldRow.length];
             }
@@ -769,6 +800,7 @@
         return;
       }
       const last = R110.generations[R110.generations.length - 1];
+      // Only proceed if there's at least one '1' & not too many rows
       if (last.some(cell => cell === 1) && R110.generations.length < R110.maxRows) {
         const next = computeNextRow(last, R110.useWrap === true);
         R110.generations.push(next);
@@ -801,31 +833,29 @@
     function randomizeFirstRow() {
       stopGame();
       R110.generations = [];
+      R110.rowsDrawn = 0;
       const row = new Array(R110.cols).fill(0);
       
-      // Much lower base density and gentler logarithmic scaling
-      const baseDensity = 0.06;  // 6% base density
+      // Low base density
+      const baseDensity = 0.06;
       const density = Math.min(
-        baseDensity * (1 + Math.log2(R110.zoom) * 0.1), // Gentler log scaling
-        0.15 // Hard cap at 15%
+        baseDensity * (1 + Math.log2(R110.zoom) * 0.1), 
+        0.15 
       );
       
       const cellsToFill = Math.floor(R110.cols * density);
       const positions = new Array(R110.cols).fill().map((_, i) => i);
-      
       // Fisher-Yates shuffle
       for (let i = positions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [positions[i], positions[j]] = [positions[j], positions[i]];
       }
       
-      // Fill only the calculated number of cells
       for (let i = 0; i < cellsToFill; i++) {
         row[positions[i]] = 1;
       }
       
       R110.generations.push(row);
-      R110.rowsDrawn = 0;
       clearCanvas();
       renderAllGenerations();
     }
@@ -846,7 +876,6 @@
       }
     }
 
-    // --- Modified renderNewRow ---
     function renderNewRow(rowData, rowIndex) {
       const ctx = R110.ctx;
       const size = R110.cellSize;
@@ -854,7 +883,6 @@
       ctx.fillStyle = "#7aa2f7";
       
       if (R110.zoom >= 8) {
-        // Enable smoothing at higher zoom
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         for (let c = 0; c < rowData.length; c++) {
@@ -865,7 +893,6 @@
           }
         }
       } else {
-        // Crisp pixels at lower zoom levels
         ctx.imageSmoothingEnabled = false;
         for (let c = 0; c < rowData.length; c++) {
           if (rowData[c] === 1) {
@@ -878,62 +905,209 @@
           }
         }
       }
-      
       ctx.restore();
     }
-    // --- End modified renderNewRow ---
 
     function clearCanvas() {
       R110.ctx.clearRect(0, 0, R110.canvas.width, R110.canvas.height);
       R110.ctx.fillStyle = "#24283b";
       R110.ctx.fillRect(0, 0, R110.canvas.width, R110.canvas.height);
+
+      R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
     }
 
     function setupCanvasPointer(canvas) {
+      // Mouse
       canvas.addEventListener("mousedown", e => {
         R110.isDrawing = true;
+        R110.lastToggledCol = -1; // reset
         toggleCellAtPointer(e);
       });
       canvas.addEventListener("mousemove", e => {
-        if (R110.isDrawing) toggleCellAtPointer(e);
+        if (R110.isDrawing) {
+          toggleCellAtPointer(e);
+        }
       });
       canvas.addEventListener("mouseup", () => {
         R110.isDrawing = false;
+        R110.lastToggledCol = -1; // reset
       });
       canvas.addEventListener("mouseleave", () => {
         R110.isDrawing = false;
+        R110.lastToggledCol = -1; // reset
       });
 
+      // Touch
       canvas.addEventListener("touchstart", e => {
         R110.isDrawing = true;
+        R110.lastToggledCol = -1; 
         toggleCellAtPointer(e.touches[0]);
       }, { passive: false });
       canvas.addEventListener("touchmove", e => {
         e.preventDefault();
-        if (R110.isDrawing) toggleCellAtPointer(e.touches[0]);
+        if (R110.isDrawing && e.touches[0]) {
+          toggleCellAtPointer(e.touches[0]);
+        }
       }, { passive: false });
       canvas.addEventListener("touchend", () => {
         R110.isDrawing = false;
+        R110.lastToggledCol = -1;
       });
       canvas.addEventListener("touchcancel", () => {
         R110.isDrawing = false;
+        R110.lastToggledCol = -1;
       });
     }
 
+    /**
+     *  Toggles the top cell of whichever column you click or drag over.
+     *  Each column only toggles once per click/drag sequence for consistency.
+     */
     function toggleCellAtPointer(evt) {
       if (!R110.generations.length) return;
+
       const rect = R110.canvas.getBoundingClientRect();
       const x = evt.clientX - rect.left;
-      const y = evt.clientY - rect.top;
-      if (y > R110.cellSize * 1.5) return;
       const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
+
+      // Avoid toggling the same column multiple times in one drag
+      if (col === R110.lastToggledCol) {
+        return;
+      }
+      R110.lastToggledCol = col;
+
+      // Toggle
       const firstRow = R110.generations[0];
-      firstRow[col] = firstRow[col] ? 0 : 1;
+      const oldVal = firstRow[col];
+      const newVal = oldVal ? 0 : 1;
+      firstRow[col] = newVal;
+
+      // Rebuild so future rows vanish
       R110.generations = [firstRow];
       R110.rowsDrawn = 0;
       clearCanvas();
       renderNewRow(firstRow, 0);
+
+      // Fade animation
+      animateFadeCell(col, oldVal, newVal);
+    }
+
+    /**
+     * We store each column's fade so if you toggle it again, we finalize the old fade 
+     * and start a fresh one from its final color. 
+     */
+    function animateFadeCell(col, oldVal, newVal) {
+      const ctx = R110.ctx;
+      const size = R110.cellSize;
+      const xPos = col * size;
+      const yPos = 0;
+
+      // Cancel any existing fade on this column
+      if (R110.activeFades[col]) {
+        // finalize immediately
+        R110.activeFades[col].finalizeFn();
+        cancelAnimationFrame(R110.activeFades[col].handle);
+        delete R110.activeFades[col];
+      }
+
+      // Convert #RRGGBB to [r,g,b]
+      function toRGB(hexStr) {
+        const r = parseInt(hexStr.slice(1,3),16);
+        const g = parseInt(hexStr.slice(3,5),16);
+        const b = parseInt(hexStr.slice(5,7),16);
+        return [r,g,b];
+      }
+      const colorOld = oldVal ? toRGB("#7aa2f7") : toRGB("#24283b");
+      const colorNew = newVal ? toRGB("#7aa2f7") : toRGB("#24283b");
+
+      const startTime = performance.now();
+      const duration = 200; // ms
+
+      let animFrameId = null;
+      let done = false;
+
+      function finalize() {
+        // Draw the final color instantly
+        ctx.save();
+        ctx.clearRect(xPos, yPos, size, size);
+        ctx.fillStyle = `rgb(${colorNew[0]},${colorNew[1]},${colorNew[2]})`;
+        ctx.fillRect(xPos, yPos, size, size);
+        ctx.restore();
+        done = true;
+      }
+
+      function frame(now) {
+        if (done) return; // in case we finalize early
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        
+        // Interpolate each channel
+        const r = Math.round(colorOld[0] + (colorNew[0] - colorOld[0]) * t);
+        const g = Math.round(colorOld[1] + (colorNew[1] - colorOld[1]) * t);
+        const b = Math.round(colorOld[2] + (colorNew[2] - colorOld[2]) * t);
+        
+        ctx.save();
+        ctx.clearRect(xPos, yPos, size, size);
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(xPos, yPos, size, size);
+        ctx.restore();
+
+        if (elapsed < duration) {
+          animFrameId = requestAnimationFrame(frame);
+        } else {
+          finalize();
+          // remove from active
+          delete R110.activeFades[col];
+        }
+      }
+
+      // Store the fade so we can cancel if we re-toggle quickly
+      R110.activeFades[col] = {
+        handle: 0,
+        finalizeFn: finalize
+      };
+      animFrameId = requestAnimationFrame(frame);
+      R110.activeFades[col].handle = animFrameId;
+    }
+
+    /**
+     * Hover highlight:
+     * We track mousemove and fill the entire column with 15% of #7aa2f7.
+     */
+    function setupHoverHighlight(canvas) {
+      canvas.addEventListener("mousemove", e => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const col = Math.floor(x / R110.cellSize);
+
+        if (col !== R110.hoveredCol) {
+          R110.hoveredCol = col;
+          drawHoverColumn(col);
+        }
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        R110.hoveredCol = -1;
+        R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
+      });
+    }
+
+    function drawHoverColumn(col) {
+      if (col < 0 || col >= R110.cols) {
+        R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
+        return;
+      }
+      const hc = R110.hoverCtx;
+      hc.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
+
+      hc.save();
+      // Light blue (#7aa2f7) at 15% alpha
+      hc.fillStyle = "rgba(122,162,247,0.03)";
+      const size = R110.cellSize;
+      const xPos = col * size;
+      hc.fillRect(xPos, 0, size, R110.hoverCanvas.height);
+      hc.restore();
     }
 
     function toggleGame() {
@@ -953,9 +1127,9 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
+      // If empty or all 0's, randomize
       if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
         const row = new Array(R110.cols).fill(0);
-        // Use the same density calculation as randomizeFirstRow
         const baseDensity = 0.06;
         const density = Math.min(
           baseDensity * (1 + Math.log2(R110.zoom) * 0.1),
@@ -1026,10 +1200,10 @@
         </div>
         <div class="modal-body">
           <p>
-            <strong>Toggle</strong> cells in the initial row by clicking (or tapping) near the top. Press 
-            <strong>Play</strong> to watch Rule 110 generate new rows at the bottom of the canvas. 
-            Each step applies the "110" rule to every cell, determining if it remains off or lights up 
-            based on its neighbors.
+            <strong>Toggle</strong> cells in the initial row by clicking (or dragging) on any column. Each column 
+            toggles exactly once per click/drag. Press <strong>Play</strong> to watch Rule 110 generate new rows at the 
+            bottom of the canvas. Each step applies the "110" rule to every cell, determining if it remains 
+            off or lights up based on its neighbors.
           </p>
           
           <h6>The Rules</h6>
