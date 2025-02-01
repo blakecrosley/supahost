@@ -782,10 +782,28 @@
       stopGame();
       R110.generations = [];
       const row = new Array(R110.cols).fill(0);
-      const density = 0.1 * R110.zoom;
-      for (let i = 0; i < R110.cols; i++) {
-        if (Math.random() < density) row[i] = 1;
+      
+      // Much lower base density and gentler logarithmic scaling
+      const baseDensity = 0.06;  // 6% base density
+      const density = Math.min(
+        baseDensity * (1 + Math.log2(R110.zoom) * 0.1), // Gentler log scaling
+        0.15 // Hard cap at 15%
+      );
+      
+      const cellsToFill = Math.floor(R110.cols * density);
+      const positions = new Array(R110.cols).fill().map((_, i) => i);
+      
+      // Fisher-Yates shuffle
+      for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
       }
+      
+      // Fill only the calculated number of cells
+      for (let i = 0; i < cellsToFill; i++) {
+        row[positions[i]] = 1;
+      }
+      
       R110.generations.push(row);
       R110.rowsDrawn = 0;
       clearCanvas();
@@ -927,10 +945,25 @@
 
       if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
         const row = new Array(R110.cols).fill(0);
-        const density = 0.1 * R110.zoom;
-        for (let i = 0; i < R110.cols; i++) {
-          if (Math.random() < density) row[i] = 1;
+        // Use the same density calculation as randomizeFirstRow
+        const baseDensity = 0.06;
+        const density = Math.min(
+          baseDensity * (1 + Math.log2(R110.zoom) * 0.1),
+          0.15
+        );
+        
+        const cellsToFill = Math.floor(R110.cols * density);
+        const positions = new Array(R110.cols).fill().map((_, i) => i);
+        
+        for (let i = positions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [positions[i], positions[j]] = [positions[j], positions[i]];
         }
+        
+        for (let i = 0; i < cellsToFill; i++) {
+          row[positions[i]] = 1;
+        }
+        
         R110.generations = [row];
         R110.rowsDrawn = 0;
         renderAllGenerations();
