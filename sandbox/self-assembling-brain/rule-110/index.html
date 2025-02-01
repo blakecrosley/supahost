@@ -643,31 +643,26 @@
       constructor() {
         this.baseCols = 60;         // Base number of columns at zoom level 1
         this.maxRows = 300;         // Max history rows
-        this.useWrap = true;        // Initialize wrap edges state
+        this.useWrap = true;        
         this.playing = false;
         this.timer = null;
-        // Speed from the select element
         const speedSelect = document.getElementById("speedSelect");
         this.currentSpeedMultiplier = speedSelect ? parseFloat(speedSelect.value) : 1.0;
-        this.baseInterval = 500;    // Base interval: 500ms at 1x
+        this.baseInterval = 500;    // 500ms at 1×
         this.zoom = 1;
         this.generations = [];
+        // Canvas
         this.canvas = document.getElementById("grid");
         this.ctx = this.canvas.getContext("2d");
-
-        // Hover overlay canvas
+        // Hover overlay
         this.hoverCanvas = document.getElementById("hoverCanvas");
         this.hoverCtx = this.hoverCanvas.getContext("2d");
-
-        // Track dragging/toggling
+        // Track dragging
         this.isDrawing = false;
-        // We'll track the last column toggled during the current draw
         this.lastToggledCol = -1;
-
-        // Active fade animations: col -> { handle, finalizeFn }
+        // Track fade concurrency
         this.activeFades = {};
-
-        // Calculated columns
+        // Calculated
         this.cols = this.baseCols;
         this.rowsDrawn = 0;
       }
@@ -679,13 +674,10 @@
       updateInterval() {
         if (this.playing && this.timer) {
           clearInterval(this.timer);
-          this.timer = setInterval(() => {
-            stepGeneration();
-          }, this.calculateInterval());
+          this.timer = setInterval(stepGeneration, this.calculateInterval());
         }
       }
     }
-
     const R110 = new Rule110State();
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -720,15 +712,13 @@
       const containerElem = document.getElementById("grid-container");
       const cw = containerElem.clientWidth;
       const ch = containerElem.clientHeight;
-      
+
       // Set main canvas height
       R110.canvas.height = ch;
-      
-      // Determine columns
       R110.cols = R110.baseCols * R110.zoom;
-      
+
       if (R110.zoom === 16) {
-        // For zoom=16, force integer cell size
+        // force integer cell size
         R110.cellSize = Math.max(2, Math.floor(cw / R110.cols));
         R110.canvas.width = R110.cellSize * R110.cols;
         R110.canvas.style.width = R110.canvas.width + "px";
@@ -737,8 +727,8 @@
         R110.canvas.width = cw;
         R110.canvas.style.width = "100%";
       }
-      
-      // Mirror for hoverCanvas
+
+      // Hover canvas
       R110.hoverCanvas.width = R110.canvas.width;
       R110.hoverCanvas.height = R110.canvas.height;
       R110.hoverCanvas.style.width = R110.canvas.style.width;
@@ -759,9 +749,9 @@
         calculateCanvasSize();
 
         if (oldRow) {
-          let newRow = new Array(R110.cols);
+          const newRow = new Array(R110.cols);
           if (R110.useWrap) {
-            // Fill by wrapping old row
+            // fill by wrapping
             for (let i = 0; i < R110.cols; i++) {
               newRow[i] = oldRow[i % oldRow.length];
             }
@@ -800,7 +790,6 @@
         return;
       }
       const last = R110.generations[R110.generations.length - 1];
-      // Only proceed if there's at least one '1' & not too many rows
       if (last.some(cell => cell === 1) && R110.generations.length < R110.maxRows) {
         const next = computeNextRow(last, R110.useWrap === true);
         R110.generations.push(next);
@@ -813,17 +802,15 @@
       const newArr = new Array(length).fill(0);
       for (let i = 0; i < length; i++) {
         const leftIndex = i - 1;
-        const left = leftIndex < 0 
-          ? (wrap ? arr[length - 1] : 0) 
+        const left = leftIndex < 0
+          ? (wrap ? arr[length - 1] : 0)
           : arr[leftIndex];
-
         const center = arr[i];
-
         const rightIndex = i + 1;
-        const right = rightIndex >= length 
-          ? (wrap ? arr[0] : 0) 
+        const right = rightIndex >= length
+          ? (wrap ? arr[0] : 0)
           : arr[rightIndex];
-        
+
         const pattern = (left << 2) | (center << 1) | right;
         newArr[i] = (110 >> pattern) & 1;
       }
@@ -836,25 +823,22 @@
       R110.rowsDrawn = 0;
       const row = new Array(R110.cols).fill(0);
       
-      // Low base density
       const baseDensity = 0.06;
       const density = Math.min(
-        baseDensity * (1 + Math.log2(R110.zoom) * 0.1), 
+        baseDensity * (1 + Math.log2(R110.zoom) * 0.1),
         0.15 
       );
-      
       const cellsToFill = Math.floor(R110.cols * density);
-      const positions = new Array(R110.cols).fill().map((_, i) => i);
-      // Fisher-Yates shuffle
+      const positions = [...Array(R110.cols).keys()];
+
+      // Shuffle
       for (let i = positions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [positions[i], positions[j]] = [positions[j], positions[i]];
       }
-      
       for (let i = 0; i < cellsToFill; i++) {
         row[positions[i]] = 1;
       }
-      
       R110.generations.push(row);
       clearCanvas();
       renderAllGenerations();
@@ -869,6 +853,38 @@
       renderAllGenerations();
     }
 
+    // Helper to compute integer rectangle for a cell
+    function getCellRect(col, row) {
+      // top-left
+      const x = col * R110.cellSize;
+      const y = row * R110.cellSize;
+
+      if (R110.zoom >= 8) {
+        // use nearest integers
+        const ix = Math.floor(x);
+        const iy = Math.floor(y);
+        const w = Math.floor(R110.cellSize);
+        const h = Math.floor(R110.cellSize);
+        return [ix, iy, w, h];
+      } else {
+        // Crisp pixel approach
+        const ix = Math.floor(x);
+        const iy = Math.floor(y);
+        const w = Math.ceil(R110.cellSize + 1);
+        const h = Math.ceil(R110.cellSize + 1);
+        return [ix, iy, w, h];
+      }
+    }
+
+    // Single function to fill a cell with a color using the same rounding logic
+    function drawCell(col, row, color, context) {
+      const [x, y, w, h] = getCellRect(col, row);
+      // Clear the region first
+      context.clearRect(x, y, w, h);
+      context.fillStyle = color;
+      context.fillRect(x, y, w, h);
+    }
+
     function renderAllGenerations() {
       clearCanvas();
       for (let i = 0; i < R110.generations.length; i++) {
@@ -878,34 +894,12 @@
 
     function renderNewRow(rowData, rowIndex) {
       const ctx = R110.ctx;
-      const size = R110.cellSize;
-      ctx.save();
-      ctx.fillStyle = "#7aa2f7";
-      
-      if (R110.zoom >= 8) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        for (let c = 0; c < rowData.length; c++) {
-          if (rowData[c] === 1) {
-            const x = c * size;
-            const y = rowIndex * size;
-            ctx.fillRect(x, y, size, size);
-          }
-        }
-      } else {
-        ctx.imageSmoothingEnabled = false;
-        for (let c = 0; c < rowData.length; c++) {
-          if (rowData[c] === 1) {
-            ctx.fillRect(
-              Math.floor(c * size),
-              Math.floor(rowIndex * size),
-              Math.ceil(size + 1),
-              Math.ceil(size + 1)
-            );
-          }
+      for (let c = 0; c < rowData.length; c++) {
+        if (rowData[c] === 1) {
+          // fill with #7aa2f7
+          drawCell(c, rowIndex, "#7aa2f7", ctx);
         }
       }
-      ctx.restore();
     }
 
     function clearCanvas() {
@@ -917,30 +911,26 @@
     }
 
     function setupCanvasPointer(canvas) {
-      // Mouse
       canvas.addEventListener("mousedown", e => {
         R110.isDrawing = true;
-        R110.lastToggledCol = -1; // reset
+        R110.lastToggledCol = -1;
         toggleCellAtPointer(e);
       });
       canvas.addEventListener("mousemove", e => {
-        if (R110.isDrawing) {
-          toggleCellAtPointer(e);
-        }
+        if (R110.isDrawing) toggleCellAtPointer(e);
       });
       canvas.addEventListener("mouseup", () => {
         R110.isDrawing = false;
-        R110.lastToggledCol = -1; // reset
+        R110.lastToggledCol = -1;
       });
       canvas.addEventListener("mouseleave", () => {
         R110.isDrawing = false;
-        R110.lastToggledCol = -1; // reset
+        R110.lastToggledCol = -1;
       });
 
-      // Touch
       canvas.addEventListener("touchstart", e => {
         R110.isDrawing = true;
-        R110.lastToggledCol = -1; 
+        R110.lastToggledCol = -1;
         toggleCellAtPointer(e.touches[0]);
       }, { passive: false });
       canvas.addEventListener("touchmove", e => {
@@ -959,10 +949,6 @@
       });
     }
 
-    /**
-     *  Toggles the top cell of whichever column you click or drag over.
-     *  Each column only toggles once per click/drag sequence for consistency.
-     */
     function toggleCellAtPointer(evt) {
       if (!R110.generations.length) return;
 
@@ -971,110 +957,82 @@
       const col = Math.floor(x / R110.cellSize);
       if (col < 0 || col >= R110.cols) return;
 
-      // Avoid toggling the same column multiple times in one drag
       if (col === R110.lastToggledCol) {
         return;
       }
       R110.lastToggledCol = col;
 
-      // Toggle
       const firstRow = R110.generations[0];
       const oldVal = firstRow[col];
       const newVal = oldVal ? 0 : 1;
       firstRow[col] = newVal;
 
-      // Rebuild so future rows vanish
       R110.generations = [firstRow];
       R110.rowsDrawn = 0;
       clearCanvas();
       renderNewRow(firstRow, 0);
 
-      // Fade animation
+      // fade animation
       animateFadeCell(col, oldVal, newVal);
     }
 
-    /**
-     * We store each column's fade so if you toggle it again, we finalize the old fade 
-     * and start a fresh one from its final color. 
-     */
     function animateFadeCell(col, oldVal, newVal) {
-      const ctx = R110.ctx;
-      const size = R110.cellSize;
-      const xPos = col * size;
-      const yPos = 0;
-
-      // Cancel any existing fade on this column
+      // Cancel any existing fade
       if (R110.activeFades[col]) {
-        // finalize immediately
         R110.activeFades[col].finalizeFn();
         cancelAnimationFrame(R110.activeFades[col].handle);
         delete R110.activeFades[col];
       }
 
-      // Convert #RRGGBB to [r,g,b]
-      function toRGB(hexStr) {
-        const r = parseInt(hexStr.slice(1,3),16);
-        const g = parseInt(hexStr.slice(3,5),16);
-        const b = parseInt(hexStr.slice(5,7),16);
-        return [r,g,b];
-      }
-      const colorOld = oldVal ? toRGB("#7aa2f7") : toRGB("#24283b");
-      const colorNew = newVal ? toRGB("#7aa2f7") : toRGB("#24283b");
-
+      const startColor = oldVal ? "#7aa2f7" : "#24283b";
+      const endColor = newVal ? "#7aa2f7" : "#24283b";
       const startTime = performance.now();
-      const duration = 200; // ms
-
-      let animFrameId = null;
+      const duration = 200;
       let done = false;
+      let animFrameId = null;
 
       function finalize() {
-        // Draw the final color instantly
-        ctx.save();
-        ctx.clearRect(xPos, yPos, size, size);
-        ctx.fillStyle = `rgb(${colorNew[0]},${colorNew[1]},${colorNew[2]})`;
-        ctx.fillRect(xPos, yPos, size, size);
-        ctx.restore();
+        drawCell(col, 0, endColor, R110.ctx);
         done = true;
       }
 
       function frame(now) {
-        if (done) return; // in case we finalize early
+        if (done) return;
         const elapsed = now - startTime;
         const t = Math.min(1, elapsed / duration);
         
-        // Interpolate each channel
-        const r = Math.round(colorOld[0] + (colorNew[0] - colorOld[0]) * t);
-        const g = Math.round(colorOld[1] + (colorNew[1] - colorOld[1]) * t);
-        const b = Math.round(colorOld[2] + (colorNew[2] - colorOld[2]) * t);
-        
-        ctx.save();
-        ctx.clearRect(xPos, yPos, size, size);
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.fillRect(xPos, yPos, size, size);
-        ctx.restore();
+        const [r1,g1,b1] = hexToRGB(startColor);
+        const [r2,g2,b2] = hexToRGB(endColor);
+
+        const r = Math.round(r1 + (r2 - r1) * t);
+        const g = Math.round(g1 + (g2 - g1) * t);
+        const b = Math.round(b1 + (b2 - b1) * t);
+
+        drawCell(col, 0, `rgb(${r},${g},${b})`, R110.ctx);
 
         if (elapsed < duration) {
           animFrameId = requestAnimationFrame(frame);
         } else {
           finalize();
-          // remove from active
           delete R110.activeFades[col];
         }
       }
 
-      // Store the fade so we can cancel if we re-toggle quickly
       R110.activeFades[col] = {
         handle: 0,
-        finalizeFn: finalize
+        finalizeFn: finalize,
       };
       animFrameId = requestAnimationFrame(frame);
       R110.activeFades[col].handle = animFrameId;
     }
 
-    /**
-     * Hover highlight:
-     * We track mousemove and fill the entire column with 15% of #7aa2f7.
-     */
+    function hexToRGB(hexStr) {
+      const r = parseInt(hexStr.slice(1,3),16);
+      const g = parseInt(hexStr.slice(3,5),16);
+      const b = parseInt(hexStr.slice(5,7),16);
+      return [r,g,b];
+    }
+
     function setupHoverHighlight(canvas) {
       canvas.addEventListener("mousemove", e => {
         const rect = canvas.getBoundingClientRect();
@@ -1102,11 +1060,10 @@
       hc.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
 
       hc.save();
-      // Light blue (#7aa2f7) at 15% alpha
-      hc.fillStyle = "rgba(122,162,247,0.03)";
-      const size = R110.cellSize;
-      const xPos = col * size;
-      hc.fillRect(xPos, 0, size, R110.hoverCanvas.height);
+      hc.fillStyle = "rgba(122,162,247,0.15)";
+      const xPos = col * R110.cellSize;
+      // fill full height
+      hc.fillRect(xPos, 0, R110.cellSize, R110.hoverCanvas.height);
       hc.restore();
     }
 
@@ -1127,7 +1084,7 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
-      // If empty or all 0's, randomize
+      // If empty or all zeroes, randomize
       if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
         const row = new Array(R110.cols).fill(0);
         const baseDensity = 0.06;
@@ -1135,19 +1092,16 @@
           baseDensity * (1 + Math.log2(R110.zoom) * 0.1),
           0.15
         );
-        
         const cellsToFill = Math.floor(R110.cols * density);
-        const positions = new Array(R110.cols).fill().map((_, i) => i);
-        
+        const positions = [...Array(R110.cols).keys()];
+
         for (let i = positions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [positions[i], positions[j]] = [positions[j], positions[i]];
         }
-        
         for (let i = 0; i < cellsToFill; i++) {
           row[positions[i]] = 1;
         }
-        
         R110.generations = [row];
         R110.rowsDrawn = 0;
         renderAllGenerations();
@@ -1177,7 +1131,7 @@
     }
 
     function setupControls() {
-      document.getElementById("speedSelect").addEventListener("change", (e) => {
+      document.getElementById("speedSelect").addEventListener("change", e => {
         const val = parseFloat(e.target.value);
         R110.currentSpeedMultiplier = val;
         R110.updateInterval();
@@ -1200,10 +1154,9 @@
         </div>
         <div class="modal-body">
           <p>
-            <strong>Toggle</strong> cells in the initial row by clicking (or dragging) on any column. Each column 
+            <strong>Toggle</strong> cells in the initial row by clicking or dragging on any column. Each column 
             toggles exactly once per click/drag. Press <strong>Play</strong> to watch Rule 110 generate new rows at the 
-            bottom of the canvas. Each step applies the "110" rule to every cell, determining if it remains 
-            off or lights up based on its neighbors.
+            bottom of the canvas. 
           </p>
           
           <h6>The Rules</h6>
@@ -1229,16 +1182,15 @@
               <li><strong>Play/Pause:</strong> Start or stop the generation of new rows</li>
               <li><strong>Step Forward:</strong> Generate exactly one new row</li>
               <li><strong>Randomize:</strong> Fill the initial row with random 0/1 cells</li>
-              <li><strong>Clear:</strong> Reset the canvas to a blank row of all zeros</li>
-              <li><strong>Speed:</strong> Adjust how quickly new rows appear (0.5× => 1s/step, 16× => ~1ms/step)</li>
-              <li><strong>Zoom:</strong> Change how many cells (and row height) appear (only while paused)</li>
+              <li><strong>Clear:</strong> Reset the canvas to a blank row</li>
+              <li><strong>Speed:</strong> Adjust how quickly new rows appear</li>
+              <li><strong>Zoom:</strong> Change how many cells appear (only while paused)</li>
               <li><strong>Wrap Edges:</strong> Toggle wrap-around boundary conditions</li>
             </ul>
           </p>
           
           <p class="mb-0">
-            Experiment by toggling patterns in the first row or using random seeds to watch how quickly 
-            complexity emerges!
+            Experiment with toggles or random seeds to see how quickly complexity emerges!
           </p>
         
         </div>
