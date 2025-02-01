@@ -1049,6 +1049,9 @@
 
     function setupHoverHighlight(canvas) {
       canvas.addEventListener("mousemove", e => {
+        // Skip hover effect if game is playing
+        if (R110.playing) return;
+
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const col = Math.floor(x / R110.cellSize);
@@ -1060,6 +1063,7 @@
       });
 
       canvas.addEventListener("mouseleave", () => {
+        if (R110.playing) return;
         R110.hoveredCol = -1;
         R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
       });
@@ -1096,6 +1100,11 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
+      // Clear hover effect when starting game
+      R110.hoveredCol = -1;
+      R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
+      R110.hoverCanvas.style.display = 'none';  // Hide hover canvas
+
       // If empty or all zero, randomize
       if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
         const row = new Array(R110.cols).fill(0);
@@ -1130,6 +1139,9 @@
       document.getElementById("zoomSelect").disabled = false;
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
+      
+      // Re-enable hover effect
+      R110.hoverCanvas.style.display = 'block';  // Show hover canvas
     }
 
     function showLoading() {
