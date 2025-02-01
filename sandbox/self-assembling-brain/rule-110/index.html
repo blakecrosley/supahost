@@ -402,7 +402,7 @@
 
     /* Add this to style the toggle circle */
     .form-switch .form-check-input:checked::before {
-      background-color: #88f9d7 !important;
+      background-color: #c0caf5 !important;
     }
 
     /* Update the toggle circle color to match our theme's light blue */
@@ -458,6 +458,9 @@
         <div class="row" id="rule110Controls">
           <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
             <h1>Wolfram's Rule 110</h1>
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+              <i class="bi bi-question-circle"></i> <span class="d-none d-sm-inline">How it works</span>
+            </button>
             <div id="description">
               <p>
                 Wolfram's Rule 110 is a remarkable one-dimensional cellular automaton from Stephen Wolfram's 
@@ -551,7 +554,7 @@
           yield a live cell in the next generation, while others result in a dead cell.
         </p>
         <p class="mb-large">
-          Despite the straightforward naming convention, the behaviors that emerge can be surprisingly complex. You’ll 
+          Despite the straightforward naming convention, the behaviors that emerge can be surprisingly complex. You'll 
           see chaotic regions, repetitive patterns, and all manner of interactions driven by these simple triplet rules.
         </p>
 
@@ -672,9 +675,9 @@
   </div>
 
   <!-- Bootstrap JS -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy2GkcIdslK1eN7N6jIeHz"
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
     crossorigin="anonymous">
   </script>
 
@@ -876,7 +879,7 @@
       const density= Math.min(baseDensity*(1+Math.log2(R110.zoom)*0.1),0.15);
       const cellsToFill= Math.floor(R110.cols*density);
       const positions=[...Array(R110.cols).keys()];
-      for(let i= positions.length-1; i>0; i--){
+      for(let i=positions.length-1; i>0; i--){
         const j= Math.floor(Math.random()*(i+1));
         [positions[i], positions[j]]=[positions[j], positions[i]];
       }
@@ -1121,7 +1124,8 @@
       R110.hoverCanvas.style.display='none';
       document.getElementById("grid-container").style.cursor='not-allowed';
 
-      if(!R110.generations.length||R110.generations[0].every(c=>c===0)){
+      // If the first row is empty, fill it with a random pattern
+      if(!R110.generations.length || R110.generations[0].every(c=>c===0)){
         const row=new Array(R110.cols).fill(0);
         const baseDensity=0.06;
         const density=Math.min(baseDensity*(1+Math.log2(R110.zoom)*0.1),0.15);
@@ -1188,16 +1192,16 @@
         </div>
         <div class="modal-body">
           <p>
-            <strong>Toggle</strong> cells in the initial row by clicking (or dragging) on any column. Each column 
-            toggles exactly once per click/drag. Press <strong>Play</strong> to watch Rule 110 generate new rows 
-            at the bottom of the canvas.
+            <strong>Toggle</strong> cells in the top row by clicking and dragging (or tapping and swiping) along the canvas.
+            If the first row is left entirely blank, pressing <strong>Play</strong> will automatically seed it with 
+            a random pattern. Otherwise, each time you press <strong>Play</strong> or <strong>Step Forward</strong>,
+            the "110" rule is applied to generate new rows at the bottom.
           </p>
           
           <h6>The Rules</h6>
           <p>
-            If you look at the three adjacent cells in the current row—left, center, and right—the next 
-            state of the center cell is found by checking whether those three bits match a pattern 
-            that yields a 1 (on) or 0 (off) under the "110" mapping:
+            For any cell in the current row, look at it plus its left and right neighbors to form a 3-bit pattern. 
+            According to Rule 110, these patterns produce the following outcomes:
             <ul>
               <li><strong>111 → 0</strong></li>
               <li><strong>110 → 1</strong></li>
@@ -1213,20 +1217,19 @@
           <h6>Controls</h6>
           <p>
             <ul>
-              <li><strong>Play/Pause:</strong> Start or stop the generation of new rows</li>
-              <li><strong>Step Forward:</strong> Generate exactly one new row</li>
-              <li><strong>Randomize:</strong> Fill the initial row with random 0/1 cells</li>
-              <li><strong>Clear:</strong> Reset the canvas to a blank row</li>
-              <li><strong>Speed:</strong> Adjust how quickly new rows appear</li>
-              <li><strong>Zoom:</strong> Change how many cells appear (only while paused)</li>
-              <li><strong>Wrap Edges:</strong> Toggle wrap-around boundary conditions</li>
+              <li><strong>Play/Pause:</strong> Runs or stops automatic generation of new rows.</li>
+              <li><strong>Step Forward:</strong> Manually computes the next row once.</li>
+              <li><strong>Randomize:</strong> Randomly seeds the top row with 1s and 0s.</li>
+              <li><strong>Clear:</strong> Resets the entire grid to a single empty row.</li>
+              <li><strong>Speed:</strong> Adjusts how fast rows are generated (0.5× ⇒ slower, 16× ⇒ very fast).</li>
+              <li><strong>Zoom:</strong> Changes how many cells fit in each row (only available when paused).</li>
+              <li><strong>Wrap Edges:</strong> Decides whether cells on the far left/right see each other as neighbors.</li>
             </ul>
           </p>
           
           <p class="mb-0">
-            Experiment with toggles or random seeds to see how quickly complexity emerges!
+            Experiment with toggles or random seeds to see how quickly complex patterns emerge!
           </p>
-        
         </div>
       </div>
     </div>
