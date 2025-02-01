@@ -183,7 +183,7 @@
       margin-bottom: 16px;
     }
     #zoomControls {
-      margin: 16px 0;
+      margin: 16px 0 3em 0;
     }
 
     h1, h2, h3, h4, h5, h6  {
@@ -467,8 +467,8 @@
                 produce a 1 in the next generation is encoded by the binary number <strong>110</strong>.
               </p>
               <p>
-                Despite its simple definition—just a handful of bits describing which local arrangements 
-                become "on"—Rule 110 exhibits incredibly rich and complex behavior. It's even been proven 
+                Despite its minimal definition—just a handful of bits describing which local arrangements 
+                become "on"—Rule 110 demonstrates incredibly rich and complex behavior. It's even been proven 
                 to be Turing-complete under certain initial conditions, placing it on par with systems that 
                 can, in theory, perform universal computation.
               </p>
@@ -525,7 +525,7 @@
         </div>
 
         <!-- Wrap Edges + Zoom Controls -->
-        <div id="zoomControls" class="d-flex justify-content-between align-items-center">
+        <div id="zoomControls" class="d-flex justify-content-between align-items-center"> 
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="wrapEdgesToggle" checked>
             <label class="form-check-label" for="wrapEdgesToggle">
@@ -546,45 +546,41 @@
 
         <h3>The Rule</h3>
         <p>
-          In Rule 110, we look at each group of three adjacent cells: left, center, and right. This triplet 
-          decides the center cell's state in the next generation. Because each cell is either 0 or 1, there 
-          are only eight possible triplets (000 through 111). The name "110" comes from the binary digits 
-          that define which triplets produce a live cell.
+          In elementary cellular automaton terminology, the decimal rule number 110 corresponds to the bit pattern 
+          01101110 when read from the '111' triplet down to '000.' That means certain triplets (like 110, 101, 011, 001) 
+          yield a live cell in the next generation, while others result in a dead cell.
         </p>
         <p class="mb-large">
-          In decimal, 110 is 01101110 in binary (when read top-to-bottom in the usual chart). This means 
-          certain triplets (like 110, 101, 011, 001) yield a live cell in the next generation, while others 
-          result in a dead cell.
+          Despite the straightforward naming convention, the behaviors that emerge can be surprisingly complex. You’ll 
+          see chaotic regions, repetitive patterns, and all manner of interactions driven by these simple triplet rules.
         </p>
 
         <h3>Emergence &amp; Complexity</h3>
         <p>
           One of the most intriguing aspects of Rule 110 is how a single row of bits can evolve into 
           structures that look like moving particles, collisions, or wavefronts. Tiny changes in the initial 
-          row can completely alter the unfolding tapestry. This emergent complexity arises purely from 
-          local interactions—no central coordination is needed.
+          row can drastically alter the unfolding tapestry, highlighting the system's sensitivity to initial conditions. 
+          This emergent complexity arises purely from local interactions—no central coordination is required.
         </p>
         <p class="mb-large">
-          Researchers have studied this automaton extensively to understand how simple deterministic 
-          systems might exhibit patterns that appear random or are at least computationally irreducible. 
-          In certain configurations, you'll witness stable regions, "gliders," and repeating or chaotic 
-          expansions that highlight the system's depth.
+          In certain configurations, you'll witness stable regions, "gliders," and repeating or chaotic expansions that 
+          underscore the system's depth. Researchers have studied this automaton extensively to understand how simple 
+          deterministic systems might exhibit patterns that appear random or are at least computationally irreducible.
         </p>
 
         <h3>Turing Completeness</h3>
         <p class="mb-large">
-          Rule 110 can be configured to compute anything a universal Turing machine can, making it 
-          Turing-complete. That means if you set up the initial row in just the right way, you can 
-          theoretically emulate logical operations, memory, and any fundamental computing element within 
-          this small automaton. It's a striking demonstration that complexity doesn't require an elaborate 
-          set of rules—it's the repeated interactions over time that yield powerful behavior.
+          Rule 110 can be configured to compute anything a universal Turing machine can, making it Turing-complete. That 
+          means if you set up the initial row in just the right way, you can theoretically emulate logical operations, 
+          memory, and any fundamental computing element within this small automaton. It's a striking demonstration 
+          that complexity can arise from even the simplest set of rules—it's the repeated local interactions over 
+          time that yield powerful behavior.
         </p>
 
         <h3>Algorithmic Overview</h3>
         <p class="mb-large">
-          Below is a straightforward approach to computing each new row. We optionally wrap edges so cells 
-          on one side can see neighbors on the opposite side. If disabled, edges assume "dead" neighbors 
-          outside the grid:
+          Below is a straightforward approach to computing each new row. We optionally wrap edges so cells on one side 
+          can see neighbors on the opposite side. If this is disabled, edges are considered "dead" beyond the grid:
         </p>
 
         <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
@@ -602,12 +598,12 @@
 };
 </code></pre>
 
-        <p class="mb-large">
-          And here's how we apply it during each update (though our final implementation uses the shift 
+        <p>
+          And here's how we apply it during each update (although our final implementation uses the shift 
           approach, this table is an alternate expression of which triplets yield a live cell):
         </p>
         
-        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 3rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextRow</span>(<span style="color: #e0af68;">currentRow</span>, <span style="color: #e0af68;">wrapEdges</span>) {
   <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">length</span> = <span style="color: #e0af68;">currentRow</span>.length;
   <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newRow</span> = <span style="color: #c0caf5;">new</span> <span style="color: #73daca;">Array</span>(length).fill(<span style="color: #ff9e64;">0</span>);
@@ -1181,7 +1177,7 @@
           
           <h6>The Rules</h6>
           <p>
-            If you look at the three adjacent cells in the current row—left, center, right—the next 
+            If you look at the three adjacent cells in the current row—left, center, and right—the next 
             state of the center cell is found by checking whether those three bits match a pattern 
             that yields a 1 (on) or 0 (off) under the "110" mapping:
             <ul>
