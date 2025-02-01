@@ -870,7 +870,7 @@
     function renderNewRow(rowData,rowIndex){
       for(let c=0;c< rowData.length;c++){
         if(rowData[c]===1){
-          drawCell(c,rowIndex,"#7aa2f7",R110.ctx);
+          drawCell(c,rowIndex,"#88f9d7",R110.ctx);
         }
       }
     }
@@ -950,8 +950,8 @@
         cancelAnimationFrame(R110.activeFades[col].handle);
         delete R110.activeFades[col];
       }
-      const startColor= oldVal?"#7aa2f7":"#24283b";
-      const endColor= newVal?"#7aa2f7":"#24283b";
+      const startColor= oldVal?"#88f9d7":"#24283b";
+      const endColor= newVal?"#88f9d7":"#24283b";
       const startTime= performance.now();
       const duration= 200;
       let done=false;
@@ -1019,7 +1019,7 @@
       }
       R110.hoverCtx.clearRect(0,0,R110.hoverCanvas.width,R110.hoverCanvas.height);
       R110.hoverCtx.save();
-      R110.hoverCtx.fillStyle="rgba(122,162,247,0.15)";
+      R110.hoverCtx.fillStyle="rgba(136,249,215,0.15)";
       const xPos=col*R110.cellSize;
       R110.hoverCtx.fillRect(xPos,0,R110.cellSize,R110.hoverCanvas.height);
       R110.hoverCtx.restore();
