@@ -1100,10 +1100,11 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
 
-      // Clear hover effect when starting game
+      // Clear hover effect and change cursor when starting game
       R110.hoveredCol = -1;
       R110.hoverCtx.clearRect(0, 0, R110.hoverCanvas.width, R110.hoverCanvas.height);
       R110.hoverCanvas.style.display = 'none';  // Hide hover canvas
+      document.getElementById("grid-container").style.cursor = 'not-allowed';  // Show disabled cursor
 
       // If empty or all zero, randomize
       if (R110.generations.length === 0 || R110.generations[0].every(cell => cell === 0)) {
@@ -1140,8 +1141,9 @@
       document.getElementById("toggleBtn").innerHTML =
         '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
       
-      // Re-enable hover effect
+      // Re-enable hover effect and restore cursor
       R110.hoverCanvas.style.display = 'block';  // Show hover canvas
+      document.getElementById("grid-container").style.cursor = 'pointer';  // Restore pointer cursor
     }
 
     function showLoading() {
