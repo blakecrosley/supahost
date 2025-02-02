@@ -411,6 +411,23 @@
     .form-switch .form-check-input:checked {
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23c0caf5'/%3e%3c/svg%3e") !important;
     }
+
+    .main-content-wrapper {
+      padding: 0 20px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .main-content {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 1210px) {
+      .main-content-wrapper {
+        padding: 0 calc((100% - 1100px)/2);
+      }
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -452,95 +469,59 @@
   </nav>
 
   <!-- Main container -->
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-12 col-lg-8 offset-lg-2">
-        
-        <!-- Title & Controls Row -->
-        <div class="row" id="rule110Controls">
-          <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
-            <h1>Wolfram's Rule 110</h1>
-            <div id="description">
-              <p>
-                Wolfram's Rule 110 is a remarkable one-dimensional cellular automaton from Stephen Wolfram's 
-                classification of "elementary" rules. Each cell in this linear grid can be in one of two 
-                states: 0 (off) or 1 (on). With every step, the next row of cells is determined by looking at 
-                triples in the current row—each cell plus its two neighbors. The pattern of which triplets 
-                produce a 1 in the next generation is encoded by the binary number <strong>110</strong>.
-              </p>
-              <p>
-                Despite its minimal definition—just a handful of bits describing which local arrangements 
-                become "on"—Rule 110 demonstrates incredibly rich and complex behavior. It's even been proven 
-                to be Turing-complete under certain initial conditions, placing it on par with systems that 
-                can, in theory, perform universal computation.
-              </p>
-              <p class="mb-large">
-                <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
-                  How it works
-                </a>
-              </p>
-            </div>
-
-            <!-- Button group -->
-            <div class="btn-group btn-group-lg" role="group" aria-label="Rule 110 controls">
-              <button id="toggleBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
-              </button>
-              <button id="stepBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step Forward</span>
-              </button>
-              <button id="randomBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-dice-6"></i> <span class="d-none d-sm-inline">Randomize</span>
-              </button>
-              <button id="clearBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
-              </button>
-            </div>
-
-            <!-- Speed -->
-            <div class="d-flex align-items-center gap-2">
-              <label for="speedSelect" class="form-label me-2 mb-0">
-                <i class="bi bi-speedometer2 d-sm-none"></i>
-                <span class="d-none d-sm-inline">Speed</span>
-              </label>
-              <select class="form-select form-select-lg" id="speedSelect">
-                <option value="0.5">0.5×</option>
-                <option value="1" selected>1×</option>
-                <option value="2">2×</option>
-                <option value="4">4×</option>
-                <option value="8">8×</option>
-                <option value="16">16×</option>
-              </select>
-            </div>
+  <div class="main-content-wrapper">
+    <div class="main-content">
+      
+      <!-- Title & Controls Row -->
+      <div class="row" id="rule110Controls">
+        <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
+          <h1>Wolfram's Rule 110</h1>
+          <div id="description">
+            <p>
+              Wolfram's Rule 110 is a remarkable one-dimensional cellular automaton from Stephen Wolfram's 
+              classification of "elementary" rules. Each cell in this linear grid can be in one of two 
+              states: 0 (off) or 1 (on). With every step, the next row of cells is determined by looking at 
+              triples in the current row—each cell plus its two neighbors. The pattern of which triplets 
+              produce a 1 in the next generation is encoded by the binary number <strong>110</strong>.
+            </p>
+            <p>
+              Despite its minimal definition—just a handful of bits describing which local arrangements 
+              become "on"—Rule 110 demonstrates incredibly rich and complex behavior. It's even been proven 
+              to be Turing-complete under certain initial conditions, placing it on par with systems that 
+              can, in theory, perform universal computation.
+            </p>
+            <p class="mb-large">
+              <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+                How it works
+              </a>
+            </p>
           </div>
-        </div>
 
-        <!-- Grid container -->
-        <div id="grid-container">
-          <div id="loadingState">
-            <div class="spinner"></div>
-            <div>Loading Rule 110 board...</div>
+          <!-- Button group -->
+          <div class="btn-group btn-group-lg" role="group" aria-label="Rule 110 controls">
+            <button id="toggleBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-play"></i> <span class="d-none d-lg-inline">Play</span>
+            </button>
+            <button id="stepBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-skip-end"></i> <span class="d-none d-lg-inline">Step Forward</span>
+            </button>
+            <button id="randomBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-dice-6"></i> <span class="d-none d-lg-inline">Randomize</span>
+            </button>
+            <button id="clearBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> <span class="d-none d-lg-inline">Clear</span>
+            </button>
           </div>
-          <div id="gridWrapper">
-            <!-- Main rendering canvas -->
-            <canvas id="grid"></canvas>
-            <!-- Hover highlight overlay canvas -->
-            <canvas id="hoverCanvas"></canvas>
-          </div>
-        </div>
 
-        <!-- Wrap Edges + Zoom Controls -->
-        <div id="zoomControls" class="d-flex justify-content-between align-items-center"> 
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="wrapEdgesToggle" checked>
-            <label class="form-check-label" for="wrapEdgesToggle">
-              Wrap Edges
+          <!-- Speed -->
+          <div class="d-flex align-items-center gap-2">
+            <label for="speedSelect" class="form-label me-2 mb-0">
+              <i class="bi bi-speedometer2 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Speed</span>
             </label>
-          </div>
-          <div class="d-flex align-items-center gap-3">
-            <label for="zoomSelect" class="form-label mb-0">Zoom</label>
-            <select class="form-select form-select-lg" id="zoomSelect" style="width: auto;">
-              <option value="1">1×</option>
+            <select class="form-select form-select-lg" id="speedSelect">
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
               <option value="2">2×</option>
               <option value="4">4×</option>
               <option value="8">8×</option>
@@ -548,47 +529,82 @@
             </select>
           </div>
         </div>
+      </div>
 
-        <h3>The Rule</h3>
-        <p>
-          In elementary cellular automaton terminology, the decimal rule number 110 corresponds to the bit pattern 
-          01101110 when read from the '111' triplet down to '000.' That means certain triplets (like 110, 101, 011, 001) 
-          yield a live cell in the next generation, while others result in a dead cell.
-        </p>
-        <p class="mb-large">
-          Despite the straightforward naming convention, the behaviors that emerge can be surprisingly complex. You'll 
-          see chaotic regions, repetitive patterns, and all manner of interactions driven by these simple triplet rules.
-        </p>
+      <!-- Grid container -->
+      <div id="grid-container">
+        <div id="loadingState">
+          <div class="spinner"></div>
+          <div>Loading Rule 110 board...</div>
+        </div>
+        <div id="gridWrapper">
+          <!-- Main rendering canvas -->
+          <canvas id="grid"></canvas>
+          <!-- Hover highlight overlay canvas -->
+          <canvas id="hoverCanvas"></canvas>
+        </div>
+      </div>
 
-        <h3>Emergence &amp; Complexity</h3>
-        <p>
-          One of the most intriguing aspects of Rule 110 is how a single row of bits can evolve into 
-          structures that look like moving particles, collisions, or wavefronts. Tiny changes in the initial 
-          row can drastically alter the unfolding tapestry, highlighting the system's sensitivity to initial conditions. 
-          This emergent complexity arises purely from local interactions—no central coordination is required.
-        </p>
-        <p class="mb-large">
-          In certain configurations, you'll witness stable regions, "gliders," and repeating or chaotic expansions that 
-          underscore the system's depth. Researchers have studied this automaton extensively to understand how simple 
-          deterministic systems might exhibit patterns that appear random or are at least computationally irreducible.
-        </p>
+      <!-- Wrap Edges + Zoom Controls -->
+      <div id="zoomControls" class="d-flex justify-content-between align-items-center"> 
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="wrapEdgesToggle" checked>
+          <label class="form-check-label" for="wrapEdgesToggle">
+            Wrap Edges
+          </label>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <label for="zoomSelect" class="form-label mb-0">Zoom</label>
+          <select class="form-select form-select-lg" id="zoomSelect" style="width: auto;">
+            <option value="1">1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+            <option value="8">8×</option>
+            <option value="16">16×</option>
+          </select>
+        </div>
+      </div>
 
-        <h3>Turing Completeness</h3>
-        <p class="mb-large">
-          Rule 110 can be configured to compute anything a universal Turing machine can, making it Turing-complete. That 
-          means if you set up the initial row in just the right way, you can theoretically emulate logical operations, 
-          memory, and any fundamental computing element within this small automaton. It's a striking demonstration 
-          that complexity can arise from even the simplest set of rules—it's the repeated local interactions over 
-          time that yield powerful behavior.
-        </p>
+      <h3>The Rule</h3>
+      <p>
+        In elementary cellular automaton terminology, the decimal rule number 110 corresponds to the bit pattern 
+        01101110 when read from the '111' triplet down to '000.' That means certain triplets (like 110, 101, 011, 001) 
+        yield a live cell in the next generation, while others result in a dead cell.
+      </p>
+      <p class="mb-large">
+        Despite the straightforward naming convention, the behaviors that emerge can be surprisingly complex. You'll 
+        see chaotic regions, repetitive patterns, and all manner of interactions driven by these simple triplet rules.
+      </p>
 
-        <h3>Algorithmic Overview</h3>
-        <p class="mb-large">
-          Below is a straightforward approach to computing each new row. We optionally wrap edges so cells on one side 
-          can see neighbors on the opposite side. If this is disabled, edges are considered "dead" beyond the grid:
-        </p>
+      <h3>Emergence &amp; Complexity</h3>
+      <p>
+        One of the most intriguing aspects of Rule 110 is how a single row of bits can evolve into 
+        structures that look like moving particles, collisions, or wavefronts. Tiny changes in the initial 
+        row can drastically alter the unfolding tapestry, highlighting the system's sensitivity to initial conditions. 
+        This emergent complexity arises purely from local interactions—no central coordination is required.
+      </p>
+      <p class="mb-large">
+        In certain configurations, you'll witness stable regions, "gliders," and repeating or chaotic expansions that 
+        underscore the system's depth. Researchers have studied this automaton extensively to understand how simple 
+        deterministic systems might exhibit patterns that appear random or are at least computationally irreducible.
+      </p>
 
-        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+      <h3>Turing Completeness</h3>
+      <p class="mb-large">
+        Rule 110 can be configured to compute anything a universal Turing machine can, making it Turing-complete. That 
+        means if you set up the initial row in just the right way, you can theoretically emulate logical operations, 
+        memory, and any fundamental computing element within this small automaton. It's a striking demonstration 
+        that complexity can arise from even the simplest set of rules—it's the repeated local interactions over 
+        time that yield powerful behavior.
+      </p>
+
+      <h3>Algorithmic Overview</h3>
+      <p class="mb-large">
+        Below is a straightforward approach to computing each new row. We optionally wrap edges so cells on one side 
+        can see neighbors on the opposite side. If this is disabled, edges are considered "dead" beyond the grid:
+      </p>
+
+      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Rule 110 transition table - maps each 3-bit pattern to its next state</span>
 <span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">transitions</span> = {
   <span style="color: #565f89;">// pattern => next state</span>
@@ -603,12 +619,12 @@
 };
 </code></pre>
 
-        <p>
-          And here's how we apply it during each update (although our final implementation uses the shift 
-          approach, this table is an alternate expression of which triplets yield a live cell):
-        </p>
-        
-        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 3rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+      <p>
+        And here's how we apply it during each update (although our final implementation uses the shift 
+        approach, this table is an alternate expression of which triplets yield a live cell):
+      </p>
+      
+      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 3rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextRow</span>(<span style="color: #e0af68;">currentRow</span>, <span style="color: #e0af68;">wrapEdges</span>) {
   <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">length</span> = <span style="color: #e0af68;">currentRow</span>.length;
   <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newRow</span> = <span style="color: #c0caf5;">new</span> <span style="color: #73daca;">Array</span>(length).fill(<span style="color: #ff9e64;">0</span>);
@@ -627,9 +643,9 @@
   <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newRow</span>;
 }
 </code></pre>
-      </div>
     </div>
   </div>
+</div>
   
   <!-- Link to Rule 110 -->
   <div class="text-center mb-5">
