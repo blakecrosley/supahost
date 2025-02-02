@@ -246,7 +246,7 @@
       position: relative;
       bottom: 0;
       width: 100%;
-      padding: 1rem 0;
+      padding: 1rem;
     }
     
     .text-muted {
@@ -502,6 +502,23 @@
     .alive.hover-highlight {
         background-color: #9ffae2; /* Slightly lighter than the alive color #88f9d7 */
     }
+
+    .main-content-wrapper {
+      padding: 0 20px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .main-content {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 1210px) {
+      .main-content-wrapper {
+        padding: 0 calc((100% - 1100px)/2);
+      }
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../../../favicon/favicon-96x96.png" sizes="96x96" />
@@ -545,122 +562,119 @@
     </div>
   </nav>
 
-  <!-- Main container: Use a Bootstrap container and row -->
-  <div class="container-fluid">
-    <div class="row">
-      <!-- 8 columns wide on large screens, 12 on smaller, with offset for center -->
-      <div class="col-12 col-lg-8 offset-lg-2">
-        
-        <!-- BEGIN game functionality section -->
-        <!-- Control buttons row -->
-        <div class="row" id="gameControls">
-          <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
-            <h1>Conway's Game of Life</h1>
+  <!-- Main container -->
+  <div class="main-content-wrapper">
+    <div class="main-content">
+      
+      <!-- Title & Controls Row -->
+      <div class="row" id="gameControls">
+        <div class="col-12 d-flex flex-wrap align-items-center justify-content-between">
+          <h1>Conway's Game of Life</h1>
+          
+          <!-- Editorial description -->
+          <div id="description">
+            <p>
+              Conway's Game of Life is a classic example of how complexity can blossom from just a few 
+              straightforward rules. Picture an infinite grid of cells—each one can be "on" (alive) or 
+              "off" (dead). Each turn (or "generation"), every cell checks how many neighbors are alive. 
+              If it's overcrowded, it dies. If it's too lonely, it also dies. But with exactly three 
+              neighbors, a dead cell will spark into life.
+            </p>
+            <p>
+              This simple set of rules leads to endlessly fascinating behavior—from stable formations 
+              and repeating oscillators, to self-propagating "spaceships" that traverse the grid. 
+              It's a perfect demonstration of how complexity can arise from simplicity, and it's even 
+              Turing complete, meaning it can, in theory, simulate any computation.
+            </p>
+            <p class="mb-large">
+              <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+                How it works
+              </a>
+            </p>
+    </div>
 
-            <!-- Editorial description -->
-            <div id="description">
-              <p>
-                Conway's Game of Life is a classic example of how complexity can blossom from just a few 
-                straightforward rules. Picture an infinite grid of cells—each one can be "on" (alive) or 
-                "off" (dead). Each turn (or "generation"), every cell checks how many neighbors are alive. 
-                If it's overcrowded, it dies. If it's too lonely, it also dies. But with exactly three 
-                neighbors, a dead cell will spark into life.
-              </p>
-              <p>
-                This simple set of rules leads to endlessly fascinating behavior—from stable formations 
-                and repeating oscillators, to self-propagating "spaceships" that traverse the grid. 
-                It's a perfect demonstration of how complexity can arise from simplicity, and it's even 
-                Turing complete, meaning it can, in theory, simulate any computation.
-              </p>
-              <p class="mb-large">
-                <a href="#" class="instructions-link" data-bs-toggle="modal" data-bs-target="#instructionsModal">
-                  How it works
-                </a>
-              </p>
+          <!-- Button group -->
+          <div class="btn-group btn-group-lg" role="group" aria-label="Game controls">
+            <button id="toggleBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-play"></i> <span class="d-none d-lg-inline">Play</span>
+            </button>
+            <button id="stepBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-skip-end"></i> <span class="d-none d-lg-inline">Step Forward</span>
+            </button>
+            <button id="randomBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-dice-6"></i> <span class="d-none d-lg-inline">Randomize</span>
+            </button>
+            <button id="clearBtn" type="button" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> <span class="d-none d-lg-inline">Clear</span>
+            </button>
+          </div>
+          <!-- Speed select -->
+          <div class="ms-3 d-inline-flex align-items-center">
+            <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
+            <select id="speedSelect" class="form-select form-select-lg" style="width:auto;" aria-label="Speed">
+      <option value="0.5">0.5×</option>
+      <option value="1.0" selected>1.0×</option>
+      <option value="1.5">1.5×</option>
+      <option value="2.0">2.0×</option>
+    </select>
   </div>
-
-            <!-- Button group -->
-            <div class="btn-group btn-group-lg" role="group" aria-label="Game controls">
-              <button id="toggleBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>
-              </button>
-              <button id="stepBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-skip-end"></i> <span class="d-none d-sm-inline">Step Forward</span>
-              </button>
-              <button id="randomBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-dice-6"></i> <span class="d-none d-sm-inline">Randomize</span>
-              </button>
-              <button id="clearBtn" type="button" class="btn btn-secondary">
-                <i class="bi bi-x-circle"></i> <span class="d-none d-sm-inline">Clear</span>
-              </button>
-            </div>
-            <!-- Speed select -->
-            <div class="ms-3 d-inline-flex align-items-center">
-              <label for="speedSelect" class="form-label me-2 mb-0">Speed</label>
-              <select id="speedSelect" class="form-select form-select-lg" style="width:auto;" aria-label="Speed">
-        <option value="0.5">0.5×</option>
-        <option value="1.0" selected>1.0×</option>
-        <option value="1.5">1.5×</option>
-        <option value="2.0">2.0×</option>
-      </select>
-    </div>
-    </div>    
-    </div>
-
-    <!-- Transform #grid into a <canvas> for rendering -->
-    <div id="grid-container">
-      <div id="loadingState">
-        <div class="spinner"></div>
-        <div>Loading game board...</div>
+        </div>
       </div>
-      <div id="gridWrapper">
-        <!-- Replace the old <div id="grid"></div> with a canvas -->
-        <canvas id="grid"></canvas>
-      </div>
-    </div>
 
-    <!-- Zoom controls -->
-    <div class="d-flex justify-content-end align-items-center" id="zoomControls">
-      <label for="zoomSelect" class="form-label me-2 mb-0">Zoom</label>
-      <select id="zoomSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
-        <option value="1" selected>1×</option>
-        <option value="2">2×</option>
-        <option value="3">3×</option>
-      </select>
-    </div>
+      <!-- Grid container -->
+      <div id="grid-container">
+        <div id="loadingState">
+          <div class="spinner"></div>
+          <div>Loading game board...</div>
+        </div>
+        <div id="gridWrapper">
+          <!-- Replace the old <div id="grid"></div> with a canvas -->
+          <canvas id="grid"></canvas>
+        </div>
+      </div>
 
-    <!-- Pattern section -->
-    <h3>Pattern Examples</h3>
-    <div id="instructions">
-      <p>
-        These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement 
-        across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows 
-        how simple shapes can evolve into complex forms.
-      </p>
-    </div>
-    <div id="exampleControls" class="d-flex gap-2 flex-wrap mb-large">
-      <!-- Example pattern checkboxes (to be toggled in script) -->
-      <div class="btn-group" role="group">
-        <input type="checkbox" class="btn-check" id="gliderBtn" autocomplete="off" value="glider">
-        <label class="btn btn-outline-secondary" for="gliderBtn">Glider</label>
+      <!-- Zoom controls -->
+      <div class="d-flex justify-content-end align-items-center" id="zoomControls">
+        <label for="zoomSelect" class="form-label me-2 mb-0">Zoom</label>
+        <select id="zoomSelect" class="form-select form-select-lg d-inline-block" style="width:auto;">
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="3">3×</option>
+        </select>
       </div>
-      <div class="btn-group" role="group">
-        <input type="checkbox" class="btn-check" id="pulsarBtn" autocomplete="off" value="pulsar">
-        <label class="btn btn-outline-secondary" for="pulsarBtn">Pulsar</label>
-      </div>
-      <div class="btn-group" role="group">
-        <input type="checkbox" class="btn-check" id="smallExploderBtn" autocomplete="off" value="smallExploder">
-        <label class="btn btn-outline-secondary" for="smallExploderBtn">Small Exploder</label>
-      </div>
-    </div>
 
-    <!-- Code Showcase -->
-    <h3>The Algorithm</h3>
-    <p>At its heart, the Game of Life runs on just a few elegant functions that determine life and death in our cellular universe:</p>
-    
-    <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
-      <!-- Core Algorithm -->
-      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
+      <!-- Pattern section -->
+      <h3>Pattern Examples</h3>
+      <div id="instructions">
+        <p>
+          These classic patterns showcase the Game's emergent behavior. The "Glider" demonstrates movement 
+          across the grid, the "Pulsar" creates a mesmerizing oscillation, and the "Small Exploder" shows 
+          how simple shapes can evolve into complex forms.
+        </p>
+      </div>
+      <div id="exampleControls" class="d-flex gap-2 flex-wrap mb-large">
+        <!-- Example pattern checkboxes (to be toggled in script) -->
+        <div class="btn-group" role="group">
+          <input type="checkbox" class="btn-check" id="gliderBtn" autocomplete="off" value="glider">
+          <label class="btn btn-outline-secondary" for="gliderBtn">Glider</label>
+        </div>
+        <div class="btn-group" role="group">
+          <input type="checkbox" class="btn-check" id="pulsarBtn" autocomplete="off" value="pulsar">
+          <label class="btn btn-outline-secondary" for="pulsarBtn">Pulsar</label>
+        </div>
+        <div class="btn-group" role="group">
+          <input type="checkbox" class="btn-check" id="smallExploderBtn" autocomplete="off" value="smallExploder">
+          <label class="btn btn-outline-secondary" for="smallExploderBtn">Small Exploder</label>
+        </div>
+      </div>
+
+      <!-- Code Showcase -->
+      <h3>The Algorithm</h3>
+      <p>At its heart, the Game of Life runs on just a few elegant functions that determine life and death in our cellular universe:</p>
+      
+      <div class="code-showcase" style="background: #1a1b26; border-radius: .5rem; margin: 1rem 0 3rem 0;">
+        <!-- Core Algorithm -->
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; overflow-x: auto; margin: 0; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// The core algorithm that determines life and death</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">computeNextGeneration</span>(<span style="color: #e0af68;">currentGrid</span>) {
   <span style="color: #c0caf5;">const</span> <span style="color: #7dcfff;">newGrid</span> = <span style="color: #7aa2f7;">createEmptyGrid</span>(<span style="color: #7dcfff;">rows</span>, <span style="color: #7dcfff;">cols</span>);
@@ -683,14 +697,14 @@
   <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">newGrid</span>;
 }</code></pre>
 
-      <p style="color: #c0caf5; margin: 1em 0;">
-        The core algorithm applies Conway's rules to each cell in the grid. For each generation, it checks every cell's 
-        state and its neighbor count to determine if it lives, dies, or springs to life. This creates the mesmerizing 
-        patterns we see evolving on the board.
-      </p>
+        <p style="color: #c0caf5; margin: 1em 0;">
+          The core algorithm applies Conway's rules to each cell in the grid. For each generation, it checks every cell's 
+          state and its neighbor count to determine if it lives, dies, or springs to life. This creates the mesmerizing 
+          patterns we see evolving on the board.
+        </p>
 
-      <!-- Neighbor Counting -->
-      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 0; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+        <!-- Neighbor Counting -->
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; margin-bottom: 0; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Count live neighbors for each cell</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">countNeighbors</span>(<span style="color: #e0af68;">g</span>, <span style="color: #e0af68;">row</span>, <span style="color: #e0af68;">col</span>) {
   <span style="color: #bb9af7;">let</span> <span style="color: #7dcfff;">count</span> = <span style="color: #ff9e64;">0</span>;
@@ -704,14 +718,14 @@
   <span style="color: #bb9af7;">return</span> <span style="color: #7dcfff;">count</span>;
 }</code></pre>
 
-      <p style="color: #c0caf5; margin: 1em 0;">
-        The neighbor counting function scans the eight cells surrounding each position. It carefully handles edge cases 
-        and provides the vital information needed to apply Conway's rules. This efficient implementation uses simple 
-        addition since living cells are represented as 1's and dead cells as 0's.
-      </p>
+        <p style="color: #c0caf5; margin: 1em 0;">
+          The neighbor counting function scans the eight cells surrounding each position. It carefully handles edge cases 
+          and provides the vital information needed to apply Conway's rules. This efficient implementation uses simple 
+          addition since living cells are represented as 1's and dead cells as 0's.
+        </p>
 
-      <!-- Pattern Loading -->
-      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+        <!-- Pattern Loading -->
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Load and center a predefined pattern on the grid</span>
 <span style="color: #bb9af7;">function</span> <span style="color: #7aa2f7;">loadPattern</span>(<span style="color: #e0af68;">patternName</span>) {
   <span style="color: #bb9af7;">if</span> (!<span style="color: #7aa2f7;">patterns</span>[<span style="color: #e0af68;">patternName</span>]) <span style="color: #bb9af7;">return</span>;
@@ -734,14 +748,14 @@
   });
 }</code></pre>
 
-      <p style="color: #c0caf5; margin: 1em 0;">
-        Pattern loading is what allows us to place predefined structures onto the grid. It automatically centers the pattern 
-        and ensures it fits within the boundaries. This function transforms the simple coordinate lists below into living 
-        cells on our grid.
-      </p>
+        <p style="color: #c0caf5; margin: 1em 0;">
+          Pattern loading is what allows us to place predefined structures onto the grid. It automatically centers the pattern 
+          and ensures it fits within the boundaries. This function transforms the simple coordinate lists below into living 
+          cells on our grid.
+        </p>
 
-      <!-- Pattern Definitions -->
-      <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
+        <!-- Pattern Definitions -->
+        <pre style="background: #24283b; padding: 1.5rem; border-radius: .5rem; margin-top: 1rem; overflow-x: auto; border: 1px solid var(--tn-border);"><code>
 <span style="color: #565f89;">// Classic patterns that demonstrate emergent behavior</span>
 <span style="color: #bb9af7;">const</span> <span style="color: #7aa2f7;">patterns</span> = {
   <span style="color: #565f89;">// Glider - Moves diagonally across the grid indefinitely</span>
@@ -770,35 +784,35 @@
   ]
 };</code></pre>
 
-      <p style="color: #c0caf5; margin: 1em 0 3em 0;">
-        These pattern definitions encode classic Game of Life structures using coordinate pairs. Each pattern demonstrates 
-        different emergent behaviors: the Glider moves endlessly across the grid, the Pulsar oscillates in place, and 
-        the Small Exploder creates expanding chaos from a tiny seed.
-      </p>
+        <p style="color: #c0caf5; margin: 1em 0 3em 0;">
+          These pattern definitions encode classic Game of Life structures using coordinate pairs. Each pattern demonstrates 
+          different emergent behaviors: the Glider moves endlessly across the grid, the Pulsar oscillates in place, and 
+          the Small Exploder creates expanding chaos from a tiny seed.
+        </p>
 
-      <!-- Link to Rule 110 -->
-      <div class="text-center mb-5">
-        <a href="../rule-110/" class="btn btn-lg" style="
-          background: transparent;
-          border: 2px solid rgb(245, 133, 237);
-          color: rgb(245, 133, 237);
-          transition: all 0.2s ease;
-          font-weight: 600;
-          padding: 0.75rem 1.5rem;
-          " onmouseover="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'" 
-          onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'"
-          onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'"
-          onmouseup="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'"
-        >
-          View Wolfram's Rule 110 →
-        </a>
+        <!-- Link to Rule 110 -->
+        <div class="text-center mb-5">
+          <a href="../rule-110/" class="btn btn-lg" style="
+            background: transparent;
+            border: 2px solid rgb(245, 133, 237);
+            color: rgb(245, 133, 237);
+            transition: all 0.2s ease;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            " onmouseover="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'" 
+            onmouseout="this.style.background='transparent';this.style.borderColor='rgb(245, 133, 237)';this.style.color='rgb(245, 133, 237)'"
+            onmousedown="this.style.background='rgba(245, 133, 237, 0.2)';this.style.borderColor='rgb(219, 119, 212)';this.style.color='rgb(219, 119, 212)'"
+            onmouseup="this.style.background='rgba(245, 133, 237, 0.1)';this.style.borderColor='rgb(250, 164, 244)';this.style.color='rgb(250, 164, 244)'"
+          >
+            View Wolfram's Rule 110 →
+          </a>
+        </div>
+
       </div>
 
+      <!-- END game functionality section -->
+    
     </div>
-
-    <!-- END game functionality section -->
-  
-  </div>
   </div>
   <!-- Footer -->
   <div class="container-fluid footer-container">
@@ -823,9 +837,9 @@
             </a>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
-  </div>
+  </footer>
 
 
   <!-- Bootstrap 5.3.3 JS (includes Popper) -->
@@ -1544,7 +1558,7 @@
 
         // Start playing automatically
         startGame();
-        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
+        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-lg-inline">Pause</span>';
       } catch (error) {
         console.error('Error loading pattern:', error);
         clearGrid();
@@ -1580,7 +1594,7 @@
         clearInterval(timer);
         timer = null;
       }
-      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
+      document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-play"></i> <span class="d-none d-lg-inline">Play</span>';
       document.getElementById("zoomSelect").disabled = false;
     }
 
@@ -1589,7 +1603,7 @@
         stopGame();
       } else {
         startGame();
-        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>';
+        document.getElementById("toggleBtn").innerHTML = '<i class="bi bi-pause"></i> <span class="d-none d-lg-inline">Pause</span>';
       }
     }
 
@@ -1718,8 +1732,8 @@
 
       updatePlayButton(playing) {
         this.domElements.toggleBtn.innerHTML = playing ? 
-          '<i class="bi bi-pause"></i> <span class="d-none d-sm-inline">Pause</span>' :
-          '<i class="bi bi-play"></i> <span class="d-none d-sm-inline">Play</span>';
+          '<i class="bi bi-pause"></i> <span class="d-none d-lg-inline">Pause</span>' :
+          '<i class="bi bi-play"></i> <span class="d-none d-lg-inline">Play</span>';
       }
 
       // ... other UI methods ...
